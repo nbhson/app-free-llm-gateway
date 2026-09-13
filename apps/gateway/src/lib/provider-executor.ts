@@ -2,7 +2,7 @@ import type { Provider } from "../providers/base.js";
 import { providers } from "../providers/registry.js";
 import { getNextKeyManaged, markRateLimited, markSuccess } from "./key-manager.js";
 import { checkQuotaAsync, recordUsage } from "./quota-tracker.js";
-import { isOpen, recordSuccess, recordFailureIfRetryable } from "./circuit-breaker.js";
+import { isOpen, recordSuccess, recordFailure, recordFailureIfRetryable } from "./circuit-breaker.js";
 import { logger } from "../middleware/logger.js";
 import { isPublicProvider } from "./provider-keys.js";
 import { errMessage, type ProviderError } from "./types.js";
@@ -10,6 +10,56 @@ import { config } from "../config.js";
 import { updateLatencyEMA } from "./adaptive-router.js";
 import { metrics } from "./metrics.js";
 import { getEffectiveKeys } from "./byok-store.js";
+
+/**
+ * Budget/quota error is retryable even when HTTP is 200 with SSE body containing the error.
+ * Pollinations returns 403 "reached its budget" but some gateways wrap it as 200 SSE data: {error}
+ */
+const BUDGET_ERROR_RE = /reached its budget|budget.*exceeded|quota.*exceeded|insufficient.*quota/i;
+
+async function detectBudgetErrorInResponse(res: Response): Promise<string | null> {
+  // Only peek for responses that look like they might be budget errors; avoid
+  // consuming successful streams. Use clone + short reader timeout (400ms).
+  try {
+    const clone = res.clone();
+    const reader = clone.body?.getReader();
+    if (!reader) {
+      const text = await clone.text().catch(() => "");
+      if (BUDGET_ERROR_RE.test(text)) return text.slice(0, 600);
+      return null;
+    }
+    const decoder = new TextDecoder();
+    let acc = "";
+    const timeoutMs = 500;
+    let timer: NodeJS.Timeout | undefined;
+    const timeout = new Promise<void>((resolve) => {
+      timer = setTimeout(() => resolve(), timeoutMs);
+      timer.unref?.();
+    });
+    const readPromise = (async () => {
+      try {
+        const { value, done } = await reader.read();
+        if (value) acc += decoder.decode(value, { stream: true });
+        // try one more chunk if first is very small and not yet conclusive
+        if (!BUDGET_ERROR_RE.test(acc) && acc.length < 400 && !done) {
+          const r2 = await Promise.race([
+            reader.read(),
+            new Promise<{ value: undefined; done: true }>((resolve) => setTimeout(() => resolve({ value: undefined, done: true }), 200)),
+          ]) as { value?: Uint8Array; done?: boolean };
+          if ((r2 as { value?: Uint8Array }).value) acc += decoder.decode((r2 as { value: Uint8Array }).value!, { stream: true });
+        }
+      } catch { /* ignore */ }
+      try { reader.cancel().catch(() => {}); } catch { /* ignore */ }
+    })();
+    await Promise.race([readPromise, timeout]);
+    if (timer) clearTimeout(timer);
+    try { reader.cancel().catch(() => {}); } catch { /* ignore */ }
+    if (BUDGET_ERROR_RE.test(acc)) return acc.slice(0, 600);
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Shared provider fallback executor — single implementation of the
@@ -101,8 +151,21 @@ async function tryProvidersParallel(opts: TryProvidersOpts, batchSize: number): 
             retryAfterMs = Number.isNaN(retry) ? 60000 : retry;
             markRateLimited(pid, key, retryAfterMs);
           }
-          recordFailureIfRetryable(pid, res.status);
+          // 402/403 budget exhausted is also retryable for fallback
+          if (res.status === 402 || res.status === 403) {
+            const isBudget = BUDGET_ERROR_RE.test(text);
+            if (isBudget) recordFailure(pid);
+            else recordFailureIfRetryable(pid, res.status);
+          } else {
+            recordFailureIfRetryable(pid, res.status);
+          }
           throw { provider: pid, status: res.status, error: text.slice(0, 600), retryAfterMs } as ProviderError;
+        }
+        // Stream success but body contains budget error (Pollinations returns 200 SSE with error)
+        const budgetText = await detectBudgetErrorInResponse(res);
+        if (budgetText) {
+          recordFailure(pid);
+          throw { provider: pid, status: 402, error: budgetText } as ProviderError;
         }
         recordSuccess(pid);
         markSuccess(pid, key);
@@ -202,8 +265,20 @@ export async function tryProviders(opts: TryProvidersOpts): Promise<TryProviders
           markRateLimited(pid, key, retryAfterMs);
         }
         errors.push({ provider: pid, status: res.status, error: text.slice(0, 600), retryAfterMs });
-        // 4xx (except 429) is a client/request error — not provider fault, don't trip breaker
-        recordFailureIfRetryable(pid, res.status);
+        if (res.status === 402 || res.status === 403) {
+          const isBudget = BUDGET_ERROR_RE.test(text);
+          if (isBudget) recordFailure(pid);
+          else recordFailureIfRetryable(pid, res.status);
+        } else {
+          recordFailureIfRetryable(pid, res.status);
+        }
+        continue;
+      }
+      // Check streaming success that actually contains budget error in SSE body (Pollinations 200 with error)
+      const budgetTextSeq = await detectBudgetErrorInResponse(res);
+      if (budgetTextSeq) {
+        errors.push({ provider: pid, status: 402, error: budgetTextSeq });
+        recordFailure(pid);
         continue;
       }
       recordSuccess(pid);

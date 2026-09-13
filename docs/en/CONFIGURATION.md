@@ -67,7 +67,7 @@ ALIBABA_API_KEYS=sk-xxx
 NSCALE_API_KEYS=nsc_xxx
 NEBIUS_API_KEYS=nebius_xxx
 AI21_API_KEYS=ai21_xxx
-POLLINATIONS_API_KEY= # usually not needed
+POLLINATIONS_API_KEY= # optional — Pollinations anonymous works, but set enter.pollinations.ai key to track per-key budget; gateway forwards Authorization when set (pollinations.ts) and falls back on 402/403 budget
 
 # KiraAI Vietnam (https://kiraai.vn/api/v1) — OpenAI compatible, 150M free tokens/day
 KIRAAI_API_KEYS=kira_xxx
@@ -123,7 +123,7 @@ Flags are off by default (`0`) for backwards compatibility. **New:** all tunable
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `WEB_TOOLS_ENABLED` | `0` | Enable gateway web tools. `1` to enable, frontend `Globe` toggle sends `x-web-tools:1` to inject `tools: [web_search, web_fetch]` |
+| `WEB_TOOLS_ENABLED` | `0` | Enable gateway web tools. `1` to enable — toggle in **Settings → Web Tools** (applies server-wide, no per-chat Globe button). Frontend reads `WEB_TOOLS_ENABLED` from `/api/config` (cached in `localStorage.gatewaySettings`) and sends `x-web-tools:1` automatically. |
 | `WEB_SEARCH_PROVIDER` | `tavily` | Preferred `tavily`/`brave`/`serper`/`jina` (fallback `jina` free, no key, 500 RPM) |
 | `TAVILY_API_KEY` | _(empty)_ | Tavily search API key (ranked excerpts, `0.008$/credit`) |
 | `BRAVE_API_KEY` | _(empty)_ | Brave Search API key (`$5/1k`, 669ms) |

@@ -54,7 +54,6 @@ export default function Chat() {
   const [maxTokens, setMaxTokens] = useState(() => prefs.getMaxTokens());
   const [streamEnabled, setStreamEnabled] = useState(() => prefs.getStream());
   const [systemPrompt, setSystemPrompt] = useState(() => prefs.getSystem());
-  const [webToolsEnabled, setWebToolsEnabled] = useState(() => prefs.getWebTools());
   const [showSettings, setShowSettings] = useState(false);
   const [lastMeta, setLastMeta] = useState<{ provider?: string; model?: string; latencyMs?: number; usage?: unknown } | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -85,7 +84,6 @@ export default function Chat() {
   useEffect(() => prefs.setMaxTokens(maxTokens), [maxTokens]);
   useEffect(() => prefs.setStream(streamEnabled), [streamEnabled]);
   useEffect(() => prefs.setSystem(systemPrompt), [systemPrompt]);
-  useEffect(() => prefs.setWebTools(webToolsEnabled), [webToolsEnabled]);
 
   // Fetch models — ALLOWED + favorites, timeout-guarded
   useEffect(() => {
@@ -144,7 +142,6 @@ export default function Chat() {
     temperature,
     maxTokens,
     streamEnabled,
-    webToolsEnabled,
     messages,
     setMessages,
     setLastMeta,
@@ -230,8 +227,6 @@ export default function Chat() {
           showSettings={showSettings}
           onToggleSettings={() => setShowSettings(!showSettings)}
           onConfirmRefresh={confirmRefresh}
-          webToolsEnabled={webToolsEnabled}
-          onToggleWebTools={() => setWebToolsEnabled((v) => !v)}
           favoriteSet={favoriteSet}
         />
 
@@ -282,12 +277,6 @@ export default function Chat() {
               {error.includes("timeout") || error.includes("All providers failed") ? (
                 <button onClick={() => setError(null)} className="px-2.5 py-1 rounded-full bg-white border border-rose-200 hover:bg-rose-100 font-semibold text-[11px]">Đã hiểu</button>
               ) : null}
-              {webToolsEnabled && (
-                <button onClick={() => setWebToolsEnabled(false)} className="px-2.5 py-1 rounded-full bg-amber-500 text-white hover:bg-amber-600 font-semibold text-[11px]">Tắt Web Tools & thử lại</button>
-              )}
-              {!webToolsEnabled && error.includes("Web Tools") && (
-                <button onClick={() => setWebToolsEnabled(true)} className="px-2.5 py-1 rounded-full bg-emerald-600 text-white hover:bg-emerald-700 font-semibold text-[11px]">Bật Web Tools</button>
-              )}
             </div>
           </div>
         )}

@@ -131,7 +131,7 @@ export interface Provider {
 
 * `openai-compatible` (28/30): NVIDIA (`integrate.api.nvidia.com/v1`), Groq (`api.groq.com/openai/v1`), Cerebras, GitHub Models (`models.github.ai/inference`), OVH, Cohere (`/v2`), ModelScope, Chutes, SambaNova, SiliconFlow, Glhf, Mistral, LLM7, Agnes, Aion, Z AI (`open.bigmodel.cn/api/paas/v4`), DeepSeek, OpenRouter, Ollama Cloud, Nscale, Nebius, AI21… — just `baseURL + Authorization`.
 * `gemini`: Google (`generativelanguage.googleapis.com/v1beta`) — needs `format-translator` (OpenAI → Gemini contents).
-* `scraped`: Pollinations (`text.pollinations.ai/openai`) — no key needed, auto maps alias `auto` → `openai`.
+* `scraped`: Pollinations (`text.pollinations.ai/openai`) — tùy chọn `POLLINATIONS_API_KEY` gửi `Authorization: Bearer` (`providers/pollinations.ts`), auto map alias `auto` → `openai`; lỗi hết budget `402/403` + `200 SSE budget` được bắt (`provider-executor.ts` detector) và fallback + breaker `402/403` retryable (`circuit-breaker.ts:63`).
 
 Registry `apps/gateway/src/providers/registry.ts:1` lists 41 ids (30 freellms slugs + 11 alias `mistral`/`gemini`/`nvidia`/`kilo-code`/`openrouter`), `providerMeta` contains caps/tier/noCard, alias map 15+ keys (`kilo-auto`, `gemini-3.6`...).
 
@@ -148,7 +148,7 @@ Based on `smart_router.py` + OmniRoute 19 strategies, actual freellms tiers:
 | `verified` | If `data/verified-models.json` + `data/model-health.json` (persisted 404/410) exists, `GET /v1/models?verified=free` removes `deprecated` from pool |
 | `cost-aware` | When `COST_ROUTING_ENABLED=1`, `rankProvidersByCostAndLatency(ids)` (`lib/cost-router.ts:99`) re-ranks pool by `FREELLMS_COST` ($/1M tokens) + latency EMA from `data/provider-stats.json` (fallback 100ms) + quota headroom — `score = cost*COST_WEIGHT(5) + latency*LATENCY_WEIGHT(0.0005) - headroom*HEADROOM_WEIGHT(0.3)`, sort asc (env overrides); `syncPricing()` syncs from LiteLLM CDN `model_prices_and_context_window.json` |
 
-Fallback: Tiered fallback with circuit breaker (5 fails / 30s cooldown, `config.ts:30`). Mid-stream SSE error → emit `data: {"error": ...}\n\n` then close. Persisted `model-health.json` is merged by `chat.ts:22` to skip `deprecated` even before `verify`. With cost-routing, sorted pool is iterated in cheapest + fastest order.
+Fallback: Tiered fallback với circuit breaker (5 fails / 30s cooldown, `config.ts:30`; `402/403 budget` giờ retryable `circuit-breaker.ts:63`). Hết budget (`402/403 "reached its budget"` + `200 SSE budget` qua `provider-executor.ts` detector) sẽ fallback ngay sang tier tiếp theo của `auto` và tính vào breaker. Mid-stream SSE error → emit `data: {"error": ...}\n\n` rồi close (budget SSE được chặn trước khi stream). Persisted `model-health.json` được merge bởi `chat.ts:22` để skip `deprecated` trước cả `verify`. Pollinations gửi `Authorization: Bearer POLLINATIONS_API_KEY` khi có key (`providers/pollinations.ts`).
 
 ## 5. Key Management & Security
 

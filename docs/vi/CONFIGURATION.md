@@ -67,7 +67,7 @@ ALIBABA_API_KEYS=sk-xxx
 NSCALE_API_KEYS=nsc_xxx
 NEBIUS_API_KEYS=nebius_xxx
 AI21_API_KEYS=ai21_xxx
-POLLINATIONS_API_KEY= # usually not needed
+POLLINATIONS_API_KEY= # tùy chọn — để trống vẫn chạy anonymous, nhưng nếu có key enter.pollinations.ai thì gateway gửi Authorization (pollinations.ts) để tracking đúng per-key budget; hết budget 402/403 sẽ tự fallback
 
 # KiraAI Vietnam (https://kiraai.vn/api/v1) — OpenAI compatible, 150M free tokens/day
 KIRAAI_API_KEYS=kira_xxx
@@ -110,7 +110,7 @@ Flags are off by default (`0`) for backwards compatibility. Enable individually 
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `WEB_TOOLS_ENABLED` | `0` | Bật gateway web tools. `1` để enable, frontend toggle `Globe` gửi `x-web-tools:1` mới inject `tools: [web_search, web_fetch]` |
+| `WEB_TOOLS_ENABLED` | `0` | Bật gateway web tools. `1` để enable — toggle trong **Settings → Web Tools** (áp dụng server-wide, không có nút Globe trên Chat). Frontend đọc `WEB_TOOLS_ENABLED` từ `/api/config` (cache `localStorage.gatewaySettings`) và tự gửi `x-web-tools:1` khi gửi request. |
 | `WEB_SEARCH_PROVIDER` | `tavily` | Ưu tiên `tavily`/`brave`/`serper`/`jina` (fallback `jina` free không cần key) |
 | `TAVILY_API_KEY` | _(empty)_ | Tavily search API key (ranked excerpts, `0.008$/credit`) |
 | `BRAVE_API_KEY` | _(empty)_ | Brave Search API key (`$5/1k`, 669ms) |

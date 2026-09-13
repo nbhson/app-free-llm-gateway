@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { tryProviders } from "./provider-executor.js";
 import { providers } from "../providers/registry.js";
 import { getState } from "./circuit-breaker.js";
+import { _resetKeyStates } from "./key-manager.js";
 
 function ok(text: string) {
   return new Response(JSON.stringify({ ok: true, text }), { status: 200 });
@@ -15,6 +16,7 @@ describe("provider-executor", () => {
     providers["pollinations"] = origPollinations;
     providers["llm7-io"] = origLlm7;
     providers["ollama-cloud"] = origOllama;
+    _resetKeyStates();
   });
 
   it("returns first success with providerId + key + res", async () => {
@@ -105,5 +107,65 @@ describe("provider-executor", () => {
       expect(r.errors[0].status).toBe(429);
       expect(r.errors[0].retryAfterMs).toBeGreaterThan(0);
     }
+  });
+
+  it("falls back on 403 budget exhausted (Pollinations)", async () => {
+    providers["pollinations"] = {
+      ...origPollinations,
+      chat: async () => new Response(JSON.stringify({ error: "The API key used for this request has reached its budget. Please raise the key budget" }), { status: 403 }),
+    } as any;
+    providers["llm7-io"] = { ...origLlm7, chat: async () => ok("llm7-ok") } as any;
+    const r = await tryProviders({
+      providerOrder: ["pollinations", "llm7-io"],
+      call: ({ provider, key }) => (provider as any).chat({}, key),
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.providerId).toBe("llm7-io");
+  });
+
+  it("falls back on 200 SSE containing budget phrase", async () => {
+    providers["pollinations"] = {
+      ...origPollinations,
+      chat: async () => {
+        const stream = new ReadableStream({
+          start(controller) {
+            controller.enqueue(new TextEncoder().encode('data: {"error":"reached its budget"}\n\n'));
+            controller.close();
+          },
+        });
+        return new Response(stream as any, { status: 200, headers: { "content-type": "text/event-stream" } });
+      },
+    } as any;
+    providers["llm7-io"] = { ...origLlm7, chat: async () => ok("llm7-ok") } as any;
+    const r = await tryProviders({
+      providerOrder: ["pollinations", "llm7-io"],
+      call: ({ provider, key }) => (provider as any).chat({}, key),
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.providerId).toBe("llm7-io");
+  });
+
+  it("parallel fallback skips pollinations budget and wins with next", async () => {
+    providers["pollinations"] = { ...origPollinations, chat: async () => new Response("reached its budget", { status: 403 }) } as any;
+    providers["llm7-io"] = { ...origLlm7, chat: async () => ok("llm7-ok") } as any;
+    const r = await tryProviders({
+      providerOrder: ["pollinations", "llm7-io"],
+      parallel: 3,
+      call: ({ provider, key }) => (provider as any).chat({}, key),
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.providerId).toBe("llm7-io");
+  });
+
+  it("402 budget trips breaker", async () => {
+    // use isolated public provider to avoid polluted breaker from previous pollinations tests (threshold 5)
+    const pid = "glhf-chat" as const;
+    const orig = providers[pid];
+    const before = getState(pid).failures;
+    providers[pid] = { id: pid, type: "scraped", chat: async () => new Response("budget exceeded", { status: 402 }), models: async () => [], health: async () => true } as any;
+    await tryProviders({ providerOrder: [pid], call: ({ provider, key }) => (provider as any).chat({}, key) });
+    expect(getState(pid).failures).toBeGreaterThan(before);
+    if (orig) providers[pid] = orig;
+    else delete (providers as any)[pid];
   });
 });

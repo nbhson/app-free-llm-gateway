@@ -2,6 +2,20 @@
 
 Tất cả thay đổi đáng chú ý sẽ được ghi ở đây. Format theo [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.11.2] - 2026-09-13
+
+### Changed
+- **Web Tools control** — bỏ Globe button khỏi Chat page header (`ChatHeader.tsx`), chỉ toggle trong Settings page. `useChatStream.ts` đọc server config `WEB_TOOLS_ENABLED` từ `localStorage.gatewaySettings` thay vì client state, đảm bảo toggle Settings áp dụng cho mọi request tự động. Error hint trong `chat.ts` + `useChatStream.ts` đổi "Globe" → "Settings". Xóa `prefs.getWebTools/setWebTools` (`storage.ts`) — không còn dùng.
+
+## [1.11.1] - 2026-09-13
+
+### Fixed
+- **Pollinations `free-llm-gateway/auto` dừng ở budget** — `apps/gateway/src/providers/pollinations.ts:7` thêm `Authorization: Bearer POLLINATIONS_API_KEY` khi có key (tracking đúng per-key budget `enter.pollinations.ai/edit-key`), trước bỏ qua `_apiKey`; `apps/gateway/src/lib/circuit-breaker.ts:63` coi `402/403` budget là retryable (trước chỉ `429/5xx`, `400` vẫn ignore) để `auto` fallback và mở breaker sau 5 lần; `apps/gateway/src/lib/provider-executor.ts:14` thêm `BUDGET_ERROR_RE` + `detectBudgetErrorInResponse()` peek `500ms` đầu SSE — `403 JSON` lẫn `200 SSE {error:"reached its budget"}` (Pollinations trả 200 khi stream) đều bị bắt và `throw {status:402}` để `tryProviders`/`tryProvidersParallel` fallback sang `llm7-io/kiraai` ngay, cả sequential lẫn `parallel:3` cho `auto`
+- **UT docs** — `324 tests pass (49 files)` sau fix `pollinations` auth + breaker `402/403` + budget detector (`provider-executor.test.ts` 4 tests mới: 403→llm7, 200 SSE budget→llm7, parallel 3, 402 trips breaker; `circuit-breaker.test.ts` 400 vs 402/403/5xx; `scraped-gemini.test.ts` Pollinations `Authorization`)
+
+### Changed
+- **Docs** — `docs/en|vi/PROVIDERS.md` Pollinations row `POLLINATIONS_API_KEY (optional)` + note budget fallback wallet vs per-key; `docs/en|vi/CONFIGURATION.md` `POLLINATIONS_API_KEY` comment; `docs/en|vi/ARCHITECTURE.md` `scraped Pollinations` + `Fallback` mô tả `402/403` + SSE detector + `Authorization`
+
 ## [1.11.0] - 2026-09-12
 
 ### Added

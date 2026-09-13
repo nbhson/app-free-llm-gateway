@@ -538,12 +538,12 @@ chatRoute.post(
     // User-friendly detail: top 3 errors + actionable suggestion
     const topErrors = errors.slice(0, 3).map((e) => `${e.provider}: ${String(e.error || "").slice(0, 180)}${e.status ? ` (${e.status})` : ""}`).join(" | ");
     const suggestion = webToolsForRequest
-      ? "Thử tắt Web Tools (Globe) rồi gửi lại, hoặc chọn model khác (kilo-code/kilo-auto, kiraai/kira-auto, openrouter/auto)."
+      ? "Thử tắt Web Tools trong Settings rồi gửi lại, hoặc chọn model khác (kilo-code/kilo-auto, kiraai/kira-auto, openrouter/auto)."
       : errors.some((e) => /timeout/i.test(e.error || ""))
         ? `Provider timeout sau ${config.providerTimeoutMs}ms — thử lại sau 10-30s hoặc chọn model khác (pollinations/openai, groq/llama-3.3-70b).`
         : errors.some((e) => e.status === 400 && /invalid model/i.test(e.error || ""))
           ? "Model không tồn tại trên provider này — thử chọn model trong danh sách Chat (6 default + Favorites) hoặc dùng free-llm-gateway/auto."
-          : "Thử chọn model khác hoặc tắt/bật Web Tools và gửi lại.";
+          : "Thử chọn model khác hoặc tắt/bật Web Tools trong Settings rồi gửi lại.";
     const detailedMessage = `All providers failed (${errors.length} tried). ${topErrors}. Gợi ý: ${suggestion}`;
     return c.json({ error: { message: detailedMessage, type: "provider_error", provider_errors: errors, hint: suggestion } }, 502);
   }

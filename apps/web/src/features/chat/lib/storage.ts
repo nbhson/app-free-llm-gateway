@@ -7,7 +7,6 @@ const TEMP_KEY = "chatTemp";
 const MAX_TOK_KEY = "chatMaxTokens";
 const STREAM_KEY = "chatStream";
 const SYSTEM_KEY = "chatSystemPrompt";
-const WEB_TOOLS_KEY = "chatWebTools";
 
 export function getMasterKey(): string {
   // No hard-coded fallback in JS bundle. Bootstrap via /api/bootstrap in Layout.
@@ -62,6 +61,4 @@ export const prefs = {
   setStream: (v: boolean) => { try { localStorage.setItem(STREAM_KEY, v ? "1" : "0"); } catch { /* ignore */ } },
   getSystem: () => localStorage.getItem(SYSTEM_KEY) || "",
   setSystem: (v: string) => { try { localStorage.setItem(SYSTEM_KEY, v); } catch { /* ignore */ } },
-  getWebTools: () => localStorage.getItem(WEB_TOOLS_KEY) === "1",
-  setWebTools: (v: boolean) => { try { localStorage.setItem(WEB_TOOLS_KEY, v ? "1" : "0"); } catch { /* ignore */ } },
 };

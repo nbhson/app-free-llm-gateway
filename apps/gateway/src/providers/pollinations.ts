@@ -4,16 +4,19 @@ import type { Provider, ChatRequest, ModelInfo } from "./base.js";
 export const pollinationsProvider: Provider = {
   id: "pollinations",
   type: "scraped",
-  async chat(req: ChatRequest, _apiKey: string): Promise<Response> {
+  async chat(req: ChatRequest, apiKey: string): Promise<Response> {
     const url = "https://text.pollinations.ai/openai";
-    // Pollinations expects OpenAI shape, no auth
     // Map generic aliases to pollinations openai model
     const aliasMap: Record<string, string> = { auto: "openai", "gpt-4": "openai", "gpt-3.5": "openai", llama: "openai" };
     const raw = req.model.includes("/") ? req.model.split("/").pop()! : req.model || "openai";
     const model = aliasMap[raw.toLowerCase()] || raw;
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    // If POLLINATIONS_API_KEY is configured (enter.pollinations.ai), send it so per-key budget is tracked correctly
+    // Pollinations accepts Authorization: Bearer <key> for authenticated budget; anonymous still works without it
+    if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
     return fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({
         model,
         messages: req.messages,

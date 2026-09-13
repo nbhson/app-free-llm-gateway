@@ -9,7 +9,6 @@ type UseChatStreamOpts = {
   temperature: number;
   maxTokens: number;
   streamEnabled: boolean;
-  webToolsEnabled: boolean;
   messages: ChatMessage[];
   setMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   setLastMeta: React.Dispatch<React.SetStateAction<{ provider?: string; model?: string; latencyMs?: number; usage?: unknown } | null>>;
@@ -17,8 +16,20 @@ type UseChatStreamOpts = {
   setIsStreaming: (v: boolean) => void;
 };
 
+function getWebToolsFromServer(): boolean {
+  try {
+    const raw = localStorage.getItem("gatewaySettings");
+    if (!raw) return false;
+    const cfg = JSON.parse(raw) as Record<string, unknown>;
+    return (cfg.WEB_TOOLS_ENABLED === 1 || cfg.WEB_TOOLS_ENABLED === "1" || cfg.WEB_TOOLS_ENABLED === true);
+  } catch {
+    return false;
+  }
+}
+
 export function useChatStream(opts: UseChatStreamOpts) {
-  const { selectedModel, systemPrompt, temperature, maxTokens, streamEnabled, webToolsEnabled, messages, setMessages, setLastMeta, setError, setIsStreaming } = opts;
+  const { selectedModel, systemPrompt, temperature, maxTokens, streamEnabled, messages, setMessages, setLastMeta, setError, setIsStreaming } = opts;
+  const webToolsEnabled = getWebToolsFromServer();
   const abortRef = useRef<AbortController | null>(null);
   const throttleRef = useRef<{ pending: string; raf: number | null; targetId: string | null; provider?: string; modelHeader?: string }>({ pending: "", raf: null, targetId: null });
 
@@ -169,7 +180,7 @@ export function useChatStream(opts: UseChatStreamOpts) {
         } catch { /* ignore */ }
         // Map generic 502 into user-friendly Vietnamese hint if backend didn't provide
         if (!hint && msg.includes("All providers failed") && !msg.includes("Gợi ý")) {
-          msg = msg + "\n\nGợi ý: Thử tắt Web Tools (Globe 🌐) nếu đang bật, chọn model khác (ví dụ kiraai/kira-auto, kilo-code/kilo-auto), hoặc đợi 15s rồi gửi lại. Kiểm tra /providers để xem provider nào đang online.";
+          msg = msg + "\n\nGợi ý: Thử tắt Web Tools trong Settings rồi gửi lại, chọn model khác (ví dụ kiraai/kira-auto, kilo-code/kilo-auto), hoặc đợi 15s rồi gửi lại. Kiểm tra /providers để xem provider nào đang online.";
         }
         throw new Error(msg || `HTTP ${res.status}`);
       }
@@ -319,7 +330,7 @@ export function useChatStream(opts: UseChatStreamOpts) {
       setIsStreaming(false);
       abortRef.current = null;
     }
-  }, [messages, selectedModel, systemPrompt, temperature, maxTokens, streamEnabled, webToolsEnabled, setMessages, setLastMeta, setError, setIsStreaming, scheduleFlush]);
+  }, [messages, selectedModel, systemPrompt, temperature, maxTokens, streamEnabled, setMessages, setLastMeta, setError, setIsStreaming, scheduleFlush]);
 
   const handleContinue = useCallback(() => {
     // Trigger continuation with a short prompt that preserves context

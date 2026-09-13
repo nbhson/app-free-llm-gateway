@@ -62,8 +62,9 @@
 | Fireworks | `https://api.fireworks.ai/inference/v1` | `FIREWORKS_API_KEYS` |
 | Novita | `https://api.novita.ai/v3/openai` | `NOVITA_API_KEYS` |
 | DeepSeek | `https://api.deepseek.com/v1` | `DEEPSEEK_API_KEYS` |
-| Pollinations | `https://text.pollinations.ai/openai` | `POLLINATIONS_API_KEY` (not required) |
+| Pollinations | `https://text.pollinations.ai/openai` | `POLLINATIONS_API_KEY` (optional, `enter.pollinations.ai` per-key budget; anonymous works) |
 
+> Pollinations budget fallback: `402/403 "reached its budget"` and streaming `200 SSE {error:"reached its budget"}` are treated as retryable failures (`provider-executor.ts` budget detector + `circuit-breaker.ts:63` 402/403 retryable) and the gateway auto-falls back to the next `auto` tier (`kiraai→llm7-io→kilo-code…`) and opens the breaker after `CIRCUIT_BREAKER_THRESHOLD` (5). When `Authorization: Bearer <key>` is set (`pollinations.ts`), per-key budget is tracked correctly. > Topping up the wallet alone does not raise the per-key budget — use `enter.pollinations.ai/edit-key` to raise it.
 > Scraped warning: Pollinations/LLM7 are not fully stable and need a health cron with auto-disable in P3.
 
 ## 3. Model Catalog — freellms 316 free (historical) + live 882 free

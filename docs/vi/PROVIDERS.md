@@ -60,8 +60,9 @@
 | Fireworks | `https://api.fireworks.ai/inference/v1` | `FIREWORKS_API_KEYS` |
 | Novita | `https://api.novita.ai/v3/openai` | `NOVITA_API_KEYS` |
 | DeepSeek | `https://api.deepseek.com/v1` | `DEEPSEEK_API_KEYS` |
-| Pollinations | `https://text.pollinations.ai/openai` | `POLLINATIONS_API_KEY` (không cần) |
+| Pollinations | `https://text.pollinations.ai/openai` | `POLLINATIONS_API_KEY` (tùy chọn, `enter.pollinations.ai` budget theo key; để trống vẫn chạy anonymous) |
 
+> Pollinations hết budget: `402/403 "reached its budget"` và `200 SSE {error:"reached its budget"}` được coi là lỗi retryable (`provider-executor.ts` detector + `circuit-breaker.ts:63` 402/403 retryable) — gateway tự fallback sang provider tiếp theo của `free-llm-gateway/auto` (`kiraai→llm7-io→kilo-code…`) và mở breaker sau `CIRCUIT_BREAKER_THRESHOLD` (5). Khi có `POLLINATIONS_API_KEY`, `pollinations.ts` gửi `Authorization: Bearer <key>` để tracking đúng per-key budget. > Nạp tiền wallet không tự tăng per-key budget — phải vào `enter.pollinations.ai/edit-key` để raise.
 > Cảnh báo scraped: Pollinations/LLM7 không ổn định, cần health cron và auto-disable trong P3.
 
 ## 3. Model Catalog — freellms 316 free (lịch sử) + live 882 free

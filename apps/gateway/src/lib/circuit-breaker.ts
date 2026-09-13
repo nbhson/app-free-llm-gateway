@@ -55,10 +55,13 @@ export function recordFailure(providerId: string) {
 
 /**
  * Count a failure only when it indicates provider trouble: network exception
- * (status undefined), 429, or 5xx. Plain 4xx means the request itself was bad.
+ * (status undefined), 429, 402/403 budget exhausted, or 5xx. Plain 4xx like
+ * 400 invalid model means the request itself was bad.
+ * Pollinations budget (402/403 "reached its budget") is retryable so the
+ * gateway can fallback to next provider and open circuit after threshold.
  */
 export function recordFailureIfRetryable(providerId: string, status?: number): void {
-  if (status !== undefined && status !== 429 && status < 500) return;
+  if (status !== undefined && status !== 429 && status !== 402 && status !== 403 && status < 500) return;
   recordFailure(providerId);
 }
 

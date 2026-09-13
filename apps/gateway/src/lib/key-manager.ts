@@ -97,3 +97,7 @@ export function getKeyStats(providerId: string) {
     available: s.cooldownUntil <= Date.now(),
   }));
 }
+
+export function _resetKeyStates(): void {
+  keyStates.clear();
+}

@@ -11,7 +11,7 @@ describe("pollinations provider", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url: any, init: any) => {
-        seen.push({ url: String(url), body: JSON.parse(init.body) });
+        seen.push({ url: String(url), body: JSON.parse(init.body), headers: init.headers });
         return new Response("{}", { status: 200 });
       })
     );
@@ -20,6 +20,21 @@ describe("pollinations provider", () => {
     expect(seen[0].body.model).toBe("openai");
     await pollinationsProvider.chat({ model: "pollinations/mistral", messages: [] } as any, "");
     expect(seen[1].body.model).toBe("mistral");
+  });
+
+  it("sends Authorization when apiKey present, omits when blank", async () => {
+    const seen: any[] = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: any, init: any) => {
+        seen.push({ headers: init.headers });
+        return new Response("{}", { status: 200 });
+      })
+    );
+    await pollinationsProvider.chat({ model: "auto", messages: [{ role: "user", content: "hi" }] } as any, "sk_test_123");
+    expect(seen[0].headers.Authorization).toBe("Bearer sk_test_123");
+    await pollinationsProvider.chat({ model: "auto", messages: [{ role: "user", content: "hi" }] } as any, "");
+    expect(seen[1].headers.Authorization).toBeUndefined();
   });
 
   it("models() returns static list, health reflects ok/throw", async () => {

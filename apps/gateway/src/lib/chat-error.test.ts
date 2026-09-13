@@ -75,11 +75,11 @@ describe("Fix 1.9.1 — frequent All providers failed", () => {
     expect(txt).toContain("j.error?.hint");
   });
 
-  it("Chat.tsx error banner shows whitespace-pre-wrap and Web Tools toggle actions", () => {
+  it("Chat.tsx error banner shows whitespace-pre-wrap, no per-chat Web Tools toggle (controlled from Settings)", () => {
     const txt = readWeb("apps/web/src/pages/Chat.tsx");
     expect(txt).toContain("whitespace-pre-wrap");
-    expect(txt).toContain("Tắt Web Tools & thử lại");
-    expect(txt).toContain("webToolsEnabled");
+    expect(txt).not.toContain("Tắt Web Tools & thử lại");
+    expect(txt).not.toContain("webToolsEnabled");
     expect(txt).toContain('role="alert"');
   });
 });
