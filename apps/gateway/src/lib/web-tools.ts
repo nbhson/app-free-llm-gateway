@@ -134,7 +134,7 @@ async function searchWithJina(query: string, count: number): Promise<SearchResul
   const text = await res.text();
   // Try to parse markdown links
   const links: SearchResult[] = [];
-  const re = /\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g;
+  const re = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(text)) && links.length < count) {
     links.push({ title: m[1].slice(0, 120), url: m[2], snippet: "" });

@@ -32,7 +32,7 @@ export default function Providers() {
     try {
       const raw = localStorage.getItem("providersCache");
       if (raw) return JSON.parse(raw) as ProvidersPayload;
-    } catch {}
+    } catch { /* ignore */ }
     return null;
   });
   const [health, setHealth] = useState<HealthPayload | null>(null);
@@ -51,7 +51,7 @@ export default function Providers() {
     try {
       const raw = localStorage.getItem("providersSyncCache");
       if (raw) return JSON.parse(raw) as SyncStatus;
-    } catch {}
+    } catch { /* ignore */ }
     return null;
   });
   const [autoSyncing, setAutoSyncing] = useState(false);
@@ -83,7 +83,7 @@ export default function Providers() {
       }
       const merged = { ...first, detailed: all, pagination: first.pagination ? { ...first.pagination, total: all.length } : undefined };
       setData(merged);
-      try { localStorage.setItem("providersCache", JSON.stringify(merged)); localStorage.setItem("providersCacheAt", new Date().toISOString()); } catch {}
+      try { localStorage.setItem("providersCache", JSON.stringify(merged)); localStorage.setItem("providersCacheAt", new Date().toISOString()); } catch { /* ignore */ }
     } catch { /* ignore */ }
   };
   const fetchSync = async () => {
@@ -92,7 +92,7 @@ export default function Providers() {
       if (!r.ok) return;
       const j = (await r.json()) as SyncStatus;
       setSyncStatus(j);
-      try { localStorage.setItem("providersSyncCache", JSON.stringify(j)); } catch {}
+      try { localStorage.setItem("providersSyncCache", JSON.stringify(j)); } catch { /* ignore */ }
       if (j.bootSync?.status === "running") setAutoSyncing(true);
       else setAutoSyncing(false);
     } catch { /* ignore */ }

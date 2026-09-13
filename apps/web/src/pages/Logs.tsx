@@ -7,12 +7,12 @@ function mk() { return localStorage.getItem("masterKey") || "fgk-master-dev-key"
 export default function Logs() {
   const { t } = useLang();
   const [logs, setLogs] = useState<ApiLog[]>(() => {
-    try { const raw = localStorage.getItem("logsCache"); if (raw) return JSON.parse(raw) as ApiLog[]; } catch {}
+    try { const raw = localStorage.getItem("logsCache"); if (raw) return JSON.parse(raw) as ApiLog[]; } catch { /* ignore */ }
     return [];
   });
   const [live, setLive] = useState(false);
   const [stats, setStats] = useState<GatewayStats | null>(() => {
-    try { const raw = localStorage.getItem("logsStatsCache"); if (raw) return JSON.parse(raw) as GatewayStats; } catch {}
+    try { const raw = localStorage.getItem("logsStatsCache"); if (raw) return JSON.parse(raw) as GatewayStats; } catch { /* ignore */ }
     return null;
   });
 
@@ -23,7 +23,7 @@ export default function Logs() {
     fetch("/api/logs?limit=100", { headers: { Authorization: `Bearer ${mk()}` } }).then((r) => { if (!r.ok) { setAuthError(r.status === 401 ? t("logs.auth_error") : `Error ${r.status}`); return null; } setAuthError(null); return r.json(); }).then((d) => {
       if (d?.data) {
         setLogs(d.data);
-        try { localStorage.setItem("logsCache", JSON.stringify(d.data)); } catch {}
+        try { localStorage.setItem("logsCache", JSON.stringify(d.data)); } catch { /* ignore */ }
       }
     }).catch(() => {});
     fetch("/api/stats", { headers: { Authorization: `Bearer ${mk()}` } }).then((r) => { if (!r.ok) { if (r.status === 401) setAuthError(t("logs.auth_error")); return null; } return r.json(); }).then((d) => {
@@ -38,7 +38,7 @@ export default function Logs() {
           }
           return d;
         });
-        try { localStorage.setItem("logsStatsCache", JSON.stringify(d)); } catch {}
+        try { localStorage.setItem("logsStatsCache", JSON.stringify(d)); } catch { /* ignore */ }
       }
     }).catch(() => {});
   };

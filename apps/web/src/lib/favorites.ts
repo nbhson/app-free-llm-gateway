@@ -21,7 +21,7 @@ export function setFavoriteIds(ids: string[]): void {
   try {
     localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids));
     window.dispatchEvent(new CustomEvent(FAVORITES_EVENT));
-  } catch {}
+  } catch { /* ignore */ }
 }
 
 export function toggleFavorite(id: string): string[] {

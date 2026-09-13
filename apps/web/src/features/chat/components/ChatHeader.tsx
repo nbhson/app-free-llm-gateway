@@ -12,7 +12,6 @@ type Props = {
   onToggleDrawer: () => void;
   showSettings: boolean;
   onToggleSettings: () => void;
-  onRefresh: () => void;
   onConfirmRefresh: () => void;
   webToolsEnabled: boolean;
   onToggleWebTools: () => void;
@@ -28,7 +27,6 @@ export const ChatHeader = React.memo(function ChatHeader({
   onToggleDrawer,
   showSettings,
   onToggleSettings,
-  onRefresh,
   onConfirmRefresh,
   webToolsEnabled,
   onToggleWebTools,

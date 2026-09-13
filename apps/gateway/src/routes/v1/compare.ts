@@ -68,7 +68,7 @@ compareRoute.post("/compare", zValidator("json", compareSchema), async (c) => {
       const latencyMs = Date.now() - t0;
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
-        try { metrics.llmLatency(providerId, model, latencyMs); } catch {}
+        try { metrics.llmLatency(providerId, model, latencyMs); } catch { /* ignore */ }
         return { model, providerId, ok: false as const, error: `HTTP ${res.status}: ${txt.slice(0, 500)}`, latencyMs, content: "", usage: null as unknown };
       }
       const data = (await res.json().catch(() => ({}))) as {
@@ -78,11 +78,11 @@ compareRoute.post("/compare", zValidator("json", compareSchema), async (c) => {
       const rawContent = data.choices?.[0]?.message?.content ?? "";
       const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
       const usage = data.usage && typeof data.usage === "object" ? data.usage : null;
-      try { metrics.llmLatency(providerId, model, latencyMs); } catch {}
+      try { metrics.llmLatency(providerId, model, latencyMs); } catch { /* ignore */ }
       return { model, providerId, ok: true as const, content, latencyMs, usage };
     } catch (e) {
       const latencyMs = Date.now() - t0;
-      try { metrics.llmLatency(providerId, model, latencyMs); } catch {}
+      try { metrics.llmLatency(providerId, model, latencyMs); } catch { /* ignore */ }
       return { model, providerId, ok: false as const, error: (e as Error).message?.slice(0, 500) || "unknown error", latencyMs, content: "", usage: null as unknown };
     }
   }));

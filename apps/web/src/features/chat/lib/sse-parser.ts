@@ -149,12 +149,12 @@ export async function parseSseStream(
             full += deltaContent;
             callbacks.onDelta?.(deltaContent, reasoning);
           }
-        } catch {}
+        } catch { /* ignore */ }
       }
     }
     if (!full.trim() && reasoningFull.trim()) full = reasoningFull;
   } finally {
-    try { reader.releaseLock(); } catch {}
+    try { reader.releaseLock(); } catch { /* ignore */ }
   }
   return { full, reasoningFull, error: streamError, finishReason };
 }

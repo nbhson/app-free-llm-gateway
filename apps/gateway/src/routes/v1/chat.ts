@@ -12,14 +12,13 @@ import { hasScope } from "../../lib/virtual-keys.js";
 import { compressWithMetrics } from "../../lib/compression.js";
 import { logGenAI } from "../../lib/otel.js";
 import { FREELLMS_COST, rankProvidersByCostAndLatency } from "../../lib/cost-router.js";
-import { adaptiveRank, getAdaptiveScores } from "../../lib/adaptive-router.js";
+import { adaptiveRank } from "../../lib/adaptive-router.js";
 import { semanticCache } from "../../lib/semantic-cache.js";
 import { loadVerifiedMap, loadHealthMap } from "../../lib/model-store.js";
 import { tryProviders } from "../../lib/provider-executor.js";
 import { getRequestVk, type UpstreamChatCompletion, type CompressibleMessage } from "../../lib/types.js";
 import type { ChatMessage } from "../../providers/base.js";
-import { getWebTools, executeWebSearch, executeWebFetch, shouldEnableWebTools } from "../../lib/web-tools.js";
-import { metrics } from "../../lib/metrics.js";
+import { shouldEnableWebTools, getWebTools, executeWebSearch, executeWebFetch } from "../../lib/web-tools.js";
 
 const contentPartSchema = z.object({
   type: z.string(),

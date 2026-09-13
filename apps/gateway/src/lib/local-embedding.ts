@@ -48,7 +48,7 @@ export async function localEmbed(text: string): Promise<number[] | null> {
       const v = await fn(text);
       if (v && v.length>0) return v;
     }
-  } catch {}
+  } catch { /* ignore */ }
   // fallback hash always succeeds
   return hashEmbedding(text);
 }

@@ -8,12 +8,12 @@ export type ByokMap = Record<string, Record<string, string[]>>; // vkId -> provi
 const STORE_PATH = resolveDataPath("byok-store.json");
 
 function loadRaw(): ByokMap {
-  try { if (fs.existsSync(STORE_PATH)) return JSON.parse(fs.readFileSync(STORE_PATH, "utf-8")); } catch {}
+  try { if (fs.existsSync(STORE_PATH)) return JSON.parse(fs.readFileSync(STORE_PATH, "utf-8")); } catch { /* ignore */ }
   return {};
 }
 
 function saveRaw(map: ByokMap): void {
-  try { fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true }); fs.writeFileSync(STORE_PATH, JSON.stringify(map, null, 2)); } catch {}
+  try { fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true }); fs.writeFileSync(STORE_PATH, JSON.stringify(map, null, 2)); } catch { /* ignore */ }
 }
 
 // Encrypted at rest: store as encrypted JSON blob
@@ -32,7 +32,7 @@ function load(): ByokMap {
       // plain map
       return j as ByokMap;
     }
-  } catch {}
+  } catch { /* ignore */ }
   return loadRaw();
 }
 

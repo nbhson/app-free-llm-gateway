@@ -40,7 +40,7 @@ export default function Chat() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [models, setModels] = useState<ModelEntry[]>([]);
-  const { favoriteSet, combinedIds, combinedSet } = useFavoriteModels();
+  const { favoriteSet, combinedIds } = useFavoriteModels();
   const [selectedModel, setSelectedModel] = useState<string>(() => {
     try {
       const favs = getFavoriteIds();
@@ -229,7 +229,6 @@ export default function Chat() {
           onToggleDrawer={() => setDrawerOpen(!drawerOpen)}
           showSettings={showSettings}
           onToggleSettings={() => setShowSettings(!showSettings)}
-          onRefresh={handleRefresh}
           onConfirmRefresh={confirmRefresh}
           webToolsEnabled={webToolsEnabled}
           onToggleWebTools={() => setWebToolsEnabled((v) => !v)}

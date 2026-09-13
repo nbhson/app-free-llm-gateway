@@ -94,7 +94,7 @@ export async function embedWithFallback(text: string, timeoutMs = 2000): Promise
       logger.info({ dim: local.length }, "[embeddings] local fallback success");
       return { embedding: local, model: `local/${config.localEmbeddingModel}` };
     }
-  } catch {}
+  } catch { /* ignore */ }
   logger.warn({ models }, "[embeddings] all fallbacks failed, will use hash fallback");
   return null;
 }

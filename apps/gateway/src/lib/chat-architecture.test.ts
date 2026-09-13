@@ -8,7 +8,7 @@ function readRepo(file: string): string {
     resolve(process.cwd(), "../../" + file), // apps/gateway
   ];
   for (const p of candidates) {
-    try { return readFileSync(p, "utf-8"); } catch {}
+    try { return readFileSync(p, "utf-8"); } catch { /* ignore */ }
   }
   throw new Error(`not found: ${file}`);
 }

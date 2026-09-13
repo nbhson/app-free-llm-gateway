@@ -18,28 +18,27 @@ interface ProvidersPayload {
 export default function Usage() {
   const { t } = useLang();
   const [stats, setStats] = useState<GatewayStats | null>(() => {
-    try { const raw = localStorage.getItem("usageStatsCache"); if (raw) return JSON.parse(raw) as GatewayStats; } catch {}
+    try { const raw = localStorage.getItem("usageStatsCache"); if (raw) return JSON.parse(raw) as GatewayStats; } catch { /* ignore */ }
     return null;
   });
   const [logs, setLogs] = useState<ApiLog[]>(() => {
-    try { const raw = localStorage.getItem("usageLogsCache"); if (raw) return JSON.parse(raw) as ApiLog[]; } catch {}
+    try { const raw = localStorage.getItem("usageLogsCache"); if (raw) return JSON.parse(raw) as ApiLog[]; } catch { /* ignore */ }
     return [];
   });
   const [providers, setProviders] = useState<ApiProvider[]>(() => {
-    try { const raw = localStorage.getItem("usageProvidersCache"); if (raw) return JSON.parse(raw) as ApiProvider[]; } catch {}
+    try { const raw = localStorage.getItem("usageProvidersCache"); if (raw) return JSON.parse(raw) as ApiProvider[]; } catch { /* ignore */ }
     return [];
   });
   const [activeProvider, setActiveProvider] = useState<string | null>(null);
   const [live, setLive] = useState(false);
   const [newestProviders, setNewestProviders] = useState<string[]>(() => {
-    try { const raw = localStorage.getItem("usageNewestCache"); if (raw) return JSON.parse(raw) as string[]; } catch {}
+    try { const raw = localStorage.getItem("usageNewestCache"); if (raw) return JSON.parse(raw) as string[]; } catch { /* ignore */ }
     return [];
   });
   const [syncInfo, setSyncInfo] = useState<{ lastAdded?: string[]; lastAddedAt?: string | null; bootSync?: { status?: string } } | null>(() => {
-    try { const raw = localStorage.getItem("usageSyncCache"); if (raw) return JSON.parse(raw); } catch {}
+    try { const raw = localStorage.getItem("usageSyncCache"); if (raw) return JSON.parse(raw); } catch { /* ignore */ }
     return null;
   });
-  const [hasRefreshed, setHasRefreshed] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const activeTimerRef = useRef<number | null>(null);
   const prevLogIdRef = useRef<string | null>(null);
@@ -53,7 +52,7 @@ export default function Usage() {
         if (d?.newestProviders) setNewestProviders(d.newestProviders);
         else if (d?.lastAdded) setNewestProviders(d.lastAdded);
         setSyncInfo({ lastAdded: d.lastAdded, lastAddedAt: d.lastAddedAt, bootSync: d.bootSync });
-        try { localStorage.setItem("usageSyncCache", JSON.stringify({ lastAdded: d.lastAdded, lastAddedAt: d.lastAddedAt, bootSync: d.bootSync })); localStorage.setItem("usageNewestCache", JSON.stringify(d.newestProviders || d.lastAdded || [])); } catch {}
+        try { localStorage.setItem("usageSyncCache", JSON.stringify({ lastAdded: d.lastAdded, lastAddedAt: d.lastAddedAt, bootSync: d.bootSync })); localStorage.setItem("usageNewestCache", JSON.stringify(d.newestProviders || d.lastAdded || [])); } catch { /* ignore */ }
         // usage will be loaded based on latest provider — highlight newest
         if (d?.lastAdded?.length) {
           const newest = d.lastAdded[0];
@@ -64,7 +63,7 @@ export default function Usage() {
           }
         }
       }
-    } catch {}
+    } catch { /* ignore */ }
   };
 
   const load = async () => {
@@ -77,19 +76,22 @@ export default function Usage() {
         const d = await r.json();
         if (d) {
           setStats((prev) => {
-            const prevAll = (prev as any)?.logs?.allTimeTokens ?? 0;
-            const prevTotal = (prev as any)?.logs?.total ?? 0;
-            const dAll = (d as any)?.logs?.allTimeTokens ?? 0;
-            const dTotal = (d as any)?.logs?.total ?? 0;
+            // Both shapes are GatewayStats-ish; index optional fields defensively
+            const prevLogs = (prev ?? {}) as GatewayStats["logs"];
+            const dLogs = (d ?? {}) as GatewayStats["logs"];
+            const prevAll = prevLogs?.allTimeTokens ?? 0;
+            const prevTotal = prevLogs?.total ?? 0;
+            const dAll = dLogs?.allTimeTokens ?? 0;
+            const dTotal = dLogs?.total ?? 0;
             // if gateway just restarted and returns 0, keep previous cache (don't refresh to empty)
             const isEmptyAfterRestart = dAll === 0 && dTotal === 0 && (prevAll > 0 || prevTotal > 0);
             const next = isEmptyAfterRestart ? prev as GatewayStats : d as GatewayStats;
-            try { localStorage.setItem("usageStatsCache", JSON.stringify(next)); } catch {}
+            try { localStorage.setItem("usageStatsCache", JSON.stringify(next)); } catch { /* ignore */ }
             return next;
           });
         }
       }
-    } catch {}
+    } catch { /* ignore */ }
     try {
       const r2 = await fetch("/api/logs?limit=20", { headers: { Authorization: `Bearer ${key}` } });
       const d2 = r2.ok ? await r2.json() : { data: [] };
@@ -97,7 +99,7 @@ export default function Usage() {
       // keep previous logs if fetch empty to preserve totals
       if (data.length > 0 || logs.length === 0) {
         setLogs(data);
-        try { localStorage.setItem("usageLogsCache", JSON.stringify(data)); } catch {}
+        try { localStorage.setItem("usageLogsCache", JSON.stringify(data)); } catch { /* ignore */ }
         if (data.length > 0) {
           const latest = data[0];
           if (latest.provider && latest.id !== prevLogIdRef.current) {
@@ -108,7 +110,7 @@ export default function Usage() {
           }
         }
       }
-    } catch {}
+    } catch { /* ignore */ }
     // API chỉ cho limit 25/50 => phải fetch đủ 2 trang để lấy hết ~48 providers (bug cũ: limit=100 bị fallback về 25 nên chỉ hiện 7/13)
     // providers loaded based on env model (hasKey via providerKeys)
     const fetchAllProviders = async () => {
@@ -120,7 +122,7 @@ export default function Usage() {
         if (d1.sync?.lastAdded) {
           setNewestProviders(d1.sync.lastAdded);
           setSyncInfo((prev) => prev || { lastAdded: d1.sync!.lastAdded, lastAddedAt: d1.sync!.lastAddedAt || null });
-          try { localStorage.setItem("usageNewestCache", JSON.stringify(d1.sync.lastAdded)); } catch {}
+          try { localStorage.setItem("usageNewestCache", JSON.stringify(d1.sync.lastAdded)); } catch { /* ignore */ }
         }
         const totalPages = d1.pagination?.total_pages || 1;
         if (totalPages > 1) {
@@ -134,7 +136,7 @@ export default function Usage() {
         setProviders((prev) => {
           // preserve after gateway restart: if new is empty but cache had data, keep cache
           const next = all.length === 0 && prev.length > 0 ? prev : all;
-          try { localStorage.setItem("usageProvidersCache", JSON.stringify(next)); } catch {}
+          try { localStorage.setItem("usageProvidersCache", JSON.stringify(next)); } catch { /* ignore */ }
           return next;
         });
       } catch { /* ignore */ }
@@ -144,7 +146,6 @@ export default function Usage() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    setHasRefreshed(true);
     try {
       await load();
       await fetchSync();
@@ -157,7 +158,6 @@ export default function Usage() {
   useEffect(() => {
     const hasCache = (() => { try { return !!localStorage.getItem("usageStatsCache"); } catch { return false; } })();
     if (!hasCache) {
-      setHasRefreshed(true);
       load();
       fetchSync();
     }

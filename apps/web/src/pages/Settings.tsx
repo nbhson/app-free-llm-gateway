@@ -859,7 +859,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
   const handleTiersAddProvider = useCallback(() => {
     const p = newProvider.trim();
     if (!p) return;
-    if (!/^[a-z0-9._\-\/@]+$/i.test(p)) {
+    if (!/^[a-z0-9._\-/@]+$/i.test(p)) {
       setTiersError("Provider id invalid: use a-z 0-9 . _ - / @");
       return;
     }

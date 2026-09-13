@@ -26,31 +26,31 @@ jobs:
         run: |
           echo "Freellms sync disabled — using live provider APIs as source of truth"
           echo "If you still need freellms snapshot, run: python scripts/sync-freellms.py (manual)"
-          # Live sync via provider APIs (requires secrets)
-          # npx --prefix apps/gateway tsx src/jobs/sync-live-models.ts || true
+          # Live sync via provider APIs (requires secrets): cd apps/gateway && npx tsx src/jobs/sync-live-models.ts || true
           ls -lh data/live-models.json 2>&1 || echo "no live-models.json yet (run Sync Live Now with real keys)"
 
-      - name: Install gateway (for verify)
-        run: npm ci --prefix apps/gateway || npm install --prefix apps/gateway
+      - name: Install dependencies (root workspace — lockfile lives at root)
+        run: npm ci
 
       - name: Verify free tiers (dry-run by default in CI, needs secrets for live)
+        working-directory: apps/gateway
         run: |
           if [ "${{ inputs.dry_run }}" = "true" ]; then
             echo "Dry run only"
-            npx --prefix apps/gateway tsx src/jobs/verify-free.ts --dry-run
+            npx tsx src/jobs/verify-free.ts --dry-run
           else
             # Live verify requires API keys as secrets; if not set, it will mark unverified_no_key
             # Provide keys via GitHub Secrets: GROQ_API_KEYS, CEREBRAS_API_KEYS, etc.
             # We default to dry-run in CI unless SECRETS present
             if [ -n "${{ secrets.GROQ_API_KEYS }}" ]; then
               echo "Live verify with secrets"
-              GROQ_API_KEYS="${{ secrets.GROQ_API_KEYS }}" CEREBRAS_API_KEYS="${{ secrets.CEREBRAS_API_KEYS }}" NVIDIA_API_KEYS="${{ secrets.NVIDIA_API_KEYS }}" npx --prefix apps/gateway tsx src/jobs/verify-free.ts || npx --prefix apps/gateway tsx src/jobs/verify-free.ts --dry-run
+              GROQ_API_KEYS="${{ secrets.GROQ_API_KEYS }}" CEREBRAS_API_KEYS="${{ secrets.CEREBRAS_API_KEYS }}" NVIDIA_API_KEYS="${{ secrets.NVIDIA_API_KEYS }}" npx tsx src/jobs/verify-free.ts || npx tsx src/jobs/verify-free.ts --dry-run
             else
               echo "No secrets, dry-run"
-              npx --prefix apps/gateway tsx src/jobs/verify-free.ts --dry-run
+              npx tsx src/jobs/verify-free.ts --dry-run
             fi
           fi
-          ls -lh data/verified-*.json || true
+          ls -lh ../../data/verified-*.json || true
 
       - name: Commit if changed
         run: |

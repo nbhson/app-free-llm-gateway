@@ -86,9 +86,8 @@ describe("Providers/Models/Usage manual Refresh — no auto-sync on reload", () 
     expect(txt).toContain("hasKeyOnly");
   });
 
-  it("Usage.tsx has manual Refresh (hasRefreshed, latest provider, env-based)", () => {
+  it("Usage.tsx has manual Refresh (latest provider, env-based, cache)", () => {
     const txt = readWeb("apps/web/src/pages/Usage.tsx");
-    expect(txt).toContain("hasRefreshed");
     expect(txt).toContain("handleRefresh");
     expect(txt).toContain("fetchSync");
     expect(txt).toContain("usageStatsCache");

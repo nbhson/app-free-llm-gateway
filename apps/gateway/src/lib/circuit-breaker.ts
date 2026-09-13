@@ -1,4 +1,4 @@
-import { handleAll, ConsecutiveBreaker, CircuitState, circuitBreaker } from "cockatiel";
+import { handleAll, ConsecutiveBreaker, circuitBreaker } from "cockatiel";
 import type { CircuitBreakerPolicy } from "cockatiel";
 import { config } from "../config.js";
 import { logger } from "../middleware/logger.js";
@@ -31,11 +31,11 @@ export function recordSuccess(providerId: string) {
   if (w.state === "half-open" && w.successes >= 2) {
     w.state = "closed";
     w.successes = 0;
-    try { w.breaker.execute(() => Promise.resolve()).catch(() => {}); } catch {}
+    try { w.breaker.execute(() => Promise.resolve()).catch(() => {}); } catch { /* ignore */ }
   } else if (w.state === "open") {
     w.state = "closed";
   } else {
-    try { w.breaker.execute(() => Promise.resolve()).catch(() => {}); } catch {}
+    try { w.breaker.execute(() => Promise.resolve()).catch(() => {}); } catch { /* ignore */ }
   }
 }
 
@@ -50,7 +50,7 @@ export function recordFailure(providerId: string) {
     w.state = "open";
     w.openedAt = Date.now();
   }
-  try { w.breaker.execute(() => Promise.reject(new Error("provider failure"))).catch(() => {}); } catch {}
+  try { w.breaker.execute(() => Promise.reject(new Error("provider failure"))).catch(() => {}); } catch { /* ignore */ }
 }
 
 /**

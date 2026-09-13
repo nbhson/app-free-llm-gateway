@@ -24,7 +24,7 @@ export function getEmaLatency(provider: string): number | null {
   return emaLatency.get(provider) ?? null;
 }
 
-export function getAdaptiveScores(providerIds: string[], model?: string): Array<{ provider: string; cost: number; emaLatency: number; quotaHeadroom: number; successRate: number; breakerPenalty: number; score: number }> {
+export function getAdaptiveScores(providerIds: string[], _model?: string): Array<{ provider: string; cost: number; emaLatency: number; quotaHeadroom: number; successRate: number; breakerPenalty: number; score: number }> {
   const breakers = getAllStates() as Record<string, { state?: string }>;
   return providerIds.map((provider) => {
     const cost = FREELLMS_COST[provider] ?? 0.05;

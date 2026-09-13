@@ -190,7 +190,7 @@ export default function Benchmark() {
       })
       .catch(() => {});
     const onFav = () => {
-      try { setFavorites(JSON.parse(localStorage.getItem("favoriteModels") || "[]")); } catch {}
+      try { setFavorites(JSON.parse(localStorage.getItem("favoriteModels") || "[]")); } catch { /* ignore */ }
     };
     window.addEventListener("favorites-updated", onFav);
     window.addEventListener("storage", onFav);
@@ -264,7 +264,7 @@ export default function Benchmark() {
     }
     try {
       localStorage.setItem(STORAGE_HISTORY, JSON.stringify({ at: new Date().toISOString(), prompt, models, temperature, maxTokens, aggs: aggregate(allRuns) }));
-    } catch {}
+    } catch { /* ignore */ }
     setLoading(false);
     setProgress("");
     setAbortCtrl(null);

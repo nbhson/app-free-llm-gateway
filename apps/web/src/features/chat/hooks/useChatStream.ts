@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from "react";
-import { extractDelta, parseSseStream } from "../lib/sse-parser";
+import { parseSseStream } from "../lib/sse-parser";
 import { getMasterKey } from "../lib/storage";
 import type { ChatMessage } from "../types";
 
@@ -166,7 +166,7 @@ export function useChatStream(opts: UseChatStreamOpts) {
             }
           }
           if (hint && !msg.includes(hint.slice(0, 15))) msg = msg + `\n\nGợi ý: ${hint}`;
-        } catch {}
+        } catch { /* ignore */ }
         // Map generic 502 into user-friendly Vietnamese hint if backend didn't provide
         if (!hint && msg.includes("All providers failed") && !msg.includes("Gợi ý")) {
           msg = msg + "\n\nGợi ý: Thử tắt Web Tools (Globe 🌐) nếu đang bật, chọn model khác (ví dụ kiraai/kira-auto, kilo-code/kilo-auto), hoặc đợi 15s rồi gửi lại. Kiểm tra /providers để xem provider nào đang online.";
@@ -208,7 +208,7 @@ export function useChatStream(opts: UseChatStreamOpts) {
           {
             onDelta: (delta) => scheduleFlush(delta, assistantId, provider, modelHeader),
             onUsage: (u) => setLastMeta((p) => ({ ...(p || {}), usage: u })),
-            onError: (msg) => setLastMeta((p) => ({ ...(p || {}), usage: undefined })),
+            onError: (_msg) => setLastMeta((p) => ({ ...(p || {}), usage: undefined })),
           },
           controller.signal,
         );
@@ -280,7 +280,7 @@ export function useChatStream(opts: UseChatStreamOpts) {
                   const sum = (pe as Array<{ provider?: string; error?: string; status?: number }>).slice(0, 1).map((e) => `${e.provider}: ${String(e.error || "").slice(0, 120)}`).join("");
                   if (sum) fbMsg += ` — ${sum}`;
                 }
-              } catch {}
+              } catch { /* ignore */ }
               throw new Error(fbMsg || "Empty stream — fallback failed");
             }
           } catch (fbErr: unknown) {

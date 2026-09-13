@@ -61,14 +61,14 @@ export default function Models() {
     try {
       const raw = localStorage.getItem("modelsAllProvidersCache");
       if (raw) return JSON.parse(raw) as ApiProvider[];
-    } catch {}
+    } catch { /* ignore */ }
     return [];
   });
   const [syncStatus, setSyncStatus] = useState<{ lastAdded?: string[]; lastAddedAt?: string | null; bootSync?: { status?: string; total?: number }; liveModels?: { total?: number; generated_at?: string | null } } | null>(() => {
     try {
       const raw = localStorage.getItem("modelsSyncCache");
       if (raw) return JSON.parse(raw);
-    } catch {}
+    } catch { /* ignore */ }
     return null;
   });
   const [hasRefreshed, setHasRefreshed] = useState(true);
@@ -88,8 +88,8 @@ export default function Models() {
       const list = (d.detailed || []) as ApiProvider[];
       list.sort((a, b) => a.id.localeCompare(b.id));
       setAllProviders(list);
-      try { localStorage.setItem("modelsAllProvidersCache", JSON.stringify(list)); } catch {}
-    } catch {}
+      try { localStorage.setItem("modelsAllProvidersCache", JSON.stringify(list)); } catch { /* ignore */ }
+    } catch { /* ignore */ }
   };
 
   const fetchModels = () => {
@@ -104,7 +104,7 @@ export default function Models() {
       const data = d.data || [];
       setModels(data);
       setTotal(d.total ?? data.length ?? 0);
-      try { localStorage.setItem("modelsCache", JSON.stringify(data)); localStorage.setItem("modelsTotalCache", String(d.total ?? data.length)); } catch {}
+      try { localStorage.setItem("modelsCache", JSON.stringify(data)); localStorage.setItem("modelsTotalCache", String(d.total ?? data.length)); } catch { /* ignore */ }
     }).catch(() => {});
   };
   const fetchUsage = () => {
@@ -112,7 +112,7 @@ export default function Models() {
       const map: Record<string, number> = {}; for (const l of d.data || []) { const id = l.model || ""; map[id] = (map[id] || 0) + 1; }
       // preserve previous usage until new arrives is already handled by not clearing; just update
       setUsage(map);
-      try { localStorage.setItem("modelsUsageCache", JSON.stringify(map)); } catch {}
+      try { localStorage.setItem("modelsUsageCache", JSON.stringify(map)); } catch { /* ignore */ }
     }).catch(() => {});
   };
   const fetchSync = async () => {
@@ -121,7 +121,7 @@ export default function Models() {
       if (!r.ok) return;
       const j = await r.json();
       setSyncStatus(j);
-      try { localStorage.setItem("modelsSyncCache", JSON.stringify(j)); } catch {}
+      try { localStorage.setItem("modelsSyncCache", JSON.stringify(j)); } catch { /* ignore */ }
     } catch { /* ignore */ }
   };
 
@@ -149,7 +149,7 @@ export default function Models() {
         if (cachedTotal) setTotal(parseInt(cachedTotal, 10));
       }
       if (cachedUsage) setUsage(JSON.parse(cachedUsage));
-    } catch {}
+    } catch { /* ignore */ }
   }, []);
   // Initial display fix: fetch once on mount if no cache so page not empty (then manual Refresh for newest)
   useEffect(() => {
@@ -169,7 +169,7 @@ export default function Models() {
   useEffect(() => { localStorage.setItem("hasKeyOnly", hasKeyOnly ? "1" : "0"); }, [hasKeyOnly]);
   useEffect(() => { localStorage.setItem("modelsFavOnly", favOnly ? "1" : "0"); }, [favOnly]);
   useEffect(() => {
-    const onFav = () => { try { const raw = localStorage.getItem(FAVORITES_KEY); setFavorites(new Set(raw ? JSON.parse(raw) as string[] : [])); } catch {} };
+    const onFav = () => { try { const raw = localStorage.getItem(FAVORITES_KEY); setFavorites(new Set(raw ? JSON.parse(raw) as string[] : [])); } catch { /* ignore */ } };
     window.addEventListener(FAVORITES_EVENT, onFav);
     window.addEventListener("storage", onFav as EventListener);
     return () => { window.removeEventListener(FAVORITES_EVENT, onFav); window.removeEventListener("storage", onFav as EventListener); };
@@ -178,7 +178,7 @@ export default function Models() {
     setFavorites((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id); else next.add(id);
-      try { localStorage.setItem(FAVORITES_KEY, JSON.stringify([...next])); window.dispatchEvent(new CustomEvent(FAVORITES_EVENT)); } catch {}
+      try { localStorage.setItem(FAVORITES_KEY, JSON.stringify([...next])); window.dispatchEvent(new CustomEvent(FAVORITES_EVENT)); } catch { /* ignore */ }
       return next;
     });
   };
@@ -197,7 +197,8 @@ export default function Models() {
     setQ("");
     setProvider("");
     setVerified("all");
-    // keep hasKeyOnly as-is to preserve env-based filter; user can toggle manually
+    // match "Reset default" semantics: restore default toggles (hasKeyOnly stays env-based)
+    setHasKeyOnly(true);
     setHide404(true);
     setHidePayment(true);
     setHideInvalid(true);
@@ -415,7 +416,7 @@ export default function Models() {
                 </label>
                 <div className="border-t border-slate-100 mt-2 pt-2 px-3 flex justify-between items-center">
                   <span className="text-[11px] text-slate-400">{(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0)} active</span>
-                  <button onClick={() => { setHasKeyOnly(true); setHide404(true); setHidePayment(true); setHideInvalid(true); setFavOnly(false); }} className="text-[11px] font-semibold text-slate-600 hover:text-slate-900">Reset default</button>
+                  <button onClick={handleResetFilters} className="text-[11px] font-semibold text-slate-600 hover:text-slate-900">Reset default</button>
                 </div>
               </div>
             )}

@@ -14,7 +14,7 @@ function findParserPath(): string {
     try {
       readFileSync(p);
       return p;
-    } catch {}
+    } catch { /* ignore */ }
   }
   throw new Error(`sse-parser.ts not found: ${candidates.join(", ")}`);
 }

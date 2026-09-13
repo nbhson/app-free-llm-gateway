@@ -17,7 +17,7 @@ export function useFavoriteModels() {
       try {
         const raw = localStorage.getItem(FAVORITES_KEY);
         setFavoriteIds(raw ? (JSON.parse(raw) as string[]) : []);
-      } catch {}
+      } catch { /* ignore */ }
     };
     window.addEventListener(FAVORITES_EVENT, onFav);
     window.addEventListener("storage", onFav as EventListener);

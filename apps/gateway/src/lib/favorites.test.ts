@@ -71,7 +71,6 @@ describe("Favorite models — Chat page integration", () => {
     expect(txt).toContain("useFavoriteModels");
     expect(txt).toContain("favoriteSet");
     expect(txt).toContain("combinedIds");
-    expect(txt).toContain("combinedSet");
     expect(txt).toContain("favoriteSet.has");
     // still re-exports ALLOWED_CHAT_MODELS with 6 ids (not enlarged)
     expect(txt).toContain("ALLOWED_CHAT_MODELS");

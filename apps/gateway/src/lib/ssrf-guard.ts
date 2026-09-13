@@ -1,5 +1,4 @@
 import dns from "node:dns/promises";
-import ipaddr from "node:net";
 import { isIP } from "node:net";
 
 // Lightweight SSRF guard without external deps.

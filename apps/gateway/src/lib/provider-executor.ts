@@ -226,7 +226,6 @@ export async function tryProviders(opts: TryProvidersOpts): Promise<TryProviders
  * Each model is isolated; we return settled results for UI diff.
  */
 export async function tryProvidersSettled(opts: TryProvidersOpts & { providerOrder: string[] }): Promise<Array<{ ok: boolean; providerId: string; res?: Response; error?: string; latencyMs?: number }>> {
-  const started = Date.now();
   const tasks = opts.providerOrder.map(async (pid) => {
     const t0 = Date.now();
     try {
