@@ -1,0 +1,44 @@
+# Provider: orcarouter — 4 free models (2026-05 catalog price=free)
+# Source: https://www.orcarouter.ai/console/catalog?price=free + https://api.orcarouter.ai/v1/models (pricing.request=0 + orcarouter/free) + https://docs.orcarouter.ai/routing/free-models
+# Updated: 2026-05 — replaces legacy qwen/qwen3.8-27b-free (now priced) with tencent/hy3-free + z-ai/glm-5.3-flash-free
+models:
+  - id: "orcarouter/free"
+    display_name: "orcarouter/free"
+    provider: orcarouter
+    context_length: 262144
+    score: 75
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free (difficulty-routed router)"
+  - id: "deepseek/deepseek-v4-flash-free"
+    display_name: "deepseek/deepseek-v4-flash-free"
+    provider: orcarouter
+    context_length: 262144
+    score: 70
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "tencent/hy3-free"
+    display_name: "tencent/hy3-free"
+    provider: orcarouter
+    context_length: 262144
+    score: 71
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "z-ai/glm-5.3-flash-free"
+    display_name: "z-ai/glm-5.3-flash-free"
+    provider: orcarouter
+    context_length: 1048576
+    score: 72
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning, image, video]
+    limit: "free"

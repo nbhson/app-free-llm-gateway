@@ -271,9 +271,12 @@ export const modelAliases: Record<string, string[]> = {
   "deepseek-ai/deepseek-v4-flash-0731": ["nvidia-nim", "kiraai", "modelscope", "chutes-ai"],
   "deepseek-ai/deepseek-v4-pro-0813": ["nvidia-nim", "kiraai", "modelscope"],
   "moonshotai/kimi-k3": ["nvidia-nim", "ollama-cloud", "groq"],
-  // OrcaRouter
+  // OrcaRouter — 4 free (2026-05 catalog price=free): orcarouter/free (router) + 3× -free
+  "orcarouter/free": ["orcarouter"],
   "deepseek/deepseek-v4-flash-free": ["orcarouter", "deepseek"],
-  "qwen/qwen3.8-27b-free": ["orcarouter", "modelscope", "siliconflow"],
+  "tencent/hy3-free": ["orcarouter"],
+  "z-ai/glm-5.3-flash-free": ["orcarouter", "z-ai-zhipu-ai"],
+  "qwen/qwen3.8-27b-free": ["orcarouter", "modelscope", "siliconflow"], // legacy, no longer free (2026-05 priced), kept for compat
   // Cline / OpenCode Zen
   "nemotron-3.5-lightning-free": ["opencode", "nvidia-nim"],
   "nemotron-3-ultra-free": ["opencode", "nvidia-nim"],
