@@ -56,7 +56,7 @@ export const geminiProvider: Provider = {
     const isStream = req.stream ?? false;
     const endpoint = isStream ? "streamGenerateContent" : "generateContent";
     // alt=sse for true SSE from Gemini
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:${endpoint}${isStream ? "?alt=sse" : ""}&key=${apiKey}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:${endpoint}${isStream ? "?alt=sse&key=" : "?key="}${apiKey}`;
 
     const geminiBody = translateOpenAIToGemini(req);
 
