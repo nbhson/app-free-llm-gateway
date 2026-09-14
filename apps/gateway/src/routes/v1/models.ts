@@ -80,6 +80,7 @@ const freellmsModels = loadFreellmsModels();
 // Ensures models like deepseek/deepseek-v4-flash-free and qwen/qwen3.8-27b-free are displayed even if live sync missed them
 const opencodeSupplement: ModelListEntry[] = [
   // agnes-custom -> agnes-ai
+  { id: "agnes-ai/agnes-3.0-flash", owned_by: "agnes-ai", provider: "agnes-ai", display_name: "agnes-3.0-flash", context_length: 256000, score: 85, tier: "permanent", live_status: "alias", capabilities: ["text","vision"], limit: "30 RPM" },
   { id: "agnes-ai/agnes-2.5-flash", owned_by: "agnes-ai", provider: "agnes-ai", display_name: "agnes-2.5-flash", context_length: 256000, score: 82, tier: "permanent", live_status: "alias", capabilities: ["text","vision"], limit: "30 RPM" },
   // openrouter-custom -> openrouter
   { id: "openrouter/free", owned_by: "openrouter", provider: "openrouter", display_name: "openrouter/free", context_length: 262144, score: 70, tier: "permanent", live_status: "alias", capabilities: ["text"], limit: "200 req/day" },

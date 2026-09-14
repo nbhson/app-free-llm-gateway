@@ -1,5 +1,15 @@
-# Provider: agnes-ai — auto-split from models.yaml (5 models)
+# Provider: agnes-ai — auto-split from models.yaml (6 models)
 models:
+  - id: "agnes-ai/agnes-3.0-flash"
+    display_name: "agnes-3.0-flash"
+    provider: agnes-ai
+    context_length: 256000
+    score: 85
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, vision]
+    limit: "30 RPM"
   - id: "agnes-ai/agnes-2.0-flash"
     display_name: "agnes-2.0-flash"
     provider: agnes-ai

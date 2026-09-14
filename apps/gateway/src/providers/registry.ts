@@ -254,7 +254,8 @@ export const modelAliases: Record<string, string[]> = {
   "unorouter/ling-3.0-flash-fin:free": ["unorouter"],
   unorouter: ["unorouter"],
   // Opencode custom — agnes
-  "agnes-2.5-flash": ["agnes-ai"],
+   "agnes-3.0-flash": ["agnes-ai"],
+   "agnes-2.5-flash": ["agnes-ai"],
   // Opencode custom — openrouter free tier
   "openrouter/free": ["openrouter"],
   "z-ai/glm-5.2:free": ["openrouter", "z-ai-zhipu-ai", "nvidia-nim"],
