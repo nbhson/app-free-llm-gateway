@@ -34,15 +34,17 @@ describe("registry resolveProvidersForModel", () => {
   it("B.AI and TokenHarbor alias routing", () => {
     expect(resolveProvidersForModel("b-ai/qwen3.8-flash")).toEqual(["b-ai"]);
     expect(resolveProvidersForModel("b-ai/hy3")).toEqual(["b-ai"]);
-    expect(resolveProvidersForModel("qwen3.8-flash")).toEqual(["b-ai"]);
-    expect(resolveProvidersForModel("hy3")).toEqual(["b-ai"]);
-    expect(resolveProvidersForModel("QWEN3.8-FLASH")).toEqual(["b-ai"]);
+    // qwen3.8-flash and hy3 now route to kiosapi first (free via KiosAPI), then b-ai
+    expect(resolveProvidersForModel("qwen3.8-flash")).toEqual(["kiosapi", "b-ai"]);
+    expect(resolveProvidersForModel("hy3")).toEqual(["kiosapi", "b-ai"]);
+    expect(resolveProvidersForModel("QWEN3.8-FLASH")).toEqual(["kiosapi", "b-ai"]);
     expect(resolveProvidersForModel("tokenharbor/deepseek-v4.1-flash:free")).toEqual(["tokenharbor"]);
     expect(resolveProvidersForModel("deepseek-v4.1-flash:free")).toEqual(["tokenharbor", "unorouter"]);
     expect(resolveProvidersForModel("mimo-v2.5:free")).toContain("tokenharbor");
     expect(resolveProvidersForModel("glm-5.3-flash")).toContain("b-ai");
     expect(providerIds).toContain("b-ai");
     expect(providerIds).toContain("tokenharbor");
+    expect(providerIds).toContain("kiosapi");
     // aliases are now deduped: not in providerIds but still resolvable via resolveProviderId
     expect(providerIds).not.toContain("bai");
     expect(providerIds).not.toContain("chat-b-ai");
@@ -60,7 +62,7 @@ describe("registry resolveProvidersForModel", () => {
     expect(resolveProviderId("experiential")).toBe("experientiallabs");
     expect(PROVIDER_ALIASES["experiential_cloud"]).toBe("experientiallabs");
     // alias model prefix still routes to canonical
-    expect(resolveProvidersForModel("bai/qwen3.8-flash")).toEqual(["b-ai"]);
+    expect(resolveProvidersForModel("bai/qwen3.8-flash")).toEqual(["kiosapi", "b-ai"]);
     expect(resolveProvidersForModel("nvidia/unknown-xyz-123")).toEqual(["nvidia-nim"]);
     expect(resolveProvidersForModel("gemini/gemini-2.0-flash")).toEqual(["google-gemini"]);
     // llama alias wins over prefix (withoutPrefix=llama matches modelAliases)

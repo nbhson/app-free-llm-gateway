@@ -1,0 +1,214 @@
+# Provider: kiosapi — 20 free models (https://kiosapi.com/pricing, llm24 2026-09, $0.00 in/out)
+# Source: https://kiosapi.com/pricing + https://llm24.net/provider/kiosapi
+# Updated: 2026-09
+models:
+  - id: "kiosapi/ling-3.0-flash-fin"
+    display_name: "ling-3.0-flash-fin"
+    provider: kiosapi
+    context_length: 262144
+    score: 90
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/glm-5.3-flash"
+    display_name: "glm-5.3-flash"
+    provider: kiosapi
+    context_length: 1048576
+    score: 89
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/glm-5.3"
+    display_name: "glm-5.3"
+    provider: kiosapi
+    context_length: 1048576
+    score: 88
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/qwen3.8-flash"
+    display_name: "qwen3.8-flash"
+    provider: kiosapi
+    context_length: 262144
+    score: 87
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/oc/muse-spark-1.3-contributor"
+    display_name: "oc/muse-spark-1.3-contributor"
+    provider: kiosapi
+    context_length: 1048576
+    score: 86
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/qwen3.8-27b"
+    display_name: "qwen3.8-27b"
+    provider: kiosapi
+    context_length: 1048576
+    score: 85
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/kimi-k3"
+    display_name: "kimi-k3"
+    provider: kiosapi
+    context_length: 1048576
+    score: 84
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/laguna-s-2.1"
+    display_name: "laguna-s-2.1"
+    provider: kiosapi
+    context_length: 262144
+    score: 83
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/muse-glimmer-30b"
+    display_name: "muse-glimmer-30b"
+    provider: kiosapi
+    context_length: 1048576
+    score: 82
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/hy3"
+    display_name: "hy3"
+    provider: kiosapi
+    context_length: 262144
+    score: 81
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/laguna-xs-2.1"
+    display_name: "laguna-xs-2.1"
+    provider: kiosapi
+    context_length: 262144
+    score: 80
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/nemotron-3-ultra-550b-a55b"
+    display_name: "nemotron-3-ultra-550b-a55b"
+    provider: kiosapi
+    context_length: 1048576
+    score: 79
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/deepseek-v4-flash"
+    display_name: "deepseek-v4-flash"
+    provider: kiosapi
+    context_length: 262144
+    score: 78
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/deepseek-v4-flash-0731"
+    display_name: "deepseek-v4-flash-0731"
+    provider: kiosapi
+    context_length: 262144
+    score: 77
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/diffusiongemma-26b-a4b-it"
+    display_name: "diffusiongemma-26b-a4b-it"
+    provider: kiosapi
+    context_length: 1048576
+    score: 76
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, image, reasoning]
+    limit: "free"
+  - id: "kiosapi/oc/mimo-v2.5"
+    display_name: "oc/mimo-v2.5"
+    provider: kiosapi
+    context_length: 262144
+    score: 75
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/nemotron-3-super-120b-a12b"
+    display_name: "nemotron-3-super-120b-a12b"
+    provider: kiosapi
+    context_length: 262144
+    score: 74
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/gpt-oss-20b"
+    display_name: "gpt-oss-20b"
+    provider: kiosapi
+    context_length: 262144
+    score: 73
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/oc/nemotron-3.5-lightning"
+    display_name: "oc/nemotron-3.5-lightning"
+    provider: kiosapi
+    context_length: 262144
+    score: 72
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/qwen3-8b"
+    display_name: "qwen3-8b"
+    provider: kiosapi
+    context_length: 262144
+    score: 71
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "free"
+  - id: "kiosapi/north-mini-code"
+    display_name: "north-mini-code"
+    provider: kiosapi
+    context_length: 256000
+    score: 70
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, code, reasoning]
+    limit: "free"

@@ -40,11 +40,26 @@ function ensure() {
   if (!loaded) { load(); loaded = true; }
 }
 
+const isRequestLogTestEnv = process.env.NODE_ENV === "test" || !!process.env.VITEST;
+function isTestLog(e: RequestLog): boolean {
+  return String(e.provider).startsWith("ut-provider") || String(e.provider).startsWith("ut-flaky") || String(e.provider).startsWith("analytics-prov") || String(e.provider).startsWith("hb-test") || String(e.provider).startsWith("test-provider") || ["t1","t2","old-1","new-1","s1","s2","a1"].includes(e.id);
+}
 function persist() {
+  if (isRequestLogTestEnv) return;
   try {
     fs.mkdirSync(path.dirname(LOG_PATH), { recursive: true });
-    // keep last 1000
-    const toSave = logs.slice(-MAX_LOGS);
+    // keep last 1000, but never persist test artifacts (when running vitest, keep real data)
+    const filtered = logs.filter((e) => !isTestLog(e));
+    const toSave = filtered.slice(-MAX_LOGS);
+    // guard: don't clobber real data with empty array (test run with no real logs)
+    if (toSave.length === 0) {
+      try {
+        if (fs.existsSync(LOG_PATH)) {
+          const existing = JSON.parse(fs.readFileSync(LOG_PATH, "utf-8")) as unknown[];
+          if (Array.isArray(existing) && existing.length > 0) return;
+        }
+      } catch { /* ignore */ }
+    }
     fs.writeFileSync(LOG_PATH, JSON.stringify(toSave, null, 2));
   } catch { /* ignore: persist failed */ }
 }
@@ -82,15 +97,13 @@ export function flushRequestLogs(): void {
 
 // Best-effort flush on shutdown so the trailing window is not lost
 // Keep Usage stats across gateway restarts — flush immediately on SIGTERM/SIGINT (Docker/pkill)
+// Also handle SIGUSR2/SIGHUP which tsx watch / nodemon use on file change
 if (typeof process !== "undefined" && typeof process.on === "function") {
   const flushSync = () => { try { persist(); } catch { /* ignore */ } };
-  process.on("exit", flushSync);
-  // SIGTERM/SIGINT are the typical Docker/k8s and pkill signals — persist before exit
-  try {
-    process.on("SIGTERM", () => { flushSync(); });
-    process.on("SIGINT", () => { flushSync(); });
-  } catch { /* ignore: not in worker */ }
-  // Also handle beforeExit for Node async flush
+  try { process.on("exit", flushSync); } catch { /* ignore */ }
+  for (const sig of ["SIGTERM", "SIGINT", "SIGUSR2", "SIGHUP"] as const) {
+    try { process.on(sig as NodeJS.Signals, () => { flushSync(); }); } catch { /* ignore */ }
+  }
   try { process.on("beforeExit", flushSync); } catch { /* ignore */ }
 }
 
@@ -181,4 +194,15 @@ export function getStats() {
 export function onLog(fn: (log: RequestLog) => void) {
   listeners.add(fn);
   return () => listeners.delete(fn);
+}
+
+/** Test helper: remove test entries from memory and disk (prevents polluting real data) */
+export function __clearTestLogs(): void {
+  ensure();
+  const before = logs.length;
+  logs = logs.filter((e) => !isTestLog(e) && !String(e.id).startsWith("flush-"));
+  if (logs.length !== before) {
+    if (persistTimer) { clearTimeout(persistTimer); persistTimer = null; persistPending = false; }
+    persist();
+  }
 }

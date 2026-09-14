@@ -77,6 +77,28 @@ function scheduleSave(): void {
       }
     });
   }, 1000);
+  saveTimer.unref?.();
+}
+
+function flushVirtualKeysSync(): void {
+  if (saveTimer) {
+    clearTimeout(saveTimer);
+    saveTimer = null;
+    pendingSave = false;
+  }
+  if (cache) {
+    try { save(cache); } catch { /* ignore */ }
+  }
+}
+
+const isVkTestEnv = process.env.NODE_ENV === "test" || !!process.env.VITEST;
+if (!isVkTestEnv && typeof process !== "undefined" && typeof process.on === "function") {
+  const flush = () => { try { flushVirtualKeysSync(); } catch { /* ignore */ } };
+  try { process.on("exit", flush); } catch { /* ignore */ }
+  for (const sig of ["SIGTERM", "SIGINT", "SIGUSR2", "SIGHUP"] as const) {
+    try { process.on(sig as NodeJS.Signals, () => { flush(); }); } catch { /* ignore */ }
+  }
+  try { process.on("beforeExit", flush); } catch { /* ignore */ }
 }
 
 let cache: VirtualKey[] | null = null;

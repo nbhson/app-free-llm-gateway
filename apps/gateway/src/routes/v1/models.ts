@@ -32,39 +32,45 @@ export interface ModelListEntry {
 // Load freellms free models if available (316 models) — fallback to models/ (split per-provider) for fresh clone
 // Also merges models/ supplement so b-ai/tokenharbor (8 models) always visible even when freellms json stale
 function loadFreellmsModels(): ModelListEntry[] {
+  try {
     const arr = readDataJson<FreellmsModelEntry[]>("freellms-models-free.json", []);
-    if (arr.length > 0) {
-      const base = arr.map((m) => {
-        const sanitized = sanitizeFreellmsName(String(m.name ?? ""));
-        return {
-          id: `${m.slug}/${sanitized}`,
-          raw_id: `${m.slug}/${m.name}`,
-          object: "model",
-          owned_by: m.slug || "unknown",
-          provider: m.slug,
-          display_name: m.name,
-          context_length: parseInt(String(m.context ?? "")) || 8192,
-          score: parseInt(String(m.score ?? "")) || 0,
-          tier: m.tier_type,
-          freellms_verified: m.verified,
-          no_card: m.nocard,
-          capabilities: m.modality,
-          limit: m.limit,
-          created: 1715433600,
-        };
-      });
-      // Merge missing models from models/ (e.g. b-ai/tokenharbor when freellms json stale at 319)
-      try {
-        const yamlModels = loadModelsYaml();
-        if (yamlModels.length > 0) {
-          const seen = new Set(base.map((m) => m.id));
-          for (const ym of yamlModels) if (!seen.has(ym.id)) (base as ModelListEntry[]).push(ym as ModelListEntry);
+    const base: ModelListEntry[] = arr.length > 0 ? arr.map((m) => {
+      const sanitized = sanitizeFreellmsName(String(m.name ?? ""));
+      return {
+        id: `${m.slug}/${sanitized}`,
+        raw_id: `${m.slug}/${m.name}`,
+        object: "model",
+        owned_by: m.slug || "unknown",
+        provider: m.slug,
+        display_name: m.name,
+        context_length: parseInt(String(m.context ?? "")) || 8192,
+        score: parseInt(String(m.score ?? "")) || 0,
+        tier: m.tier_type,
+        freellms_verified: m.verified,
+        no_card: m.nocard,
+        capabilities: m.modality,
+        limit: m.limit,
+        created: 1715433600,
+      };
+    }) : [];
+    // Merge missing models from models/ directory (per-provider YAML files: kiosapi, orcarouter, b-ai, tokenharbor, etc.)
+    // Loaded per-request (not at module load) so new models/*.yaml files appear without gateway restart
+    try {
+      const yamlModels = loadModelsYaml();
+      if (yamlModels.length > 0) {
+        const seen = new Set(base.map((m) => m.id));
+        for (const ym of yamlModels) {
+          if (!seen.has(ym.id)) {
+            (base as ModelListEntry[]).push(ym as ModelListEntry);
+            seen.add(ym.id);
+          }
         }
-      } catch { /* ignore */ }
-      return base;
-    }
-    return loadModelsYaml();
-  }
+      }
+    } catch { /* ignore */ }
+    return base;
+  } catch { /* ignore */ }
+  try { return loadModelsYaml(); } catch { return []; }
+}
 
 // Models route needs full verified entry (not just status string)
 function loadVerifiedMapFull(): Map<string, Record<string, unknown>> {
@@ -74,7 +80,8 @@ function loadVerifiedMapFull(): Map<string, Record<string, unknown>> {
   return map;
 }
 
-const freellmsModels = loadFreellmsModels();
+// freellms free models now loaded per-request (see loadFreellmsModels below the route)
+// so new models/*.yaml (e.g. kiosapi.yaml) appear without a gateway restart.
 
 // Supplement from user's opencode.json (https://freellms.org/?free=1 + custom gateways)
 // Ensures models like deepseek/deepseek-v4-flash-free and qwen/qwen3.8-27b-free are displayed even if live sync missed them
@@ -205,6 +212,9 @@ modelsRoute.get("/", async (c) => {
   const verifiedMap = loadVerifiedMapFull();
   const healthMap = loadHealthMapCached();
   const liveModelsCache = loadLiveModelsCached();
+  // Load freellms + models/ YAML fresh per request so new models/*.yaml
+  // files (e.g. kiosapi.yaml) appear without a gateway restart.
+  const freellmsModels = loadFreellmsModels();
 
   const all: ModelListEntry[] = [];
 
@@ -253,10 +263,15 @@ modelsRoute.get("/", async (c) => {
     } else if (freellmsModels.length > 0) {
     for (const m of freellmsModels) {
       if (providerFilter && m.owned_by !== providerFilter) continue;
+      // kiosapi is a permanent-free provider (20 free $0.00 in/out, https://kiosapi.com/pricing)
+      // — skip the hasKey filter for it so its models are listed like other free providers
       if (hasKeyOnly) {
-        const keys = config.providerKeys[m.owned_by] || [];
-        const hasRealKey = keys.some((k) => k.length > 20 && !k.includes("xxx") && !k.includes("change-me")) || isPublicProvider(m.owned_by);
-        if (!hasRealKey) continue;
+        if (m.owned_by === "kiosapi") { /* allow kiosapi free models regardless of key */ }
+        else {
+          const keys = config.providerKeys[m.owned_by] || [];
+          const hasRealKey = keys.some((k) => k.length > 20 && !k.includes("xxx") && !k.includes("change-me")) || isPublicProvider(m.owned_by);
+          if (!hasRealKey) continue;
+        }
       }
       if (!matchesQ(m.id)) continue;
       const v = verifiedMap.get(m.id) ?? (m.raw_id ? verifiedMap.get(m.raw_id) : undefined);
@@ -386,6 +401,7 @@ modelsRoute.get("/", async (c) => {
 modelsRoute.get("/:id", (c) => {
   const id = c.req.param("id");
   const verifiedMap = loadVerifiedMapFull();
+  const freellmsModels = loadFreellmsModels();
   const found = freellmsModels.find((m) => m.id === id);
   if (found) {
     const v = verifiedMap.get(id);

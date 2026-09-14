@@ -4,9 +4,12 @@ import * as LRUCacheMod from "lru-cache";
 // Compat: lru-cache@10 ESM named export, CJS default via tsx interop
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const LRUCacheImpl: any = (LRUCacheMod as any).LRUCache ?? (LRUCacheMod as any).default ?? LRUCacheMod;
+import fs from "node:fs";
+import path from "node:path";
 import { getRedis } from "./redis.js";
 import { logger } from "../middleware/logger.js";
 import { config } from "../config.js";
+import { resolveDataPath } from "./paths.js";
 
 type CacheEntry = { value: string; expiresAt: number; embedding?: number[]; createdAt: number };
 
@@ -18,11 +21,34 @@ export interface SemanticCacheKeyOpts {
   vkId?: string; // tenant isolation (harness 01 retrieve - multi-tenancy)
 }
 
+const SEMANTIC_STATS_PATH = resolveDataPath("semantic-stats.json");
+const isSemanticTestEnv = process.env.NODE_ENV === "test" || !!process.env.VITEST;
+
+function loadSemanticStats(): { hits: number; misses: number } | null {
+  if (isSemanticTestEnv) return null;
+  try {
+    if (!fs.existsSync(SEMANTIC_STATS_PATH)) return null;
+    const j = JSON.parse(fs.readFileSync(SEMANTIC_STATS_PATH, "utf-8")) as { hits?: number; misses?: number };
+    return { hits: j.hits ?? 0, misses: j.misses ?? 0 };
+  } catch { return null; }
+}
+
+function persistSemanticStatsSync(hits: number, misses: number): void {
+  if (isSemanticTestEnv) return;
+  try {
+    fs.mkdirSync(path.dirname(SEMANTIC_STATS_PATH), { recursive: true });
+    const tmp = `${SEMANTIC_STATS_PATH}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify({ hits, misses, updatedAt: new Date().toISOString() }, null, 2));
+    fs.renameSync(tmp, SEMANTIC_STATS_PATH);
+  } catch { /* ignore */ }
+}
+
 export class SemanticCache {
   private mem: LRUCacheType<string, CacheEntry>;
   private hits = 0;
   private misses = 0;
   private customTtl?: number;
+  private persistTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(defaultTtlSec?: number) {
     this.customTtl = defaultTtlSec;
@@ -34,6 +60,31 @@ export class SemanticCache {
       ttlAutopurge: true,
       updateAgeOnGet: true,
     });
+    // restore hits/misses so /api/cache/stats survives restart
+    const restored = loadSemanticStats();
+    if (restored) {
+      this.hits = restored.hits;
+      this.misses = restored.misses;
+    }
+    // flush on shutdown
+    if (!isSemanticTestEnv && typeof process !== "undefined" && typeof process.on === "function") {
+      const flush = () => { try { persistSemanticStatsSync(this.hits, this.misses); } catch { /* ignore */ } };
+      try { process.on("exit", flush); } catch { /* ignore */ }
+      for (const sig of ["SIGTERM", "SIGINT", "SIGUSR2", "SIGHUP"] as const) {
+        try { process.on(sig as NodeJS.Signals, () => { flush(); }); } catch { /* ignore */ }
+      }
+      try { process.on("beforeExit", flush); } catch { /* ignore */ }
+    }
+  }
+
+  private scheduleStatsPersist(): void {
+    if (isSemanticTestEnv) return;
+    if (this.persistTimer) return;
+    this.persistTimer = setTimeout(() => {
+      this.persistTimer = null;
+      persistSemanticStatsSync(this.hits, this.misses);
+    }, 800);
+    this.persistTimer.unref?.();
   }
 
   // Live getters — read config each time so PUT /api/config hot-reload works without restart
@@ -125,6 +176,7 @@ export class SemanticCache {
           this.mem.delete(k);
         } else {
           this.hits++;
+          this.scheduleStatsPersist();
           // lru-cache updateAgeOnGet already promotes recency
           return entry.value;
         }
@@ -168,6 +220,7 @@ export class SemanticCache {
           if (best) {
             logger.info({ score: best.score.toFixed(3), threshold: config.semanticCacheThreshold }, "[semantic-cache] cosine hit");
             this.hits++;
+            this.scheduleStatsPersist();
             return best.entry.value;
           }
         }
@@ -177,6 +230,7 @@ export class SemanticCache {
     }
 
     this.misses++;
+    this.scheduleStatsPersist();
     return null;
   }
 
@@ -249,6 +303,7 @@ export class SemanticCache {
     this.mem.clear();
     this.hits = 0;
     this.misses = 0;
+    if (!isSemanticTestEnv) { try { fs.unlinkSync(SEMANTIC_STATS_PATH); } catch { /* ignore */ } }
     try {
       const r = getRedis();
       if (r) {

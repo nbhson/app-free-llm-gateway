@@ -2,12 +2,24 @@ import { resJson } from "../lib/types.js";
 import { describe, it, expect, afterEach } from "vitest";
 import { createApp } from "../app.js";
 import { config } from "../config.js";
-import { createVirtualKey, deleteVirtualKey } from "../lib/virtual-keys.js";
+import { createVirtualKey, deleteVirtualKey, listVirtualKeys } from "../lib/virtual-keys.js";
 import { providers } from "../providers/registry.js";
+
+function cleanupTestKeys(): void {
+  for (const k of listVirtualKeys()) {
+    if (k.name === "scope-test-key" || k.name === "user-key" || k.name?.startsWith("rl-")) {
+      try { deleteVirtualKey(k.id); } catch { /* ignore */ }
+    }
+  }
+}
 
 describe("app auth middleware", () => {
   const app = createApp();
   const master = config.masterKey;
+
+  afterEach(() => {
+    cleanupTestKeys();
+  });
 
   it("rejects /v1/chat/completions without key (401)", async () => {
     const res = await app.request("/v1/chat/completions", {

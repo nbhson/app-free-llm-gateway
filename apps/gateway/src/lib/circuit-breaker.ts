@@ -1,7 +1,10 @@
 import { handleAll, ConsecutiveBreaker, circuitBreaker } from "cockatiel";
 import type { CircuitBreakerPolicy } from "cockatiel";
+import fs from "node:fs";
+import path from "node:path";
 import { config } from "../config.js";
 import { logger } from "../middleware/logger.js";
+import { resolveDataPath } from "./paths.js";
 
 // cockatiel-backed breaker + synchronous state for testability
 // Threshold-based open is synchronous (failures counter), cockatiel provides
@@ -9,6 +12,79 @@ import { logger } from "../middleware/logger.js";
 
 type Wrapped = { breaker: CircuitBreakerPolicy; failures: number; successes: number; state: "closed" | "open" | "half-open"; openedAt: number };
 const breakers = new Map<string, Wrapped>();
+
+// ---- persistence: survive gateway restart / tsx watch reload ----
+const STORE_PATH = resolveDataPath("circuit-state.json");
+const isTestEnv = process.env.NODE_ENV === "test" || !!process.env.VITEST;
+
+function loadPersisted(): void {
+  if (isTestEnv) return;
+  try {
+    if (!fs.existsSync(STORE_PATH)) return;
+    const raw = JSON.parse(fs.readFileSync(STORE_PATH, "utf-8")) as Record<string, { failures?: number; successes?: number; state?: string; openedAt?: number }>;
+    const cooldown = config.circuitBreakerCooldownMs ?? 15000;
+    for (const [id, v] of Object.entries(raw)) {
+      // drop stale open that already cooled down
+      if (v.state === "open" && typeof v.openedAt === "number" && Date.now() - v.openedAt >= cooldown) continue;
+      const breaker = circuitBreaker(handleAll, { halfOpenAfter: cooldown, breaker: new ConsecutiveBreaker(config.circuitBreakerThreshold ?? 3) });
+      breaker.onBreak(() => logger.warn({ provider: id }, "circuit opened (cockatiel)"));
+      breaker.onReset(() => logger.info({ provider: id }, "circuit closed (cockatiel)"));
+      breaker.onHalfOpen(() => logger.info({ provider: id }, "circuit half-open (cockatiel)"));
+      // replay cockatiel failures to reflect persisted open state
+      if ((v.failures ?? 0) > 0 && v.state === "open") {
+        for (let i = 0; i < (v.failures ?? 0); i++) {
+          try { breaker.execute(() => Promise.reject(new Error("replay"))).catch(() => {}); } catch { /* ignore */ }
+        }
+      }
+      breakers.set(id, {
+        breaker,
+        failures: v.failures ?? 0,
+        successes: v.successes ?? 0,
+        state: (v.state as Wrapped["state"]) || "closed",
+        openedAt: v.openedAt ?? 0,
+      });
+    }
+    if (Object.keys(raw).length > 0) logger.info({ count: breakers.size }, "[circuit-breaker] restored from disk");
+  } catch (e) {
+    logger.warn({ err: (e as Error).message }, "[circuit-breaker] load failed");
+  }
+}
+
+function persistSync(): void {
+  if (isTestEnv) return;
+  try {
+    const out: Record<string, { failures: number; successes: number; state: string; openedAt: number }> = {};
+    for (const [id, w] of breakers.entries()) out[id] = { failures: w.failures, successes: w.successes, state: w.state, openedAt: w.openedAt };
+    fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
+    const tmp = `${STORE_PATH}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(out, null, 2));
+    fs.renameSync(tmp, STORE_PATH);
+  } catch { /* ignore: persist failed */ }
+}
+
+let persistTimer: ReturnType<typeof setTimeout> | null = null;
+function schedulePersist(): void {
+  if (isTestEnv) return;
+  if (persistTimer) return;
+  persistTimer = setTimeout(() => {
+    persistTimer = null;
+    persistSync();
+  }, 500);
+  persistTimer.unref?.();
+}
+
+// load once at import
+loadPersisted();
+
+// flush on shutdown — keep breaker state across tsx watch reload / Docker SIGTERM
+if (!isTestEnv && typeof process !== "undefined" && typeof process.on === "function") {
+  const flush = () => { try { persistSync(); } catch { /* ignore */ } };
+  try { process.on("exit", flush); } catch { /* ignore */ }
+  for (const sig of ["SIGTERM", "SIGINT", "SIGUSR2", "SIGHUP"] as const) {
+    try { process.on(sig as NodeJS.Signals, () => { flush(); }); } catch { /* ignore */ }
+  }
+  try { process.on("beforeExit", flush); } catch { /* ignore */ }
+}
 
 function getWrapped(providerId: string): Wrapped {
   let w = breakers.get(providerId);
@@ -37,6 +113,7 @@ export function recordSuccess(providerId: string) {
   } else {
     try { w.breaker.execute(() => Promise.resolve()).catch(() => {}); } catch { /* ignore */ }
   }
+  schedulePersist();
 }
 
 export function recordFailure(providerId: string) {
@@ -51,6 +128,7 @@ export function recordFailure(providerId: string) {
     w.openedAt = Date.now();
   }
   try { w.breaker.execute(() => Promise.reject(new Error("provider failure"))).catch(() => {}); } catch { /* ignore */ }
+  schedulePersist();
 }
 
 /**
@@ -75,6 +153,7 @@ export function isOpen(providerId: string): boolean {
       w.state = "half-open";
       w.successes = 0;
       logger.info({ provider: providerId }, "circuit half-open (cooldown expired)");
+      schedulePersist();
       return false;
     }
     return true;
@@ -94,6 +173,11 @@ export function getAllStates() {
   const out: Record<string, unknown> = {};
   for (const k of breakers.keys()) out[k] = getState(k);
   return out;
+}
+
+export function resetBreakersForTest(): void {
+  breakers.clear();
+  if (!isTestEnv) { try { fs.unlinkSync(STORE_PATH); } catch { /* ignore */ } }
 }
 
 export function syncBreakerConfig(): void {
@@ -125,4 +209,5 @@ export function syncBreakerConfig(): void {
     }
   }
   logger.info({ threshold: config.circuitBreakerThreshold, cooldown: config.circuitBreakerCooldownMs }, "[circuit-breaker] config synced");
+  schedulePersist();
 }

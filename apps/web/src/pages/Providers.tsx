@@ -1,16 +1,15 @@
 import { useEffect, useState } from "react";
-import { Search, RefreshCw, ExternalLink, Copy, Check, Layers, ArrowUpDown } from "lucide-react";
+import { Search, RefreshCw, ExternalLink, Copy, Check, ArrowUpDown } from "lucide-react";
 import { getKeyUrl, getProviderInfoUrl } from "../lib/getKeyUrls";
 import { getBaseUrl } from "../lib/getBaseUrls";
 import { useLang } from "../lib/i18n.tsx";
-import { errMsg, type ApiHealth, type ApiProvider } from "../lib/api-types.ts";
+import { type ApiHealth, type ApiProvider } from "../lib/api-types.ts";
 function mk() { return localStorage.getItem("masterKey") || "fgk-master-dev-key"; }
 
 interface ProvidersPayload {
   detailed?: ApiProvider[];
   pagination?: { page: number; limit: number; total: number; total_pages: number; has_next?: boolean; has_prev?: boolean };
   count?: number;
-  tiers?: unknown;
   sync?: { lastAdded?: string[]; lastAddedAt?: string | null; bootSync?: { status?: string; at?: string; total?: number; providers?: number } };
 }
 interface SyncStatus {
@@ -45,7 +44,6 @@ export default function Providers() {
     if (v === null) { localStorage.setItem("hasKeyOnly", "1"); return true; }
     return v !== "0";
   });
-  const [syncing, setSyncing] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(() => {
     try {
@@ -96,17 +94,6 @@ export default function Providers() {
       if (j.bootSync?.status === "running") setAutoSyncing(true);
       else setAutoSyncing(false);
     } catch { /* ignore */ }
-  };
-  const syncLive = async () => {
-    if (!confirm("Sync Live sẽ gọi provider.models() bằng key thật để cập nhật live list, có thể mất 20s. Tiếp tục?")) return;
-    setSyncing(true);
-    try {
-      const res = await fetch(`/api/models/live/sync`, { method: "POST", headers: { Authorization: `Bearer ${mk()}`, "Content-Type": "application/json" } });
-      const data = await res.json().catch(() => null);
-      await fetch(`/api/verify`, { method: "POST", headers: { Authorization: `Bearer ${mk()}`, "Content-Type": "application/json" }, body: JSON.stringify({ dryRun: false }) }).catch(() => {});
-      alert(data ? `Sync xong: ${data.total} live models` : "Sync done");
-      load();
-    } catch (e) { alert("Sync failed: " + errMsg(e)); } finally { setSyncing(false); }
   };
   const checkHealth = () => {
     setLoadingHealth(true);
@@ -170,21 +157,6 @@ export default function Providers() {
 
       {!data ? <p className="text-sm text-slate-400">{t("providers.loading")}</p> : (
         <>
-          <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
-            <div className="px-5 py-3.5 bg-slate-50/70 border-b border-slate-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-400/80 inline-block" /><span className="w-2.5 h-2.5 rounded-full bg-amber-400/80 inline-block" /><span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80 inline-block" /></div>
-                <span className="text-slate-300 mx-1">|</span>
-                <Layers className="w-3.5 h-3.5 text-slate-500" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("providers.tiers")}</h2>
-              </div>
-              <span className="text-[11px] font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/70">{data?.pagination?.total ?? data?.count ?? sorted.length} providers</span>
-            </div>
-            <div className="p-4 bg-slate-950 font-mono text-xs overflow-x-auto leading-relaxed text-emerald-400 max-h-64">
-              <pre><code>{JSON.stringify(data.tiers, null, 2)}</code></pre>
-            </div>
-          </div>
-
           <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-1 min-w-[280px] flex-wrap items-center gap-3">
               <div className="relative flex-1 max-w-md">
@@ -198,9 +170,6 @@ export default function Providers() {
             <div className="flex items-center gap-2.5">
               <button onClick={handleRefresh} disabled={refreshing} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-60 shadow-xs">
                 {refreshing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} {refreshing ? t("providers.syncing") : t("models.refresh")}
-              </button>
-              <button onClick={syncLive} disabled={syncing} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 disabled:opacity-75 shadow-xs active:scale-[0.98] transition-all">
-                {syncing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}{syncing ? t("providers.syncing") : t("providers.sync")}
               </button>
               <button onClick={checkHealth} disabled={loadingHealth} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200 disabled:opacity-60">
                 {loadingHealth ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />}{loadingHealth ? t("providers.checking") : t("providers.live_check")}

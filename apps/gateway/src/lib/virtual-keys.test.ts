@@ -1,13 +1,25 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import {
   createVirtualKey,
   deleteVirtualKey,
   findByKey,
   isValidVirtualKeyLive,
+  listVirtualKeys,
 } from "./virtual-keys.js";
 import { config } from "../config.js";
 
+function cleanupTestKeys(): void {
+  for (const k of listVirtualKeys()) {
+    if (k.name?.startsWith("ut-")) {
+      try { deleteVirtualKey(k.id); } catch { /* ignore */ }
+    }
+  }
+}
+
 describe("virtual-keys lifecycle", () => {
+  afterEach(() => {
+    cleanupTestKeys();
+  });
   it("master key validates as admin without touching store", () => {
     const vk = isValidVirtualKeyLive(config.masterKey);
     expect(vk?.role).toBe("admin");

@@ -1,5 +1,8 @@
+import fs from "node:fs";
+import path from "node:path";
 import { config } from "../config.js";
 import { logger } from "../middleware/logger.js";
+import { resolveDataPath } from "./paths.js";
 import { slidingCheck } from "./sliding-window.js";
 
 // Freellms limits mapping (from docs/CONFIGURATION.md + freellms scan)
@@ -28,6 +31,76 @@ const rpmWindows = new Map<string, Window>(); // key: provider or virtualKey
 const tpmWindows = new Map<string, Window>();
 const rpdWindows = new Map<string, Window>(); // 24h
 const tpdWindows = new Map<string, Window>();
+
+const QUOTA_STORE_PATH = resolveDataPath("quota-state.json");
+const isQuotaTestEnv = process.env.NODE_ENV === "test" || !!process.env.VITEST;
+
+function loadQuotaPersisted(): void {
+  if (isQuotaTestEnv) return;
+  try {
+    if (!fs.existsSync(QUOTA_STORE_PATH)) return;
+    const raw = JSON.parse(fs.readFileSync(QUOTA_STORE_PATH, "utf-8")) as {
+      rpm?: Record<string, Window>;
+      tpm?: Record<string, Window>;
+      rpd?: Record<string, Window>;
+      tpd?: Record<string, Window>;
+    };
+    const now = Date.now();
+    const fill = (map: Map<string, Window>, obj?: Record<string, Window>) => {
+      if (!obj) return;
+      for (const [k, w] of Object.entries(obj)) {
+        if (w.resetAt > now) map.set(k, w);
+      }
+    };
+    fill(rpmWindows, raw.rpm);
+    fill(tpmWindows, raw.tpm);
+    fill(rpdWindows, raw.rpd);
+    fill(tpdWindows, raw.tpd);
+    const total = rpmWindows.size + tpmWindows.size + rpdWindows.size + tpdWindows.size;
+    if (total > 0) logger.info({ total }, "[quota] restored windows from disk");
+  } catch (e) {
+    logger.warn({ err: (e as Error).message }, "[quota] load failed");
+  }
+}
+
+function persistQuotaSync(): void {
+  if (isQuotaTestEnv) return;
+  try {
+    const now = Date.now();
+    const toObj = (map: Map<string, Window>) => {
+      const o: Record<string, Window> = {};
+      for (const [k, w] of map.entries()) if (w.resetAt > now) o[k] = w;
+      return o;
+    };
+    const out = { rpm: toObj(rpmWindows), tpm: toObj(tpmWindows), rpd: toObj(rpdWindows), tpd: toObj(tpdWindows) };
+    fs.mkdirSync(path.dirname(QUOTA_STORE_PATH), { recursive: true });
+    const tmp = `${QUOTA_STORE_PATH}.tmp`;
+    fs.writeFileSync(tmp, JSON.stringify(out, null, 2));
+    fs.renameSync(tmp, QUOTA_STORE_PATH);
+  } catch { /* ignore */ }
+}
+
+let quotaPersistTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleQuotaPersist(): void {
+  if (isQuotaTestEnv) return;
+  if (quotaPersistTimer) return;
+  quotaPersistTimer = setTimeout(() => {
+    quotaPersistTimer = null;
+    persistQuotaSync();
+  }, 800);
+  quotaPersistTimer.unref?.();
+}
+
+loadQuotaPersisted();
+
+if (!isQuotaTestEnv && typeof process !== "undefined" && typeof process.on === "function") {
+  const flush = () => { try { persistQuotaSync(); } catch { /* ignore */ } };
+  try { process.on("exit", flush); } catch { /* ignore */ }
+  for (const sig of ["SIGTERM", "SIGINT", "SIGUSR2", "SIGHUP"] as const) {
+    try { process.on(sig as NodeJS.Signals, () => { flush(); }); } catch { /* ignore */ }
+  }
+  try { process.on("beforeExit", flush); } catch { /* ignore */ }
+}
 
 function windowKey(provider: string, keyPrefix: string) {
   return `${provider}:${keyPrefix}`;
@@ -119,6 +192,7 @@ export function recordUsage(provider: string, key: string, tokens: number, model
   }
   // Redis commit (best-effort): mirrors the increments into sliding windows (once)
   void commitUsageAsync(provider, key, tokens, model).catch(() => {});
+  scheduleQuotaPersist();
   logger.debug({ provider, tokens, k }, "quota usage recorded");
 }
 
@@ -188,6 +262,14 @@ export async function checkQuotaAsync(
     }
   }
   return { allowed: true };
+}
+
+export function resetQuotaForTest(): void {
+  rpmWindows.clear();
+  tpmWindows.clear();
+  rpdWindows.clear();
+  tpdWindows.clear();
+  if (!isQuotaTestEnv) { try { fs.unlinkSync(QUOTA_STORE_PATH); } catch { /* ignore */ } }
 }
 
 export function getQuotaState(provider: string, key: string) {

@@ -1,7 +1,15 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach } from "vitest";
 import { Hono } from "hono";
 import { virtualKeyRateLimit } from "./rate-limit.js";
-import { createVirtualKey, deleteVirtualKey } from "../lib/virtual-keys.js";
+import { createVirtualKey, deleteVirtualKey, listVirtualKeys } from "../lib/virtual-keys.js";
+
+function cleanupTestKeys(): void {
+  for (const k of listVirtualKeys()) {
+    if (k.name?.startsWith("rl-")) {
+      try { deleteVirtualKey(k.id); } catch { /* ignore */ }
+    }
+  }
+}
 
 function miniApp() {
   const app = new Hono();
@@ -12,6 +20,9 @@ function miniApp() {
 }
 
 describe("virtualKeyRateLimit", () => {
+  afterEach(() => {
+    cleanupTestKeys();
+  });
   it("passes under limit with x-ratelimit headers, 429s over limit", async () => {
     const created = createVirtualKey({ name: `rl-${Date.now()}`, rpmLimit: 2 });
     try {

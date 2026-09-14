@@ -359,6 +359,7 @@ export const config = {
     "google-gemini": parseKeys(process.env.GEMINI_API_KEYS),
     "cloudflare-workers-ai": parseKeys(process.env.CLOUDFLARE_API_TOKEN),
     "llm7-io": parseKeys(process.env.LLM7_API_KEYS),
+    kiosapi: parseKeys(process.env.KIOS_API_KEYS),
     modelscope: parseKeys(process.env.MODELSCOPE_API_KEYS),
     "chutes-ai": parseKeys(process.env.CHUTES_API_KEYS),
     "z-ai-zhipu-ai": parseKeys(process.env.Z_AI_API_KEYS),

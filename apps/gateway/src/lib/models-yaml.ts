@@ -50,9 +50,19 @@ export function parseModelsYamlContent(raw: string): ModelListEntry[] {
 /** Resolve candidate roots where models.yaml / models/ live. */
 function modelYamlRoots(): string[] {
   const here = path.dirname(fileURLToPath(import.meta.url));
+  // __dirname = apps/gateway/src/lib
+  const hereParent2 = path.resolve(path.join(here, "../..")); // apps/gateway
+  const hereParent3 = path.resolve(path.join(here, "../../..")); // apps
+  const hereParent4 = path.resolve(path.join(here, "../../../..")); // repo root
   const roots: string[] = [
-    path.resolve(process.cwd()),
-    path.resolve(path.join(here, "../../../../")),
+    // Repo root: models/ directory lives here in this monorepo
+    hereParent4,
+    process.cwd(),
+    // Fallbacks: data dir siblings, apps/gateway, apps
+    path.resolve(path.join(hereParent2, "data")),
+    path.resolve(path.join(hereParent3, "data")),
+    hereParent2,
+    hereParent3,
   ];
   try { roots.push(resolveDataPath(".")); } catch { /* ignore */ }
   try { roots.push(resolveDataPath("..")); } catch { /* ignore */ }
@@ -63,6 +73,8 @@ function modelYamlRoots(): string[] {
 export function loadModelsYaml(): ModelListEntry[] {
   try {
     const roots = modelYamlRoots();
+    const mergedAll: ModelListEntry[] = [];
+    const seenAll = new Set<string>();
     for (const root of roots) {
       const dir = path.join(root, "models");
       if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
@@ -75,21 +87,16 @@ export function loadModelsYaml(): ModelListEntry[] {
               seen.add(entry.id);
               merged.push(entry);
             }
+            if (!seenAll.has(entry.id)) {
+              seenAll.add(entry.id);
+              mergedAll.push(entry);
+            }
           }
         }
         if (merged.length > 0) return merged;
       }
     }
-    for (const root of roots) {
-      const p = path.join(root, "models.yaml");
-      if (fs.existsSync(p)) {
-        const parsed = parseModelsYamlContent(fs.readFileSync(p, "utf-8"));
-        if (parsed.length > 0) return parsed;
-        const raw = fs.readFileSync(p, "utf-8");
-        const ids = [...raw.matchAll(/-\s+id:\s*"([^"]+)"/g)].map((m) => m[1]);
-        return ids.map((id) => ({ id, raw_id: id, object: "model", owned_by: id.split("/")[0], provider: id.split("/")[0], display_name: id, context_length: 8192, score: 50, tier: "permanent", freellms_verified: false, no_card: true, capabilities: ["text"], limit: "", created: 1715433600 }));
-      }
-    }
+    if (mergedAll.length > 0) return mergedAll;
   } catch { /* ignore */ }
   return [];
 }

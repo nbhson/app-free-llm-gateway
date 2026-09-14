@@ -55,6 +55,12 @@ export interface ApiLog {
   latencyMs?: number;
   error?: string;
   verifiedStatus?: string;
+  // Vector 2 extensions
+  cost?: number;
+  cacheHit?: boolean;
+  semanticHit?: boolean;
+  compressedTokens?: number;
+  compressionRatio?: number;
   _expanded?: boolean;
   [key: string]: unknown;
 }
@@ -76,6 +82,7 @@ export interface GatewayStats {
   free_models?: number;
   freellms_providers?: number;
   requests?: number;
+  flags?: { semanticCache?: boolean; compression?: boolean; costRouting?: boolean };
   logs?: {
     total?: number;
     requests?: number;
@@ -88,6 +95,9 @@ export interface GatewayStats {
     completionTokens?: number;
     avgTokens?: number;
     allTimeTokens?: number;
+    totalCost?: number;
+    cacheHitRate?: number;
+    compressedSavedTokens?: number;
   };
   [key: string]: unknown;
 }

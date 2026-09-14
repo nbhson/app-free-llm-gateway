@@ -88,9 +88,21 @@ export default function Logs() {
           <span className="text-slate-700">•</span><span className="text-slate-300">{stats?.logs?.allTimeTokens?.toLocaleString() ?? 0} tokens all-time</span>
           <span className="text-slate-700">•</span><span className="font-mono font-bold text-emerald-400">{stats?.logs?.avgLatencyMs ?? 0}ms avg</span>
           <span className="text-slate-700">•</span><span>{Math.round((stats?.logs?.errorRate || 0) * 100)}% err</span>
+          {(stats?.logs?.cacheHitRate ?? 0) > 0 && <><span className="text-slate-700">•</span><span className="text-sky-300">{Math.round((stats!.logs!.cacheHitRate ?? 0) * 100)}% cache hit</span></>}
+          {(stats?.logs?.compressedSavedTokens ?? 0) > 0 && <><span className="text-slate-700">•</span><span className="text-violet-300">{stats!.logs!.compressedSavedTokens?.toLocaleString()} tokens saved (compression)</span></>}
+          {(stats?.logs?.totalCost ?? 0) > 0 && <><span className="text-slate-700">•</span><span className="text-amber-300">${stats!.logs!.totalCost?.toFixed(4)} est. cost</span></>}
         </div>
         <span className="text-sky-300 font-mono">{Object.keys(stats?.logs?.byProvider||{}).length} providers</span>
       </div>
+      {stats?.flags && (
+        <div className="px-4 py-2.5 bg-white rounded-xl border border-slate-200 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-slate-500 font-semibold">Settings:</span>
+          <span className={`px-2 py-0.5 rounded-full border font-bold text-[11px] ${stats.flags.compression ? "bg-violet-50 text-violet-700 border-violet-200" : "bg-slate-50 text-slate-500 border-slate-200"}`}>compression {stats.flags.compression ? "ON" : "OFF"}</span>
+          <span className={`px-2 py-0.5 rounded-full border font-bold text-[11px] ${stats.flags.semanticCache ? "bg-sky-50 text-sky-700 border-sky-200" : "bg-slate-50 text-slate-500 border-slate-200"}`}>semantic cache {stats.flags.semanticCache ? "ON" : "OFF"}</span>
+          <span className={`px-2 py-0.5 rounded-full border font-bold text-[11px] ${stats.flags.costRouting ? "bg-amber-50 text-amber-700 border-amber-200" : "bg-slate-50 text-slate-500 border-slate-200"}`}>cost routing {stats.flags.costRouting ? "ON" : "OFF"}</span>
+          <span className="ml-auto text-[11px] text-slate-400">xem chi tiết ở Settings page</span>
+        </div>
+      )}
 
       <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
@@ -101,6 +113,9 @@ export default function Logs() {
             <tbody className="divide-y divide-slate-100">
               {visibleLogs.map((l) => {
                 const expanded = l._expanded;
+                const savedTokens = l.compressedTokens !== undefined && l.promptTokens !== undefined
+                  ? Math.max(0, l.promptTokens - l.compressedTokens)
+                  : undefined;
                 return (
                   <React.Fragment key={l.id}>
                     <tr className={`${expanded ? "bg-slate-50/80" : "hover:bg-slate-50/80"} cursor-pointer`} onClick={() => setLogs((prev) => prev.map((x) => x.id === l.id ? { ...x, _expanded: !x._expanded } : x))}>
@@ -109,17 +124,30 @@ export default function Logs() {
                       <td className="px-4 py-3 font-mono text-[11px]">{l.virtualKeyName || l.virtualKeyId || "-"}</td>
                       <td className="px-4 py-3"><span className="font-mono text-xs px-2 py-0.5 rounded bg-slate-100 border border-slate-200">{l.provider}</span></td>
                       <td className="px-4 py-3 font-mono text-[11px] max-w-[200px] truncate" title={l.model}>{l.model}</td>
-                      <td className="px-4 py-3 font-mono">{l.totalTokens ?? "-"}<span className="text-slate-400 text-[10px]"> ({l.promptTokens ?? 0}+{l.completionTokens ?? 0})</span></td>
+                      <td className="px-4 py-3 font-mono">
+                        {l.totalTokens ?? "-"}<span className="text-slate-400 text-[10px]"> ({l.promptTokens ?? 0}+{l.completionTokens ?? 0})</span>
+                        {savedTokens !== undefined && savedTokens > 0 && (
+                          <div className="text-[10px] text-violet-600" title={`Original prompt ${l.promptTokens}, compressed to ${l.compressedTokens}`}>
+                            ↓ {l.compressedTokens} compressed (−{savedTokens})
+                          </div>
+                        )}
+                      </td>
                       <td className="px-4 py-3 font-mono">{l.latencyMs}</td>
                       <td className="px-4 py-3"><span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold border ${l.status === 200 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200"}`}>{l.status}</span></td>
-                      <td className="px-4 py-3 text-[11px]">{l.verifiedStatus || "-"}</td>
+                      <td className="px-4 py-3 text-[11px]">
+                        <span className={l.cacheHit || l.semanticHit ? "text-sky-600 font-semibold" : ""}>{l.verifiedStatus || "-"}</span>
+                        {l.cacheHit && <span className="ml-1 text-[10px] font-bold text-sky-600 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">cache</span>}
+                        {l.semanticHit && !l.cacheHit && <span className="ml-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">semantic</span>}
+                        {l.semanticHit && l.cacheHit && <span className="ml-1 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">semantic</span>}
+                        {l.cost !== undefined && l.cost > 0 && <span className="ml-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">${l.cost}</span>}
+                      </td>
                     </tr>
                     {expanded && (
                       <tr>
                         <td colSpan={9} className="bg-slate-50/80 p-4">
                           <div className="grid md:grid-cols-2 gap-4 text-xs">
                             <div className="space-y-1"><div><b>ID:</b> <code className="bg-white border px-1.5 py-0.5 rounded font-mono text-[11px]">{l.id}</code></div><div><b>Time:</b> {l.timestamp ? new Date(l.timestamp).toLocaleString() : "-"}</div><div><b>Key:</b> {l.virtualKeyName} ({l.virtualKeyId})</div><div><b>Provider:</b> {l.provider}</div><div><b>Model:</b> <code className="bg-white border px-1.5 py-0.5 rounded font-mono text-[11px]">{l.model}</code></div></div>
-                            <div className="space-y-1"><div><b>Tokens:</b> {l.promptTokens ?? 0} prompt + {l.completionTokens ?? 0} completion = <b>{l.totalTokens ?? 0}</b></div><div><b>Latency:</b> {l.latencyMs}ms</div><div><b>Status:</b> {l.status}</div><div><b>Verified:</b> {l.verifiedStatus || "-"}</div><pre className="bg-white border border-slate-200 rounded-lg p-3 max-h-32 overflow-auto font-mono text-[11px] whitespace-pre-wrap break-all">{l.error || "—"}</pre></div>
+                            <div className="space-y-1"><div><b>Tokens:</b> {l.promptTokens ?? 0} prompt + {l.completionTokens ?? 0} completion = <b>{l.totalTokens ?? 0}</b></div><div><b>Latency:</b> {l.latencyMs}ms</div><div><b>Status:</b> {l.status}</div><div><b>Verified:</b> {l.verifiedStatus || "-"}</div>{l.compressedTokens !== undefined && l.compressedTokens > 0 && <div className="bg-violet-50 border border-violet-200 rounded-lg px-3 py-2"><b className="text-violet-700">Compact:</b> {l.promptTokens} → {l.compressedTokens} tokens <span className="text-violet-600 font-bold">(saved {savedTokens} = {l.promptTokens ? Math.round((savedTokens! / l.promptTokens)*100) : 0}%, ratio {typeof l.compressionRatio === "number" ? l.compressionRatio.toFixed(3) : l.compressionRatio ?? "-"})</span> — Settings: COMPRESSION_ENABLED{(l.compressionRatio ?? 0) > 0 ? " ON" : " (log shows compact)"}</div>}{l.cacheHit && <div><b>Cache:</b> <span className="text-sky-600 font-semibold">cache hit (semantic cache ON)</span>{l.semanticHit ? " • semantic" : ""}</div>}{!l.cacheHit && l.semanticHit && <div><b>Cache:</b> <span className="text-indigo-600 font-semibold">semantic hit</span></div>}{l.cost !== undefined && l.cost > 0 && <div><b>Cost:</b> ${l.cost} (est.) — cost routing {l.cost > 0 ? "active" : "off"}</div>}<pre className="bg-white border border-slate-200 rounded-lg p-3 max-h-32 overflow-auto font-mono text-[11px] whitespace-pre-wrap break-all">{l.error || "—"}</pre></div>
                           </div>
                           <div className="mt-3"><b className="text-xs">Raw JSON:</b><pre className="bg-slate-950 text-slate-200 rounded-xl p-4 font-mono text-xs overflow-auto max-h-48 mt-1">{JSON.stringify(l, null, 2)}</pre></div>
                         </td>

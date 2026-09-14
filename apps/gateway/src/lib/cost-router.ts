@@ -44,6 +44,7 @@ export const FREELLMS_COST: Record<string, number> = {
   deepseek: 0.14,
   nscale: 0,
   nebius: 0,
+  kiosapi: 0,
 };
 
 const STATS_PATH = resolveDataPath("provider-stats.json");
