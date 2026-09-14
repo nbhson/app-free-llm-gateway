@@ -38,4 +38,15 @@ describe("provider-keys", () => {
     expect(isPublicProvider("tokenharbor")).toBe(false);
     expect(isPublicProvider("bai")).toBe(false);
   });
+
+  it("hasRealKey resolves alias to canonical", async () => {
+    const { PROVIDER_ALIASES } = await import("../providers/registry.js");
+    expect(PROVIDER_ALIASES["bai"]).toBe("b-ai");
+    // hasRealKey for alias should not throw and should delegate to canonical
+    expect(typeof hasRealKey("bai")).toBe("boolean");
+    expect(typeof hasRealKey("chat-b-ai")).toBe("boolean");
+    expect(typeof hasRealKey("nvidia")).toBe("boolean");
+    expect(hasRealKey("bai")).toBe(hasRealKey("b-ai"));
+    expect(hasRealKey("nvidia")).toBe(hasRealKey("nvidia-nim"));
+  });
 });

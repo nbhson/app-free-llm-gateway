@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import { config } from "../config.js";
 import { logger } from "../middleware/logger.js";
 import { isPublicProvider } from "./provider-keys.js";
+import { resolveProviderId } from "../providers/registry.js";
 
 // AES-256-GCM encrypt/decrypt for at-rest storage (free-llm-gateway style)
 const ALGO = "aes-256-gcm";
@@ -40,17 +41,20 @@ type KeyState = { key: string; failCount: number; cooldownUntil: number; lastUse
 const keyStates = new Map<string, KeyState[]>(); // provider -> states
 
 function ensure(providerId: string) {
-  if (keyStates.has(providerId)) return;
-  const keys = config.providerKeys[providerId] || [];
+  const canonical = resolveProviderId(providerId);
+  if (keyStates.has(canonical)) return;
+  if (keyStates.has(providerId) && canonical !== providerId) return;
+  const keys = config.providerKeys[canonical] || config.providerKeys[providerId] || [];
   keyStates.set(
-    providerId,
+    canonical,
     keys.map((k) => ({ key: k, failCount: 0, cooldownUntil: 0, lastUsed: 0 }))
   );
 }
 
 export function getNextKeyManaged(providerId: string): string | null {
-  ensure(providerId);
-  const states = keyStates.get(providerId)!;
+  const canonical = resolveProviderId(providerId);
+  ensure(canonical);
+  const states = keyStates.get(canonical) || keyStates.get(providerId)!;
   if (states.length === 0) {
     // public providers allow empty
     if (isPublicProvider(providerId)) return "";
@@ -72,8 +76,9 @@ export function getNextKeyManaged(providerId: string): string | null {
 }
 
 export function markRateLimited(providerId: string, key: string, retryAfterMs: number = 60000) {
-  ensure(providerId);
-  const states = keyStates.get(providerId)!;
+  const canonical = resolveProviderId(providerId);
+  ensure(canonical);
+  const states = keyStates.get(canonical) || keyStates.get(providerId)!;
   const s = states.find((x) => x.key === key);
   if (s) {
     s.cooldownUntil = Date.now() + retryAfterMs;
@@ -83,14 +88,16 @@ export function markRateLimited(providerId: string, key: string, retryAfterMs: n
 }
 
 export function markSuccess(providerId: string, key: string) {
-  const states = keyStates.get(providerId);
+  const canonical = resolveProviderId(providerId);
+  const states = keyStates.get(canonical) || keyStates.get(providerId);
   const s = states?.find((x) => x.key === key);
   if (s) s.failCount = 0;
 }
 
 export function getKeyStats(providerId: string) {
-  ensure(providerId);
-  return keyStates.get(providerId)!.map((s) => ({
+  const canonical = resolveProviderId(providerId);
+  ensure(canonical);
+  return (keyStates.get(canonical) || keyStates.get(providerId)!).map((s) => ({
     prefix: s.key.slice(0, 8) + "...",
     failCount: s.failCount,
     cooldownUntil: s.cooldownUntil,

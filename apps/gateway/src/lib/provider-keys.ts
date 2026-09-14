@@ -1,4 +1,5 @@
 import { config } from "../config.js";
+import { resolveProviderId } from "../providers/registry.js";
 
 /** Providers that work without any API key (scraped / unlimited tier). Single source of truth. */
 export const PUBLIC_PROVIDERS: ReadonlySet<string> = new Set([
@@ -33,8 +34,14 @@ export function isRealKey(key: string | undefined | null): boolean {
 }
 
 export function hasRealKey(providerId: string): boolean {
-  const keys = config.providerKeys[providerId] || [];
+  const canonical = resolveProviderId(providerId);
+  const keys = config.providerKeys[canonical] || config.providerKeys[providerId] || [];
   return keys.some(isRealKey);
+}
+
+export function getProviderKeys(providerId: string): string[] {
+  const canonical = resolveProviderId(providerId);
+  return config.providerKeys[canonical] || config.providerKeys[providerId] || [];
 }
 
 /** Max number of providers allowed in strict single-tier mode (user-pinned fallback). */

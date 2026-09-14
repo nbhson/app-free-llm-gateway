@@ -1,4 +1,4 @@
-# Provider: google-gemini — auto-split from models.yaml (9 models)
+# Provider: google-gemini — auto-split from models.yaml (15 models) — updated 2026-09-15 from aistudio.google.com/rate-limit (4 unlimited Live + Gemma 4)
 models:
   - id: "google-gemini/gemini-3.6-flash"
     display_name: "gemini-3.6-flash"
@@ -47,8 +47,9 @@ models:
     score: 55
     tier: permanent
     verified: true
-    no_card: false
+    no_card: true
     capabilities: [vision, audio, reasoning]
+    limit: "15 RPM, 1,500 RPD"
   - id: "google-gemini/gemini-3-flash-preview"
     display_name: "gemini-3-flash-preview"
     provider: google-gemini
@@ -68,7 +69,7 @@ models:
     verified: true
     no_card: true
     capabilities: [text, image, audio, video, pdf, reasoning]
-    limit: "15 RPM, 1,500 RPD"
+    limit: "Deprecated for new users — use gemini-3.6-flash"
   - id: "google-gemini/gemini-2.5-flash-lite"
     display_name: "gemini-2.5-flash-lite"
     provider: google-gemini
@@ -78,7 +79,7 @@ models:
     verified: true
     no_card: true
     capabilities: [text, image, audio, video, pdf, reasoning]
-    limit: "30 RPM, 1,500 RPD"
+    limit: "Deprecated for new users — use gemini-3.5-flash-lite"
   - id: "google-gemini/gemini-flash-lite-latest"
     display_name: "gemini-flash-lite-latest"
     provider: google-gemini
@@ -86,5 +87,68 @@ models:
     score: 42
     tier: permanent
     verified: true
-    no_card: false
+    no_card: true
     capabilities: [vision, audio, reasoning]
+    limit: "30 RPM, 1,500 RPD"
+  # — Gemma 4 (good free) — from aistudio rate-limit & v1beta/models —
+  - id: "google-gemini/gemma-4-31b-it"
+    display_name: "gemma-4-31b-it"
+    provider: google-gemini
+    context_length: 262144
+    score: 78
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning, code]
+    limit: "15 RPM, 1,500 RPD"
+  - id: "google-gemini/gemma-4-26b-a4b-it"
+    display_name: "gemma-4-26b-a4b-it"
+    provider: google-gemini
+    context_length: 262144
+    score: 76
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning, code]
+    limit: "15 RPM, 1,500 RPD"
+  # — 4 Unlimited Live API models — https://aistudio.google.com/rate-limit?timeRange=last-28-days —
+  - id: "google-gemini/gemini-2.5-flash-native-audio-dialog"
+    display_name: "gemini-2.5-flash-native-audio-dialog"
+    provider: google-gemini
+    context_length: 131072
+    score: 88
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, audio, video, live]
+    limit: "Unlimited (Live API, 1M TPM)"
+  - id: "google-gemini/gemini-3-flash-live"
+    display_name: "gemini-3-flash-live"
+    provider: google-gemini
+    context_length: 1048576
+    score: 86
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, audio, video, live]
+    limit: "Unlimited (Live API, 65K TPM)"
+  - id: "google-gemini/gemini-3.5-live-translate"
+    display_name: "gemini-3.5-live-translate"
+    provider: google-gemini
+    context_length: 131072
+    score: 84
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, audio, translation, live]
+    limit: "Unlimited (Live API, 20K TPM)"
+  - id: "google-gemini/gemini-3.5-transcribe-live"
+    display_name: "gemini-3.5-transcribe-live"
+    provider: google-gemini
+    context_length: 131072
+    score: 83
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, audio, transcription, live]
+    limit: "Unlimited (Live API, 20K TPM)"

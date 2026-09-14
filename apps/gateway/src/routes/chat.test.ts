@@ -44,7 +44,7 @@ describe("chat route", () => {
     providers["pollinations"] = { ...origPollinations, chat: async () => okChat("hello from pollinations") } as unknown as Provider;
     const res = await chatRoute.request("/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-router": "pollinations" },
       body: JSON.stringify({ model: "auto", messages: [{ role: "user", content: "hi" }], stream: false }),
     });
     expect(res.status).toBe(200);
@@ -97,7 +97,7 @@ describe("chat route", () => {
     } as unknown as Provider;
     const res = await chatRoute.request("/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-router": "pollinations" },
       body: JSON.stringify({ model: "auto", messages: [{ role: "user", content: "hi" }], stream: true }),
     });
     expect(res.status).toBe(200);

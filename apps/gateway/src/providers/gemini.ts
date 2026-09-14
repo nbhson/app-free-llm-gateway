@@ -6,6 +6,18 @@ function sanitizeGeminiModel(raw: string): string {
   // raw like "gemini/gemini 3.6 flash" or "gemini-2.0-flash" or "auto"
   const base = raw.includes("/") ? raw.split("/").pop()! : raw;
   const cleaned = base.trim().toLowerCase();
+  // Live / transcribe / native-audio — keep exact id (do not collapse to 3.6)
+  if (cleaned.includes("transcribe-live") || cleaned.includes("transcribe live")) return "gemini-3.5-transcribe-live";
+  if (cleaned.includes("live-translate") || cleaned.includes("live translate")) return "gemini-3.5-live-translate";
+  if (cleaned.includes("native-audio") || cleaned.includes("native audio")) {
+    if (cleaned.includes("dialog")) return "gemini-2.5-flash-native-audio-dialog";
+    return "gemini-2.5-flash-native-audio-dialog";
+  }
+  if (cleaned.includes("flash-live") || cleaned.includes("flash live")) return "gemini-3-flash-live";
+  // Gemma 4 — keep exact
+  if (cleaned.includes("gemma-4-31") || cleaned.includes("gemma 4 31")) return "gemma-4-31b-it";
+  if (cleaned.includes("gemma-4-26") || cleaned.includes("gemma 4 26")) return "gemma-4-26b-a4b-it";
+  if (cleaned.includes("gemma")) return cleaned.replace(/\s+/g, "-");
   // Map freellms names with spaces to real Gemini ids (2026-09: 2.0 gone, use 3.6)
   if (cleaned.includes("3.6")) return "gemini-3.6-flash";
   if (cleaned.includes("3.5") && cleaned.includes("lite")) return "gemini-3.5-flash-lite";
@@ -16,13 +28,13 @@ function sanitizeGeminiModel(raw: string): string {
   if (cleaned.includes("2.0")) return "gemini-3.6-flash";
   if (cleaned.includes("1.5")) return "gemini-1.5-flash";
   if (cleaned === "auto" || cleaned === "gemini" || cleaned === "gemini-flash" || cleaned === "gemini flash latest") return "gemini-3.6-flash";
-  // Keep dash form if looks like gemini-*
-  if (cleaned.startsWith("gemini-")) return cleaned.replace(/\s+/g, "-");
+  // Keep dash form if looks like gemini-* or gemma-*
+  if (cleaned.startsWith("gemini-") || cleaned.startsWith("gemma-")) return cleaned.replace(/\s+/g, "-");
   return "gemini-3.6-flash";
 }
 
 /** Fail-fast guard: refuse unknown model ids locally instead of burning an upstream call. */
-const KNOWN_GEMINI_PATTERNS = ["gemini", "auto", "flash"];
+const KNOWN_GEMINI_PATTERNS = ["gemini", "gemma", "auto", "flash", "live", "transcribe", "native-audio"];
 
 export function isKnownGeminiModel(raw: string): boolean {
   const base = raw.includes("/") ? raw.split("/").pop()! : raw;

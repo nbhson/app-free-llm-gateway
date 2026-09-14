@@ -43,7 +43,34 @@ describe("registry resolveProvidersForModel", () => {
     expect(resolveProvidersForModel("glm-5.3-flash")).toContain("b-ai");
     expect(providerIds).toContain("b-ai");
     expect(providerIds).toContain("tokenharbor");
-    expect(providerIds).toContain("bai");
-    expect(providerIds).toContain("chat-b-ai");
+    // aliases are now deduped: not in providerIds but still resolvable via resolveProviderId
+    expect(providerIds).not.toContain("bai");
+    expect(providerIds).not.toContain("chat-b-ai");
+  });
+
+  it("provider aliases resolve to canonical", async () => {
+    const { resolveProviderId, getProvider, PROVIDER_ALIASES } = await import("./registry.js");
+    expect(resolveProviderId("bai")).toBe("b-ai");
+    expect(resolveProviderId("chat-b-ai")).toBe("b-ai");
+    expect(resolveProviderId("nvidia")).toBe("nvidia-nim");
+    expect(resolveProviderId("gemini")).toBe("google-gemini");
+    expect(resolveProviderId("mistral")).toBe("mistral-ai");
+    expect(resolveProviderId("chutes")).toBe("chutes-ai");
+    expect(resolveProviderId("kira")).toBe("kiraai");
+    expect(resolveProviderId("experiential")).toBe("experientiallabs");
+    expect(PROVIDER_ALIASES["experiential_cloud"]).toBe("experientiallabs");
+    // alias model prefix still routes to canonical
+    expect(resolveProvidersForModel("bai/qwen3.8-flash")).toEqual(["b-ai"]);
+    expect(resolveProvidersForModel("nvidia/unknown-xyz-123")).toEqual(["nvidia-nim"]);
+    expect(resolveProvidersForModel("gemini/gemini-2.0-flash")).toEqual(["google-gemini"]);
+    // llama alias wins over prefix (withoutPrefix=llama matches modelAliases)
+    expect(resolveProvidersForModel("nvidia/llama")).toContain("nvidia-nim");
+    expect(getProvider("bai")).toBeDefined();
+    expect(getProvider("nvidia")).toBeDefined();
+    // canonical ids still present
+    expect(providerIds).toContain("nvidia-nim");
+    expect(providerIds).toContain("google-gemini");
+    expect(providerIds).not.toContain("nvidia");
+    expect(providerIds).not.toContain("gemini");
   });
 });

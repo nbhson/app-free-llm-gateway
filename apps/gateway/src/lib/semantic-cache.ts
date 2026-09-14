@@ -22,19 +22,40 @@ export class SemanticCache {
   private mem: LRUCacheType<string, CacheEntry>;
   private hits = 0;
   private misses = 0;
-  private defaultTtl: number;
-  private scanCap: number;
+  private customTtl?: number;
 
   constructor(defaultTtlSec?: number) {
-    this.defaultTtl = defaultTtlSec ?? (typeof config.semanticCacheTtlSec === "number" && config.semanticCacheTtlSec > 0 ? config.semanticCacheTtlSec : 3600);
+    this.customTtl = defaultTtlSec;
+    const ttl = defaultTtlSec ?? (typeof config.semanticCacheTtlSec === "number" && config.semanticCacheTtlSec > 0 ? config.semanticCacheTtlSec : 3600);
     const maxMemEntries = config.semanticCacheMaxMemEntries ?? 1000;
-    this.scanCap = config.semanticCacheScanCap ?? 200;
     this.mem = new (LRUCacheImpl as typeof LRUCacheType)<string, CacheEntry>({
       max: maxMemEntries,
-      ttl: this.defaultTtl * 1000,
+      ttl: ttl * 1000,
       ttlAutopurge: true,
       updateAgeOnGet: true,
     });
+  }
+
+  // Live getters — read config each time so PUT /api/config hot-reload works without restart
+  // If customTtl was passed via constructor (tests), respect it; otherwise follow config
+  private get defaultTtl(): number {
+    if (typeof this.customTtl === "number") return this.customTtl;
+    return typeof config.semanticCacheTtlSec === "number" && config.semanticCacheTtlSec > 0 ? config.semanticCacheTtlSec : 3600;
+  }
+  private get scanCap(): number {
+    return config.semanticCacheScanCap ?? 200;
+  }
+
+  /** Called after PUT /api/config mutates config — resizes LRU max in-place */
+  syncConfig(): void {
+    try {
+      const newMax = config.semanticCacheMaxMemEntries ?? 1000;
+      // lru-cache v10 supports live resize via .max setter
+      (this.mem as unknown as { max: number }).max = newMax;
+      logger.info({ max: newMax, ttl: this.defaultTtl, scanCap: this.scanCap }, "[semantic-cache] config synced");
+    } catch (err) {
+      logger.warn({ err: (err as Error).message }, "[semantic-cache] syncConfig failed");
+    }
   }
 
   private hash(query: string): string {

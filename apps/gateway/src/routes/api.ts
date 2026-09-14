@@ -780,6 +780,20 @@ apiRoute.put("/config", async (c) => {
       (config as unknown as Record<string, unknown>).embeddingModels = pending.embeddingModels;
     }
   }
+  // live sync frozen singletons so every toggle in /settings actually works without restart
+  const changedKeys = new Set(Object.keys(applied));
+  if (changedKeys.has("CACHE_TTL_S") || changedKeys.has("SEMANTIC_CACHE_MAX_MEM") || changedKeys.has("SEMANTIC_CACHE_SCAN_CAP") || changedKeys.has("SEMANTIC_THRESHOLD")) {
+    try {
+      const { semanticCache } = await import("../lib/semantic-cache.js");
+      (semanticCache as unknown as { syncConfig?: () => void }).syncConfig?.();
+    } catch { /* ignore */ }
+  }
+  if (changedKeys.has("CIRCUIT_BREAKER_THRESHOLD") || changedKeys.has("CIRCUIT_BREAKER_COOLDOWN_MS")) {
+    try {
+      const { syncBreakerConfig } = await import("../lib/circuit-breaker.js");
+      syncBreakerConfig();
+    } catch { /* ignore */ }
+  }
   // audit
   try {
     const vk = (c as unknown as { get?: (k: string) => unknown }).get?.("vk") || null;

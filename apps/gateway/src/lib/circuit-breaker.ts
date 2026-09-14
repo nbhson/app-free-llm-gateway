@@ -95,3 +95,34 @@ export function getAllStates() {
   for (const k of breakers.keys()) out[k] = getState(k);
   return out;
 }
+
+export function syncBreakerConfig(): void {
+  // Recreate breakers whose cockatiel threshold/cooldown diverged from config
+  // cheapest is to clear and let getWrapped lazily recreate with new config
+  // keep failure counts? For hot-reload UX, preserve failures but update inner breaker threshold
+  for (const [id, w] of breakers.entries()) {
+    try {
+      const desiredThreshold = config.circuitBreakerThreshold ?? 5;
+      const desiredCooldown = config.circuitBreakerCooldownMs ?? 15000;
+      // cockatiel breaker is immutable — recreate with new params preserving state
+      const newBreaker = circuitBreaker(handleAll, { halfOpenAfter: desiredCooldown, breaker: new ConsecutiveBreaker(desiredThreshold) });
+      newBreaker.onBreak(() => logger.warn({ provider: id }, "circuit opened (cockatiel)"));
+      newBreaker.onReset(() => logger.info({ provider: id }, "circuit closed (cockatiel)"));
+      newBreaker.onHalfOpen(() => logger.info({ provider: id }, "circuit half-open (cockatiel)"));
+      // preserve state: if was open/half-open keep openedAt, otherwise closed
+      const prevState = w.state;
+      const prevOpenedAt = w.openedAt;
+      const prevFailures = w.failures;
+      const prevSuccesses = w.successes;
+      // replace inner breaker, keep failure counters
+      (w as unknown as { breaker: CircuitBreakerPolicy }).breaker = newBreaker;
+      w.state = prevState;
+      w.openedAt = prevOpenedAt;
+      w.failures = prevFailures;
+      w.successes = prevSuccesses;
+    } catch (err) {
+      logger.warn({ provider: id, err: (err as Error).message }, "[circuit-breaker] sync failed");
+    }
+  }
+  logger.info({ threshold: config.circuitBreakerThreshold, cooldown: config.circuitBreakerCooldownMs }, "[circuit-breaker] config synced");
+}

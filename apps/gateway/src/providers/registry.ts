@@ -17,7 +17,6 @@ export const providers: Record<string, Provider> = {
   "ovhcloud-ai-endpoints": OPENAI({ id: "ovhcloud-ai-endpoints", baseUrl: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1" }), // 10
   cohere: OPENAI({ id: "cohere", baseUrl: "https://api.cohere.ai/compatibility/v1" }), // 10, rerank/embedding (OpenAI compat)
   "mistral-ai": OPENAI({ id: "mistral-ai", baseUrl: "https://api.mistral.ai/v1" }), // 9, quota
-  mistral: OPENAI({ id: "mistral", baseUrl: "https://api.mistral.ai/v1" }), // alias
 
   // Cloudflare Workers AI — special path with {account_id}, uses Bearer token
   "cloudflare-workers-ai": OPENAI({ id: "cloudflare-workers-ai", baseUrl: "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1" }),
@@ -25,7 +24,6 @@ export const providers: Record<string, Provider> = {
   // ModelScope, Chutes, SambaNova, SiliconFlow — OpenAI compat
   modelscope: OPENAI({ id: "modelscope", baseUrl: "https://api-inference.modelscope.cn/v1" }), // 43
   "chutes-ai": OPENAI({ id: "chutes-ai", baseUrl: "https://llm.chutes.ai/v1" }), // 2 (was api.chutes.ai 404)
-  chutes: OPENAI({ id: "chutes", baseUrl: "https://llm.chutes.ai/v1" }), // alias legacy
   sambanova: OPENAI({ id: "sambanova", baseUrl: "https://api.sambanova.ai/v1" }), // 4
   siliconflow: OPENAI({ id: "siliconflow", baseUrl: "https://api.siliconflow.cn/v1" }), // 2
   "kilo-code": OPENAI({ id: "kilo-code", baseUrl: "https://api.kilo.ai/api/gateway" }), // 6 free 2026-08
@@ -36,14 +34,8 @@ export const providers: Record<string, Provider> = {
   "b-ai": OPENAI({ id: "b-ai", baseUrl: "https://api.b.ai/v1" }), // 4 free: qwen3.8-flash, hy3, mimo-v2.5, glm-5.3-flash (https://chat.b.ai/key, https://docs.b.ai/llmservice/promotions-and-pricing-notices 2026-09)
   tokenharbor: OPENAI({ id: "tokenharbor", baseUrl: "https://tokenharbor.ai/v1" }), // 3 free :free tier — deepseek-v4.1-flash:free, deepseek-v4-flash:free, mimo-v2.5:free (https://tokenharbor.ai/models?category=free 2026-09, 4th slot reserved for future free)
   "z-ai-zhipu-ai": OPENAI({ id: "z-ai-zhipu-ai", baseUrl: "https://open.bigmodel.cn/api/paas/v4" }), // 4 GLM
-  bai: OPENAI({ id: "b-ai", baseUrl: "https://api.b.ai/v1" }), // alias without hyphen for chat.b.ai
-  "chat-b-ai": OPENAI({ id: "b-ai", baseUrl: "https://api.b.ai/v1" }), // alias full domain
   "experientiallabs": OPENAI({ id: "experientiallabs", baseUrl: "https://api.experientiallabs.ai/v1" }), // 3 free promotional (qwen3.8-27b, deepseek-v4-flash, gpt-5.6-luna) — OpenAI compatible
   kiraai: OPENAI({ id: "kiraai", baseUrl: "https://kiraai.vn/api/v1" }), // KiraAI Vietnam — OpenAI compatible, 150M free tokens/day (kira-mini-1.0 + Kira family)
-  kira: OPENAI({ id: "kiraai", baseUrl: "https://kiraai.vn/api/v1" }), // alias
-  experiential: OPENAI({ id: "experientiallabs", baseUrl: "https://api.experientiallabs.ai/v1" }), // alias
-  "experiential-cloud": OPENAI({ id: "experientiallabs", baseUrl: "https://api.experientiallabs.ai/v1" }), // alias hyphen
-  experiential_cloud: OPENAI({ id: "experientiallabs", baseUrl: "https://api.experientiallabs.ai/v1" }), // alias underscore (catalog id)
   "grok-xai": OPENAI({ id: "grok-xai", baseUrl: "https://api.x.ai/v1" }), // 2, needs card (no free)
   deepseek: OPENAI({ id: "deepseek", baseUrl: "https://api.deepseek.com/v1" }),
   openrouter: OPENAI({ id: "openrouter", baseUrl: "https://openrouter.ai/api/v1" }), // 17 free
@@ -63,16 +55,36 @@ export const providers: Record<string, Provider> = {
   together: OPENAI({ id: "together", baseUrl: "https://api.together.xyz/v1" }),
   fireworks: OPENAI({ id: "fireworks", baseUrl: "https://api.fireworks.ai/inference/v1" }),
   novita: OPENAI({ id: "novita", baseUrl: "https://api.novita.ai/v3/openai" }),
-  nvidia: OPENAI({ id: "nvidia", baseUrl: "https://integrate.api.nvidia.com/v1" }), // alias
 
   // Special
   "google-gemini": geminiProvider,
-  gemini: geminiProvider, // alias
   pollinations: pollinationsProvider,
   anthropic: anthropicProvider,
   "claude-code": { ...anthropicProvider, id: "claude-code" } as Provider,
   codex: OPENAI({ id: "codex", baseUrl: "https://api.openai.com/v1" }),
 };
+
+// Alias -> canonical (dedup: no duplicate Provider objects, single backend per id)
+export const PROVIDER_ALIASES: Record<string, string> = {
+  nvidia: "nvidia-nim",
+  bai: "b-ai",
+  "chat-b-ai": "b-ai",
+  mistral: "mistral-ai",
+  chutes: "chutes-ai",
+  gemini: "google-gemini",
+  kira: "kiraai",
+  experiential: "experientiallabs",
+  "experiential-cloud": "experientiallabs",
+  experiential_cloud: "experientiallabs",
+};
+
+export function resolveProviderId(id: string): string {
+  return PROVIDER_ALIASES[id] ?? id;
+}
+
+export function getProvider(id: string): Provider | undefined {
+  return providers[resolveProviderId(id)];
+}
 
 export const providerIds = Object.keys(providers);
 
@@ -82,7 +94,7 @@ export const providerMeta: Record<string, { name: string; tier: string; tier_typ
   modelscope: { name: "ModelScope", tier: "Permanent Free", tier_type: "permanent", caps: ["text","image","video"], noCard: true },
   "cloudflare-workers-ai": { name: "Cloudflare Workers AI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","image","reasoning","code"], noCard: true },
   openrouter: { name: "OpenRouter", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","code"], noCard: true },
-  "google-gemini": { name: "Google Gemini", tier: "Permanent Free", tier_type: "permanent", caps: ["text","image","video","audio"], noCard: true },
+  "google-gemini": { name: "Google Gemini", tier: "Permanent Free", tier_type: "permanent", caps: ["text","image","video","audio","live","transcription","translation"], noCard: true },
   "github-models": { name: "GitHub Models", tier: "Quota", tier_type: "quota", caps: ["text","reasoning"], noCard: true },
   "ovhcloud-ai-endpoints": { name: "OVHcloud AI Endpoints", tier: "Permanent Free", tier_type: "permanent", caps: ["text","image"], noCard: true },
   cohere: { name: "Cohere", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","embedding","rerank"], noCard: true },
@@ -96,15 +108,9 @@ export const providerMeta: Record<string, { name: string; tier: string; tier_typ
   "aion-labs": { name: "Aion Labs", tier: "Permanent Free", tier_type: "permanent", caps: ["text"], noCard: true },
   "z-ai-zhipu-ai": { name: "Z AI (Zhipu AI)", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   "b-ai": { name: "B.AI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","image","video"], noCard: true },
-  bai: { name: "B.AI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","image","video"], noCard: true },
-  "chat-b-ai": { name: "B.AI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","image","video"], noCard: true },
   tokenharbor: { name: "TokenHarbor", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","image","video"], noCard: true },
   experientiallabs: { name: "Experiential Labs", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","image","video"], noCard: true },
-  experiential: { name: "Experiential Labs", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","image","video"], noCard: true },
-  "experiential-cloud": { name: "Experiential Labs", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","image","video"], noCard: true },
-  experiential_cloud: { name: "Experiential Labs", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","image","video"], noCard: true },
   kiraai: { name: "KiraAI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","vision","image","audio"], noCard: true },
-  kira: { name: "KiraAI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","vision","image","audio"], noCard: true },
   sambanova: { name: "SambaNova", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   "ollama-cloud": { name: "Ollama Cloud", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   "chutes-ai": { name: "Chutes.ai", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
@@ -317,11 +323,14 @@ export function resolveProvidersForModel(model: string): string[] {
     const withoutPrefix = model.startsWith(prefix + "/") ? model.slice(prefix.length + 1) : model;
     const alias = modelAliases[model.toLowerCase()] || modelAliases[withoutPrefix.toLowerCase()];
     if (alias) return alias;
-    // Fall back to prefix-based routing
-    if (providers[prefix]) return [prefix];
+    // Fall back to prefix-based routing (alias-aware)
+    const canonicalPrefix = resolveProviderId(prefix);
+    if (providers[canonicalPrefix]) return [canonicalPrefix];
+    if (getProvider(prefix)) return [canonicalPrefix];
     // freellms slug with hyphen: nvidia-nim/z-ai/glm-5.2 -> try first part
     const slug = model.split("/")[0];
-    if (providers[slug]) return [slug];
+    const canonicalSlug = resolveProviderId(slug);
+    if (providers[canonicalSlug]) return [canonicalSlug];
   }
   const alias = modelAliases[model.toLowerCase()];
   if (alias) return alias;

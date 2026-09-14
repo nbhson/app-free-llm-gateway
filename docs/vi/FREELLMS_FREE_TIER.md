@@ -26,7 +26,7 @@
 | 2 | **ModelScope** | `modelscope` | Permanent | ✅ | ✅ | text,image,video,audio | **43 / 43** | all live | Full free, Alibaba Qwen family |
 | 3 | **Cloudflare Workers AI** | `cloudflare-workers-ai` | Permanent | ✅ | ✅ | text,image,reasoning,code | **35 / 35** | all live | 35 models, Workers AI |
 | 4 | **OpenRouter** | `openrouter` | Permanent | ✅ | ✅ | text,reasoning,code,image,video | **17 / 45** | `:free` only | 200 req/day (free tier), 28 paid models |
-| 5 | **Google Gemini** | `google-gemini` | Permanent | ✅ | ✅ | text,image,video,audio | **15 / 15** | all live | 15 RPM/1.5K RPD (Flash), 30 RPM Lite |
+| 5 | **Google Gemini** | `google-gemini` | Permanent | ✅ | ✅ | text,image,video,audio,live,transcription | **19 / 19** | all live (4 Unlimited Live) | 15 RPM/1.5K RPD Flash, 30 RPM Lite, **Unlimited Live API** (Native Audio 1M TPM, Flash Live 65K, Transcribe/Translate 20K) + Gemma 4 26B/31B |
 | 6 | **GitHub Models** | `github-models` | Quota | ✅ | ✅ | text,reasoning,image | **13 / 13** | freellms list | Trial, نیاز GitHub PAT, o4-mini/gpt-4.1 |
 | 7 | **OVHcloud AI Endpoints** | `ovhcloud-ai-endpoints` | Permanent | ✅ | ✅ | text,image,video | **10 / 10** | all live | 2 RPM anonymous |
 | 8 | **Cohere** | `cohere` | Permanent | ✅ | ✅ | text,reasoning,image,embedding | **10 / 10** | all live | Command A/A+/Rerank |
@@ -59,7 +59,7 @@ Chi tiết per-provider snapshot (từ freellms.org/provider/<slug>):
 - **NVIDIA NIM**: Base `https://integrate.api.nvidia.com/v1`, Phone Required=Yes, Rate ~40 RPM shared, Context 8K–1M, Last 2026-08-06
 - **Groq**: Base `https://api.groq.com/openai/v1`, 30 RPM/250 RPD primary, 30 RPM/14.4K RPD most models, LPU 2.6k tok/s
 - **Cerebras**: Base `https://api.cerebras.ai/v1`, 15 RPM/30K TPM/1M TPD, 128K–131K ctx, WSE
-- **Gemini**: Base `generativelanguage.googleapis.com/v1beta`, 15 RPM/1.5K RPD Flash, Vision+Audio
+- **Gemini**: Base `generativelanguage.googleapis.com/v1beta`, 15 RPM/1.5K RPD Flash, Vision+Audio, **4 Unlimited Live** (2.5 Flash Native Audio Dialog 1M TPM, 3 Flash Live 65K, 3.5 Live Translate/Transcribe 20K), Gemma 4 26B/31B 262K ctx
 - **Cohere**: Rerank + Command A, embedding
 - **Cloudflare**: Workers AI, 8K–262K, binding `ai` (khác OpenAI path)
 
@@ -115,6 +115,8 @@ FALLBACK_TIERS = [
 | Cerebras | 15 | — | 30K TPM / 1M TPD | — |
 | Gemini Flash | 15 | 1.5K | — | — |
 | Gemini Lite | 30 | 1.5K | — | — |
+| Gemini Live Unlimited | Unlimited | Unlimited | 1M Native Audio, 65K Flash Live, 20K Translate/Transcribe | Live API — aistudio.google.com/rate-limit |
+| Gemma 4 31B/26B | 15 | 1.5K | 262K ctx | text/reasoning/code |
 | OVH | 2 anon | — | — | — |
 | Agnes | 30 | — | — | — |
 | OpenRouter | — | 200 free | — | — |

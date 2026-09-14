@@ -2,6 +2,19 @@
 
 Tất cả thay đổi đáng chú ý sẽ được ghi ở đây. Format theo [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.11.3] - 2026-09-15
+
+### Added
+- **Google Gemini tier update (15→19, 4 Unlimited Live + Gemma 4)** — `models/google-gemini.yaml:1` sync từ `aistudio.google.com/rate-limit` (4 Live unlimited: `gemini-2.5-flash-native-audio-dialog` 1M TPM, `gemini-3-flash-live` 65K, `gemini-3.5-live-translate` 20K, `gemini-3.5-transcribe-live` 20K; Gemma 4 26B/31B 262K `15 RPM`), `apps/gateway/src/providers/gemini.ts:5` sanitize keep exact `live/transcribe/native-audio/gemma`, `KNOWN_GEMINI_PATTERNS + gemma/live/transcribe`, `apps/gateway/src/providers/registry.ts:97` caps `+live,transcription,translation`, docs `docs/en|vi/FREELLMS_FREE_TIER.md:29`, `docs/en|vi/PROVIDERS.md:30`, `docs/en|vi/ARCHITECTURE.md:3` 51→41 canonical
+
+### Changed
+- **Alias dedup (canonical providerIds 41)** — `apps/gateway/src/config.ts:357` bỏ 10 alias keys (`gemini/chutes/bai/kira`...), `apps/gateway/src/providers/registry.ts:48` bỏ 9 duplicate `providers[alias]` (chỉ giữ `PROVIDER_ALIASES`), `apps/gateway/src/lib/provider-keys.ts:1` + `router.ts:1` + `key-manager.ts:1` + `provider-executor.ts:1` + `openai-compatible.ts:48` dùng `resolveProviderId/getProvider` để alias `bai/nvidia/gemini/mistral/chutes/kira/experiential` vẫn route đúng nhưng không duplicate object; UI `GET /api/providers` vẫn hiện canonical, `GET /v1/models?q=gemini` vẫn tìm
+- **Hot-reload sync** — `circuit-breaker.ts:95 syncBreakerConfig()` recreate `cockatiel` khi `PUT /api/config` đổi `threshold/cooldown` (preserve `failures/openedAt`), `semantic-cache.ts:22` live getters `defaultTtl/scanCap` + `syncConfig()` resize LRU `max` sau `PUT /api/config`, `routes/api.ts:14` gọi cả 2 sau `PUT /api/config` (không cần restart) — `provider-executor.ts:94 normalizeProviderOrder()` dedup alias trước fan-out `parallel:3`
+- **Version** — `1.11.2→1.11.3` (`package.json`, `apps/gateway/package.json`, `apps/web/package.json`)
+
+### Fixed
+- **Lint** — `router.ts:2` remove unused `providers/isRealKey` imports (eslint 2 errors), `build` + `typecheck` pass, `models.test.ts` 7 pass
+
 ## [1.11.2] - 2026-09-13
 
 ### Changed

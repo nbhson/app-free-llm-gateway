@@ -1,11 +1,6 @@
 import { config } from "../config.js";
-import { providers, resolveProvidersForModel } from "../providers/registry.js";
-import {
-  isPublicProvider,
-  isRealKey,
-  hasRealKey,
-  STRICT_SINGLE_TIER_MAX,
-} from "./provider-keys.js";
+import { resolveProvidersForModel, getProvider, resolveProviderId } from "../providers/registry.js";
+import { isPublicProvider, hasRealKey, STRICT_SINGLE_TIER_MAX } from "./provider-keys.js";
 
 export { isPublicProvider };
 
@@ -26,23 +21,28 @@ export function getProvidersForRequest(model: string, strategy: Strategy = "tier
     // rotate
     const rotated = [...ids.slice(rrIndex % ids.length), ...ids.slice(0, rrIndex % ids.length)];
     rrIndex++;
-    return rotated.filter((id) => providers[id]);
+    return rotated.filter((id) => getProvider(id));
   }
 
   // tiered: respect FALLBACK_TIERS strictly (user-defined single tier = only those 8, no append)
   const preferred = resolveProvidersForModel(model);
-  const tiers = config.fallbackTiers;
+  // normalize tiers: alias -> canonical and dedupe
+  const tiers = config.fallbackTiers.map((tier) => {
+    const seen = new Set<string>(); const out: string[] = [];
+    for (const p of tier) { const c = resolveProviderId(p); if (!seen.has(c)) { seen.add(c); out.push(c); } }
+    return out;
+  });
   const ordered: string[] = [];
   for (const tier of tiers) {
     for (const p of tier) {
-      if (preferred.includes(p) && providers[p] && !ordered.includes(p)) ordered.push(p);
+      if (preferred.includes(p) && getProvider(p) && !ordered.includes(p)) ordered.push(p);
     }
   }
   // Only append remaining preferred if FALLBACK_TIERS is multi-tier (default) - for single-tier strict mode, keep only tier providers
   const isSingleTierStrict = tiers.length === 1 && tiers[0].length <= STRICT_SINGLE_TIER_MAX;
   if (!isSingleTierStrict) {
     for (const p of preferred) {
-      if (!ordered.includes(p) && providers[p]) ordered.push(p);
+      if (!ordered.includes(p) && getProvider(p)) ordered.push(p);
     }
   }
   // For strict single-tier (user-defined 8), keep exact tier order as specified, no re-sort
@@ -53,8 +53,7 @@ export function getProvidersForRequest(model: string, strategy: Strategy = "tier
   // If no real keys are configured, public providers go first so `auto` hits
   // live free instead of failing fast.
   const hasRealKeyFor = (pid: string): boolean => {
-    const keys = config.providerKeys[pid] || [];
-    return keys.some((k) => isRealKey(k));
+    return hasRealKey(pid);
   };
   ordered.sort((a, b) => {
     // FINAL_FALLBACK always last — never pulled up by sort.
@@ -79,7 +78,8 @@ export function getProvidersForRequest(model: string, strategy: Strategy = "tier
 }
 
 export function getNextKey(providerId: string): string | null {
-  const keys = config.providerKeys[providerId] || [];
+  const canonical = resolveProviderId(providerId);
+  const keys = config.providerKeys[canonical] || config.providerKeys[providerId] || [];
   if (keys.length === 0) {
     if (isPublicProvider(providerId)) return "";
     return null;

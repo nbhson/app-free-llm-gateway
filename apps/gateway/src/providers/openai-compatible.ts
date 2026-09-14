@@ -45,21 +45,17 @@ export function createOpenAICompatibleProvider(opts: {
       if (/[\s()]/.test(rawModel) && !rawModel.startsWith("@cf/")) {
         rawModel = sanitizeFreellmsName(rawModel);
       }
-      // Map alias "auto" and generic aliases to provider's default free model
+      // Map alias "auto" and generic aliases to provider's default free model (canonical ids only; aliases resolved via PROVIDER_ALIASES)
       const autoMap: Record<string, string> = {
         "nvidia-nim": "nvidia/nemotron-3-ultra-550b-a55b",
-        nvidia: "nvidia/nemotron-3-ultra-550b-a55b",
         groq: "llama-3.3-70b-versatile",
         cerebras: "llama3.1-70b",
         "google-gemini": "gemini-2.0-flash",
-        gemini: "gemini-2.0-flash",
         "cloudflare-workers-ai": "@cf/meta/llama-3.1-8b-instruct",
         cohere: "command-r-plus",
         "mistral-ai": "mistral-small-latest",
-        mistral: "mistral-small-latest",
         modelscope: "Qwen/Qwen3-30b-A3B",
         "chutes-ai": "deepseek-ai/DeepSeek-V3",
-        chutes: "deepseek-ai/DeepSeek-V3",
         sambanova: "Meta-Llama-3.1-405B-Instruct",
         siliconflow: "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
         "glhf-chat": "hf:meta-llama/Llama-3.1-70B",
@@ -71,11 +67,7 @@ export function createOpenAICompatibleProvider(opts: {
         "aion-labs": "aion-labs/aion-3.0",
         "z-ai-zhipu-ai": "glm-4.7-flash",
         experientiallabs: "qwen3.8-27b",
-        experiential: "qwen3.8-27b",
-        "experiential-cloud": "qwen3.8-27b",
-        experiential_cloud: "qwen3.8-27b",
         kiraai: "kira-mini-1.0",
-        kira: "kira-mini-1.0",
         "grok-xai": "grok-2",
         xai: "grok-2",
         deepseek: "deepseek-chat",
@@ -90,8 +82,6 @@ export function createOpenAICompatibleProvider(opts: {
         freeai: "freeai/qwen3-8b",
         cline: "cline/deepseek-v4-flash",
         "b-ai": "qwen3.8-flash",
-        bai: "qwen3.8-flash",
-        "chat-b-ai": "qwen3.8-flash",
         tokenharbor: "deepseek-v4-flash:free",
         together: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
         fireworks: "accounts/fireworks/models/llama-v3p1-70b-instruct",

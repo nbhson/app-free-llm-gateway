@@ -2,7 +2,7 @@
   "name": "apps-gateway",
   "private": true,
   "type": "module",
-  "version": "1.11.0",
+  "version": "1.11.3",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",

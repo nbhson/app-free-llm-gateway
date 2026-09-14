@@ -1,5 +1,5 @@
 import type { Provider } from "../providers/base.js";
-import { providers } from "../providers/registry.js";
+import { providers, getProvider, resolveProviderId } from "../providers/registry.js";
 import { getNextKeyManaged, markRateLimited, markSuccess } from "./key-manager.js";
 import { checkQuotaAsync, recordUsage } from "./quota-tracker.js";
 import { isOpen, recordSuccess, recordFailure, recordFailureIfRetryable } from "./circuit-breaker.js";
@@ -94,6 +94,16 @@ export type TryProvidersResult =
   | { ok: true; providerId: string; key: string; res: Response }
   | { ok: false; errors: ProviderError[] };
 
+function normalizeProviderOrder(ids: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of ids) {
+    const cid = resolveProviderId(raw);
+    if (!seen.has(cid)) { seen.add(cid); out.push(cid); }
+  }
+  return out;
+}
+
 function jitterDelay(baseMs: number, jitterMs: number): Promise<void> {
   if (!jitterMs || jitterMs <= 0) return Promise.resolve();
   const d = Math.floor(Math.random() * jitterMs);
@@ -101,12 +111,13 @@ function jitterDelay(baseMs: number, jitterMs: number): Promise<void> {
 }
 
 async function tryProvidersParallel(opts: TryProvidersOpts, batchSize: number): Promise<TryProvidersResult> {
+  const normalizedOrder = normalizeProviderOrder(opts.providerOrder);
   const errors: ProviderError[] = [];
-  for (let i = 0; i < opts.providerOrder.length; i += batchSize) {
-    const batch = opts.providerOrder.slice(i, i + batchSize);
+  for (let i = 0; i < normalizedOrder.length; i += batchSize) {
+    const batch = normalizedOrder.slice(i, i + batchSize);
     const attempts = batch.map(async (pid): Promise<{ providerId: string; key: string; res: Response }> => {
       if (opts.jitterMs) await jitterDelay(0, opts.jitterMs);
-      const provider = providers[pid];
+      const provider = getProvider(pid) || providers[pid];
       if (!provider) throw { provider: pid, error: "unknown provider" } as ProviderError;
       if (isOpen(pid)) throw { provider: pid, error: "circuit open (cooldown)" } as ProviderError;
       // BYOK override: if vkId provided, try BYOK keys first
@@ -186,13 +197,14 @@ async function tryProvidersParallel(opts: TryProvidersOpts, batchSize: number): 
 }
 
 export async function tryProviders(opts: TryProvidersOpts): Promise<TryProvidersResult> {
-  if (opts.parallel && opts.parallel > 1 && opts.providerOrder.length > 1) {
-    return tryProvidersParallel(opts, Math.min(opts.parallel, 5));
+  const normalizedOrder = normalizeProviderOrder(opts.providerOrder);
+  if (opts.parallel && opts.parallel > 1 && normalizedOrder.length > 1) {
+    return tryProvidersParallel({ ...opts, providerOrder: normalizedOrder }, Math.min(opts.parallel, 5));
   }
   const errors: ProviderError[] = [];
-  for (const pid of opts.providerOrder) {
+  for (const pid of normalizedOrder) {
     if (opts.jitterMs) await jitterDelay(0, opts.jitterMs);
-    const provider = providers[pid];
+    const provider = getProvider(pid) || providers[pid];
     if (!provider) continue;
 
     if (isOpen(pid)) {
@@ -301,7 +313,8 @@ export async function tryProviders(opts: TryProvidersOpts): Promise<TryProviders
  * Each model is isolated; we return settled results for UI diff.
  */
 export async function tryProvidersSettled(opts: TryProvidersOpts & { providerOrder: string[] }): Promise<Array<{ ok: boolean; providerId: string; res?: Response; error?: string; latencyMs?: number }>> {
-  const tasks = opts.providerOrder.map(async (pid) => {
+  const normalizedOrder = normalizeProviderOrder(opts.providerOrder);
+  const tasks = normalizedOrder.map(async (pid) => {
     const t0 = Date.now();
     try {
       if (isOpen(pid)) return { ok: false as const, providerId: pid, error: "circuit open", latencyMs: Date.now()-t0 };
@@ -311,7 +324,7 @@ export async function tryProvidersSettled(opts: TryProvidersOpts & { providerOrd
         key = eff.length>0 ? eff[0] : getNextKeyManaged(pid);
       } else key = getNextKeyManaged(pid);
       if (key===null) return { ok:false as const, providerId: pid, error: "no key", latencyMs: Date.now()-t0 };
-      const provider = providers[pid];
+      const provider = getProvider(pid) || providers[pid];
       if (!provider) return { ok:false as const, providerId: pid, error:"unknown provider", latencyMs: Date.now()-t0 };
       if (opts.quotaTokens !== undefined) {
         const q = await checkQuotaAsync(pid, key, opts.quotaTokens!, opts.quotaModel);

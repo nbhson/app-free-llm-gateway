@@ -27,7 +27,7 @@
 | **NVIDIA NIM** | `nvidia-nim` | `https://integrate.api.nvidia.com/v1` | 97 | live 97 | Up to 40 RPM, 8K–1M | text,reasoning,image,video,embedding | `NVIDIA_API_KEYS` |
 | **ModelScope** | `modelscope` | `https://api-inference.modelscope.cn/v1` | 43 | live Permanent → all | 2K RPD total, ≤500/model | text,image,video,audio | `MODELSCOPE_API_KEYS` |
 | **Cloudflare Workers AI** | `cloudflare-workers-ai` | `https://api.cloudflare.com/client/v4/accounts/{id}/ai/run` | 35 | live Permanent → all | 10K neurons/day | text,image,reasoning,code | `CLOUDFLARE_API_TOKEN` + `ACCOUNT_ID` |
-| **Google Gemini** | `google-gemini` / `gemini` | `https://generativelanguage.googleapis.com/v1beta` | 15 | live Permanent → all | 15 RPM/1.5K RPD (Flash), 30 RPM Lite | text,image,video,audio | `GEMINI_API_KEYS` |
+| **Google Gemini** | `google-gemini` / `gemini` | `https://generativelanguage.googleapis.com/v1beta` | 19 | live Permanent → all (4 Unlimited Live) | 15 RPM/1.5K RPD Flash, 30 RPM Lite, **Unlimited Live API** (Native Audio 1M TPM, Flash Live 65K, Transcribe/Translate 20K) + Gemma 4 26B/31B 262K | text,image,video,audio,live,transcription | `GEMINI_API_KEYS` |
 | **OVHcloud AI Endpoints** | `ovhcloud-ai-endpoints` | `https://oai.endpoints.kepler.ai.cloud.ovh.net/v1` | 10 | live Permanent → all | 2 RPM anon | text,image,video | `OVHCLOUD_API_KEYS` |
 | **Cohere** | `cohere` | `https://api.cohere.com/v2` | 10 | live Permanent → all | — | text,reasoning,embedding,rerank | `COHERE_API_KEYS` |
 | **SambaNova** | `sambanova` | `https://api.sambanova.ai/v1` | 4 | live | — | text,reasoning | `SAMBANOVA_API_KEYS` |

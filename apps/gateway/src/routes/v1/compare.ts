@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getRequestVk } from "../../lib/types.js";
 import { getProvidersForRequest } from "../../lib/router.js";
 import { config } from "../../config.js";
-import { providers } from "../../providers/registry.js";
+import { providers, getProvider, resolveProviderId } from "../../providers/registry.js";
 import { estimateMessagesTokens } from "../../lib/token-estimator.js";
 import { metrics } from "../../lib/metrics.js";
 
@@ -45,9 +45,10 @@ compareRoute.post("/compare", zValidator("json", compareSchema), async (c) => {
   const calls: Array<{ model: string; providerId: string }> = modelProviders;
 
   // Isolated fan-out: each model measured independently, no shared t0
-  const settled = await Promise.all(calls.map(async ({ model, providerId }) => {
+  const settled = await Promise.all(calls.map(async ({ model, providerId: rawId }) => {
     const t0 = Date.now();
-    const provider = providers[providerId];
+    const providerId = resolveProviderId(rawId);
+    const provider = getProvider(providerId) || providers[providerId];
     if (!provider) {
       return { model, providerId, ok: false as const, error: `unknown provider: ${providerId}`, latencyMs: Date.now() - t0, content: "", usage: null as unknown };
     }
