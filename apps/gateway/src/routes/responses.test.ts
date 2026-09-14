@@ -37,7 +37,7 @@ describe("responses route", () => {
     const res = await responsesRoute.request("/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "auto", input: "Say hi", instructions: "be brief" }),
+      body: JSON.stringify({ model: "pollinations/openai", input: "Say hi", instructions: "be brief" }),
     });
     expect(res.status).toBe(200);
     expect(res.headers.get("X-Provider")).toBe("pollinations");
@@ -62,7 +62,7 @@ describe("responses route", () => {
     const res = await responsesRoute.request("/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "auto", input: "hi" }),
+      body: JSON.stringify({ model: "pollinations/openai", input: "hi" }),
     });
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ id: "resp_native_1", object: "response" });
@@ -83,7 +83,7 @@ describe("responses route", () => {
     const res = await responsesRoute.request("/", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "auto", input: "hi", stream: true }),
+      body: JSON.stringify({ model: "pollinations/openai", input: "hi", stream: true }),
     });
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("text/event-stream");

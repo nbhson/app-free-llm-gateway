@@ -21,7 +21,7 @@ export const baseUrls: Record<string, string> = {
   "llm7-io": "https://api.llm7.io/v1",
   "agnes-ai": "https://apihub.agnes-ai.com/v1",
   "aion-labs": "https://api.aionlabs.ai/v1",
-  "z-ai-zhipu-ai": "https://open.bigmodel.cn/api/paas/v4",
+  "z-ai-zhipu-ai": "https://api.z.ai/api/paas/v4",
   experientiallabs: "https://api.experientiallabs.ai/v1",
   experiential: "https://api.experientiallabs.ai/v1",
   "experiential-cloud": "https://api.experientiallabs.ai/v1",

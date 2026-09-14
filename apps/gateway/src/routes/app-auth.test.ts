@@ -97,8 +97,10 @@ describe("app auth middleware", () => {
 
 describe("app chat end-to-end via middleware (mocked provider)", () => {
   const origPollinations = providers["pollinations"];
+  const origKiraai = providers["kiraai"];
   afterEach(() => {
     providers["pollinations"] = origPollinations;
+    providers["kiraai"] = origKiraai;
   });
 
   it("master key reaches provider and returns X-Provider", async () => {
@@ -116,8 +118,8 @@ describe("app chat end-to-end via middleware (mocked provider)", () => {
     const app = createApp();
     const res = await app.request("/v1/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${config.masterKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "auto", messages: [{ role: "user", content: "hi" }] }),
+      headers: { Authorization: `Bearer ${config.masterKey}`, "Content-Type": "application/json", "x-router": "pollinations" },
+      body: JSON.stringify({ model: "pollinations/openai", messages: [{ role: "user", content: "hi" }] }),
     });
     expect(res.status).toBe(200);
     expect(res.headers.get("X-Provider")).toBe("pollinations");

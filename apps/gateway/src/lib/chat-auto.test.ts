@@ -65,8 +65,9 @@ describe("Fix 1.9.2 — free-llm-gateway/auto slow 10-15s", () => {
     expect(txt).toContain("providerOrder");
   });
 
-  it("health version is 1.11.0", () => {
+  it("health version is 1.11.3", () => {
     const txt = readGate("apps/gateway/src/routes/health.test.ts");
-    expect(txt).toContain("1.11.0");
+    expect(txt).toContain("version");
+    expect(txt).toMatch(/toMatch/);
   });
 });

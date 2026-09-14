@@ -33,7 +33,7 @@ export const providers: Record<string, Provider> = {
   "aion-labs": OPENAI({ id: "aion-labs", baseUrl: "https://api.aionlabs.ai/v1" }), // 5
   "b-ai": OPENAI({ id: "b-ai", baseUrl: "https://api.b.ai/v1" }), // 4 free: qwen3.8-flash, hy3, mimo-v2.5, glm-5.3-flash (https://chat.b.ai/key, https://docs.b.ai/llmservice/promotions-and-pricing-notices 2026-09)
   tokenharbor: OPENAI({ id: "tokenharbor", baseUrl: "https://tokenharbor.ai/v1" }), // 3 free :free tier — deepseek-v4.1-flash:free, deepseek-v4-flash:free, mimo-v2.5:free (https://tokenharbor.ai/models?category=free 2026-09, 4th slot reserved for future free)
-  "z-ai-zhipu-ai": OPENAI({ id: "z-ai-zhipu-ai", baseUrl: "https://open.bigmodel.cn/api/paas/v4" }), // 4 GLM
+  "z-ai-zhipu-ai": OPENAI({ id: "z-ai-zhipu-ai", baseUrl: "https://api.z.ai/api/paas/v4" }), // 3 free: glm-4.7-flash, glm-4.5-flash, glm-4.6v-flash (docs.z.ai/pricing, 2026-09)
   "experientiallabs": OPENAI({ id: "experientiallabs", baseUrl: "https://api.experientiallabs.ai/v1" }), // 3 free promotional (qwen3.8-27b, deepseek-v4-flash, gpt-5.6-luna) — OpenAI compatible
   kiraai: OPENAI({ id: "kiraai", baseUrl: "https://kiraai.vn/api/v1" }), // KiraAI Vietnam — OpenAI compatible, 150M free tokens/day (kira-mini-1.0 + Kira family)
   "grok-xai": OPENAI({ id: "grok-xai", baseUrl: "https://api.x.ai/v1" }), // 2, needs card (no free)

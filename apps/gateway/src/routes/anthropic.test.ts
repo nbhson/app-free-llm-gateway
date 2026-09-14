@@ -26,9 +26,11 @@ const baseBody = (extra: Record<string, unknown> = {}) => ({
 describe("anthropic route", () => {
   const origPollinations = providers["pollinations"];
   const origLlm7 = providers["llm7-io"];
+  const origKiraai = providers["kiraai"];
   afterEach(() => {
     providers["pollinations"] = origPollinations;
     providers["llm7-io"] = origLlm7;
+    providers["kiraai"] = origKiraai;
   });
 
   it("rejects missing messages with 400", async () => {
@@ -45,8 +47,8 @@ describe("anthropic route", () => {
     providers["pollinations"] = { ...origPollinations, chat: async () => okChat("hi-anthropic") } as any;
     const res = await anthropicRoute.request("/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(baseBody({ system: "be brief", max_tokens: 64 })),
+      headers: { "Content-Type": "application/json", "x-router": "pollinations" },
+      body: JSON.stringify(baseBody({ model: "pollinations/openai", system: "be brief", max_tokens: 64 })),
     });
     expect(res.status).toBe(200);
     expect(res.headers.get("X-Provider")).toBe("pollinations");
@@ -79,9 +81,10 @@ describe("anthropic route", () => {
     } as any;
     const res = await anthropicRoute.request("/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "x-router": "pollinations" },
       body: JSON.stringify(
         baseBody({
+          model: "pollinations/openai",
           system: [{ type: "text", text: "sys-arr" }],
           messages: [
             { role: "system", content: "extract-me" },
@@ -95,6 +98,7 @@ describe("anthropic route", () => {
   });
 
   it("falls back when first provider fails", async () => {
+    providers["kiraai"] = { ...origKiraai, chat: async () => new Response("down", { status: 500 }) } as any;
     providers["pollinations"] = {
       ...origPollinations,
       chat: async () => new Response("down", { status: 500 }),
@@ -123,8 +127,8 @@ describe("anthropic route", () => {
     } as any;
     const res = await anthropicRoute.request("/", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(baseBody({ stream: true })),
+      headers: { "Content-Type": "application/json", "x-router": "pollinations" },
+      body: JSON.stringify(baseBody({ model: "pollinations/openai", stream: true })),
     });
     expect(res.status).toBe(200);
     const text = await res.text();

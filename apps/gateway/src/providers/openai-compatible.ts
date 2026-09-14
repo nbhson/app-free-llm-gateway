@@ -53,7 +53,7 @@ export function createOpenAICompatibleProvider(opts: {
         "google-gemini": "gemini-2.0-flash",
         "cloudflare-workers-ai": "@cf/meta/llama-3.1-8b-instruct",
         cohere: "command-r-plus",
-        "mistral-ai": "mistral-small-latest",
+        "mistral-ai": "ministral-8b-latest",
         modelscope: "Qwen/Qwen3-30b-A3B",
         "chutes-ai": "deepseek-ai/DeepSeek-V3",
         sambanova: "Meta-Llama-3.1-405B-Instruct",

@@ -129,7 +129,7 @@ export interface Provider {
 }
 ```
 
-* `openai-compatible` (28/30): NVIDIA (`integrate.api.nvidia.com/v1`), Groq (`api.groq.com/openai/v1`), Cerebras, GitHub Models (`models.github.ai/inference`), OVH, Cohere (`/v2`), ModelScope, Chutes, SambaNova, SiliconFlow, Glhf, Mistral, LLM7, Agnes, Aion, Z AI (`open.bigmodel.cn/api/paas/v4`), DeepSeek, OpenRouter, Ollama Cloud, Nscale, Nebius, AI21… — just `baseURL + Authorization`.
+* `openai-compatible` (28/30): NVIDIA (`integrate.api.nvidia.com/v1`), Groq (`api.groq.com/openai/v1`), Cerebras, GitHub Models (`models.github.ai/inference`), OVH, Cohere (`/v2`), ModelScope, Chutes, SambaNova, SiliconFlow, Glhf, Mistral, LLM7, Agnes, Aion, Z AI (`api.z.ai/api/paas/v4`), DeepSeek, OpenRouter, Ollama Cloud, Nscale, Nebius, AI21… — just `baseURL + Authorization`.
 * `gemini`: Google (`generativelanguage.googleapis.com/v1beta`) — needs `format-translator` (OpenAI → Gemini contents).
 * `scraped`: Pollinations (`text.pollinations.ai/openai`) — optional `POLLINATIONS_API_KEY` forwarded as `Authorization: Bearer` (`providers/pollinations.ts`), auto maps alias `auto` → `openai`; budget `402/403` + streaming `200 SSE budget` are detected (`provider-executor.ts` budget detector) and trigger fallback + breaker `402/403` retryable (`circuit-breaker.ts:63`).
 

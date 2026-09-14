@@ -81,10 +81,12 @@ describe("integration: public endpoints (no auth)", () => {
 describe("integration: full chat pipeline (auth → route → provider → normalize)", () => {
   const origPollinations = providers["pollinations"];
   const origLlm7 = providers["llm7-io"];
+  const origKiraai = providers["kiraai"];
 
   afterEach(() => {
     providers["pollinations"] = origPollinations;
     providers["llm7-io"] = origLlm7;
+    providers["kiraai"] = origKiraai;
   });
 
   it("auth + routing + provider response + X-Provider header", async () => {
@@ -92,7 +94,7 @@ describe("integration: full chat pipeline (auth → route → provider → norma
     const res = await app.request("/v1/chat/completions", {
       method: "POST",
       headers: authHeaders,
-      body: JSON.stringify({ model: "auto", messages: [{ role: "user", content: "hi" }], stream: false }),
+      body: JSON.stringify({ model: "pollinations/openai", messages: [{ role: "user", content: "hi" }], stream: false }),
     });
     expect(res.status).toBe(200);
     expect(res.headers.get("X-Provider")).toBe("pollinations");
@@ -101,6 +103,7 @@ describe("integration: full chat pipeline (auth → route → provider → norma
   });
 
   it("fallback across providers surfaces the winning provider", async () => {
+    providers["kiraai"] = { ...origKiraai, chat: async () => errRes(500, "int-fail-kiraai") } as unknown as typeof origKiraai;
     providers["pollinations"] = { ...origPollinations, chat: async () => errRes(500, "int-fail-1") } as unknown as typeof origPollinations;
     providers["llm7-io"] = { ...origLlm7, chat: async () => okChat("fallback-wins") } as unknown as typeof origLlm7;
     const res = await app.request("/v1/chat/completions", {
@@ -126,7 +129,7 @@ describe("integration: full chat pipeline (auth → route → provider → norma
     const res = await app.request("/v1/chat/completions", {
       method: "POST",
       headers: { "x-api-key": config.masterKey, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "auto", messages: [{ role: "user", content: "hi" }], stream: false }),
+      body: JSON.stringify({ model: "pollinations/openai", messages: [{ role: "user", content: "hi" }], stream: false }),
     });
     expect(res.status).toBe(200);
     const data = (await res.json()) as { choices: Array<{ message: { content: string } }> };

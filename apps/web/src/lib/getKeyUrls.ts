@@ -25,7 +25,7 @@ export const getKeyUrls: Record<string, string> = {
   opencode: "https://opencode.ai",
   "agnes-ai": "https://agnes-ai.com",
   "aion-labs": "https://aionlabs.ai",
-  "z-ai-zhipu-ai": "https://open.bigmodel.cn/usercenter/proj-mgmt/apikeys",
+  "z-ai-zhipu-ai": "https://z.ai/manage-apikey/apikey-list",
   experientiallabs: "https://platform.experientiallabs.ai",
   experiential: "https://platform.experientiallabs.ai",
   "experiential-cloud": "https://platform.experientiallabs.ai",

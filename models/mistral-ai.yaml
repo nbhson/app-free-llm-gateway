@@ -1,92 +1,94 @@
-# Provider: mistral-ai — auto-split from models.yaml (9 models)
+# Provider: mistral-ai — auto-split from models.yaml (9 models) — FIXED 2026-09-14
+# Live test with key hUCxA...8G1: only *-latest aliases are valid (without suffix -> 400 Invalid model)
+# Verified: codestral-latest, ministral-3b/8b/14b-latest = 200 OK; mistral-small/medium-latest = 429 rate-limited; mistral-large-latest = 403 tier_not_allowed; mixtral/mistral-7b = removed (404)
 models:
-  - id: "mistral-ai/mistral-small-4"
-    display_name: "mistral-small-4"
+  - id: "mistral-ai/codestral-latest"
+    display_name: "codestral-latest"
     provider: mistral-ai
     context_length: 256000
+    score: 49
+    tier: quota
+    verified: true
+    no_card: true
+    capabilities: [text, code]
+    limit: "~1 RPS, 500K TPM"
+  - id: "mistral-ai/ministral-3b-latest"
+    display_name: "ministral-3b-latest"
+    provider: mistral-ai
+    context_length: 131072
+    score: 41
+    tier: quota
+    verified: true
+    no_card: true
+    capabilities: [text]
+    limit: "~1 RPS, 500K TPM"
+  - id: "mistral-ai/ministral-8b-latest"
+    display_name: "ministral-8b-latest"
+    provider: mistral-ai
+    context_length: 262144
+    score: 47
+    tier: quota
+    verified: true
+    no_card: true
+    capabilities: [text]
+    limit: "~1 RPS, 500K TPM"
+  - id: "mistral-ai/ministral-14b-latest"
+    display_name: "ministral-14b-latest"
+    provider: mistral-ai
+    context_length: 262144
+    score: 47
+    tier: quota
+    verified: true
+    no_card: true
+    capabilities: [text]
+    limit: "~1 RPS, 500K TPM"
+  - id: "mistral-ai/mistral-small-latest"
+    display_name: "mistral-small-latest"
+    provider: mistral-ai
+    context_length: 262144
     score: 54
     tier: quota
     verified: false
     no_card: true
     capabilities: [text]
-    limit: "~1 RPS, 500K TPM"
-  - id: "mistral-ai/mistral-medium-3.5-128b"
-    display_name: "mistral-medium-3.5-128b"
+    limit: "~1 RPS, 500K TPM — 429 on free tier, use ministral instead"
+  - id: "mistral-ai/mistral-medium-latest"
+    display_name: "mistral-medium-latest"
     provider: mistral-ai
-    context_length: 256000
+    context_length: 262144
     score: 51
     tier: quota
     verified: false
     no_card: true
     capabilities: [text]
-    limit: "~1 RPS, 500K TPM"
-  - id: "mistral-ai/codestral"
-    display_name: codestral
+    limit: "~1 RPS, 500K TPM — 429 on free tier"
+  - id: "mistral-ai/mistral-large-latest"
+    display_name: "mistral-large-latest"
     provider: mistral-ai
-    context_length: 256000
-    score: 49
-    tier: quota
-    verified: false
-    no_card: true
-    capabilities: [text, code]
-    limit: "~1 RPS, 500K TPM"
-  - id: "mistral-ai/ministral-8b"
-    display_name: "ministral-8b"
-    provider: mistral-ai
-    context_length: 256000
+    context_length: 262144
     score: 47
     tier: quota
     verified: false
     no_card: true
     capabilities: [text]
-    limit: "~1 RPS, 500K TPM"
-  - id: "mistral-ai/ministral-14b"
-    display_name: "ministral-14b"
+    limit: "403 tier_not_allowed on free tier"
+  - id: "mistral-ai/mistral-ocr-latest"
+    display_name: "mistral-ocr-latest"
     provider: mistral-ai
-    context_length: 256000
-    score: 47
-    tier: quota
-    verified: false
-    no_card: true
-    capabilities: [text]
-    limit: "~1 RPS, 500K TPM"
-  - id: "mistral-ai/mistral-large-3"
-    display_name: "mistral-large-3"
-    provider: mistral-ai
-    context_length: 256000
-    score: 47
-    tier: quota
-    verified: false
-    no_card: true
-    capabilities: [text]
-    limit: "~1 RPS, 500K TPM"
-  - id: "mistral-ai/mixtral-8x7b"
-    display_name: "mixtral-8x7b"
-    provider: mistral-ai
-    context_length: 32768
-    score: 43
-    tier: quota
-    verified: false
-    no_card: true
-    capabilities: [text]
-    limit: "See provider page"
-  - id: "mistral-ai/mistral-7b"
-    display_name: "mistral-7b"
-    provider: mistral-ai
-    context_length: 32768
+    context_length: 16384
     score: 42
     tier: quota
     verified: false
     no_card: true
     capabilities: [text]
-    limit: "See provider page"
-  - id: "mistral-ai/ministral-3b"
-    display_name: "ministral-3b"
+    limit: "OCR — use /ocr endpoint, not /chat/completions"
+  - id: "mistral-ai/voxtral-small-latest"
+    display_name: "voxtral-small-latest"
     provider: mistral-ai
-    context_length: 128000
-    score: 41
+    context_length: 32768
+    score: 40
     tier: quota
-    verified: false
+    verified: true
     no_card: true
-    capabilities: [text]
+    capabilities: [audio]
     limit: "~1 RPS, 500K TPM"

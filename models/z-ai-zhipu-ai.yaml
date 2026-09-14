@@ -1,10 +1,23 @@
-# Provider: z-ai-zhipu-ai — auto-split from models.yaml (4 models)
+# Provider: z-ai-zhipu-ai — auto-split from models.yaml (3 free models)
+# Source: https://docs.z.ai/guides/overview/pricing — Free tier per docs.z.ai 2026-09
+# Free: glm-4.7-flash, glm-4.5-flash, glm-4.6v-flash (Free/Free/Free)
+# Note: glm-5.3-flash NOT free ($0.075/$0.25 discounted), glm-4.5-air requires card/not free -> excluded
 models:
   - id: "z-ai-zhipu-ai/glm-4.7-flash"
     display_name: "glm-4.7-flash"
     provider: z-ai-zhipu-ai
     context_length: 200000
     score: 63
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "1 concurrent request"
+  - id: "z-ai-zhipu-ai/glm-4.5-flash"
+    display_name: "glm-4.5-flash"
+    provider: z-ai-zhipu-ai
+    context_length: 128000
+    score: 50
     tier: permanent
     verified: true
     no_card: true
@@ -20,22 +33,3 @@ models:
     no_card: true
     capabilities: [text, image, video, reasoning]
     limit: "1 concurrent request"
-  - id: "z-ai-zhipu-ai/glm-4.5-flash"
-    display_name: "glm-4.5-flash"
-    provider: z-ai-zhipu-ai
-    context_length: 128000
-    score: 50
-    tier: permanent
-    verified: true
-    no_card: true
-    capabilities: [text, reasoning]
-    limit: "1 concurrent request"
-  - id: "z-ai-zhipu-ai/glm-4.5-air"
-    display_name: "glm-4.5-air"
-    provider: z-ai-zhipu-ai
-    context_length: 131072
-    score: 42
-    tier: permanent
-    verified: true
-    no_card: false
-    capabilities: [reasoning]

@@ -86,7 +86,7 @@ export function createApp() {
     if (!config.mcpEnabled) return c.json({ error: "MCP disabled" }, 404);
     return c.json({
       name: "app-auto-llm-free",
-      version: "1.11.0",
+      version: "1.11.3",
       tools: [
         { name: "gateway_chat", endpoint: "/v1/chat/completions", method: "POST", description: "Chat completions via gateway" },
         { name: "gateway_compare", endpoint: "/v1/chat/compare", method: "POST", description: "Compare 2-5 models side-by-side" },
@@ -98,7 +98,7 @@ export function createApp() {
   });
 
   // Public
-  app.get("/", (c) => c.json({ name: "app-auto-llm-free", version: "1.11.0", docs: "/docs", health: "/v1/health", models: "/v1/models" }));
+  app.get("/", (c) => c.json({ name: "app-auto-llm-free", version: "1.11.3", docs: "/docs", health: "/v1/health", models: "/v1/models" }));
   app.route("/v1/health", healthRoute);
   // LB-friendly liveness/readiness probes — no auth, no version payload
   app.get("/health", (c) => c.json({ status: "ok" }));
