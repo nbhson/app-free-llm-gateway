@@ -42,6 +42,7 @@ export const providers: Record<string, Provider> = {
   openrouter: OPENAI({ id: "openrouter", baseUrl: "https://openrouter.ai/api/v1" }), // 17 free
   unorouter: OPENAI({ id: "unorouter", baseUrl: "https://api.unorouter.com/v1" }), // 219 free :free suffix, 1 req/min per model, OpenAI compatible (https://unorouter.com/en/models, key: https://unorouter.com/en/token)
   "ollama-cloud": OPENAI({ id: "ollama-cloud", baseUrl: "https://ollama.com/v1" }), // 6 free: gemma4:31b, gpt-oss:120b/20b, nemotron-3-super, etc. (was api.ollama.com 301)
+  commandcode: OPENAI({ id: "commandcode", baseUrl: "https://api.commandcode.ai/provider/v1" }), // 3 free: laguna-s-2.1-free, longcat-2.0:free, ling-3.0-flash-sante:free (https://commandcode.ai/docs/resources/pricing-limits#models, https://commandcode.ai/docs/provider, Auth Bearer <CMD_API_KEY>)
   "alibaba-cloud-model-studio": OPENAI({ id: "alibaba-cloud-model-studio", baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1" }),
   nscale: OPENAI({ id: "nscale", baseUrl: "https://api.nscale.com/v1" }),
   nebius: OPENAI({ id: "nebius", baseUrl: "https://api.studio.nebius.com/v1" }),
@@ -77,6 +78,9 @@ export const PROVIDER_ALIASES: Record<string, string> = {
   experiential: "experientiallabs",
   "experiential-cloud": "experientiallabs",
   experiential_cloud: "experientiallabs",
+  "command-code": "commandcode",
+  command_code: "commandcode",
+  cmdcode: "commandcode",
 };
 
 export function resolveProviderId(id: string): string {
@@ -120,6 +124,7 @@ export const providerMeta: Record<string, { name: string; tier: string; tier_typ
   siliconflow: { name: "SiliconFlow", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   deepseek: { name: "DeepSeek", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   unorouter: { name: "UnoRouter", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","vision","code"], noCard: true },
+  commandcode: { name: "CommandCode", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","vision","code"], noCard: true },
   orcarouter: { name: "OrcaRouter", tier: "Custom", tier_type: "custom", caps: ["text","reasoning"], noCard: true },
   freeai: { name: "FreeAI", tier: "Custom", tier_type: "custom", caps: ["text"], noCard: true },
   cline: { name: "Cline", tier: "Custom", tier_type: "custom", caps: ["text"], noCard: true },
@@ -255,6 +260,21 @@ export const modelAliases: Record<string, string[]> = {
   "unorouter/glm-5.3-flash:free": ["unorouter"],
   "unorouter/ling-3.0-flash-fin:free": ["unorouter"],
   unorouter: ["unorouter"],
+  // CommandCode Provider API — 3 free (https://api.commandcode.ai/provider/v1, https://commandcode.ai/docs/resources/pricing-limits#models, https://commandcode.ai/docs/provider)
+  // Free models: poolside/laguna-s-2.1-free (256K), meituan/LongCat-2.0:free (1M), inclusionai/ling-3.0-flash-sante:free (262K)
+  "laguna-s-2.1-free": ["commandcode", "kilo-code", "openrouter"],
+  "poolside/laguna-s-2.1-free": ["commandcode"],
+  "commandcode/poolside/laguna-s-2.1-free": ["commandcode"],
+  "commandcode/laguna-s-2.1-free": ["commandcode"],
+  "longcat-2.0:free": ["commandcode"],
+  "meituan/LongCat-2.0:free": ["commandcode"],
+  "commandcode/meituan/LongCat-2.0:free": ["commandcode"],
+  "commandcode/longcat-2.0:free": ["commandcode"],
+  "ling-3.0-flash-sante:free": ["commandcode", "kiraai", "opencode", "kilo-code"],
+  "inclusionai/ling-3.0-flash-sante:free": ["commandcode"],
+  "commandcode/inclusionai/ling-3.0-flash-sante:free": ["commandcode"],
+  "commandcode/ling-3.0-flash-sante:free": ["commandcode"],
+  commandcode: ["commandcode"],
   // Opencode custom — agnes
    "agnes-3.0-flash": ["agnes-ai"],
    "agnes-2.5-flash": ["agnes-ai"],

@@ -1,0 +1,36 @@
+# Provider: commandcode — 3 free models (https://commandcode.ai/docs/resources/pricing-limits#models, https://commandcode.ai/docs/provider)
+# BaseURL: https://api.commandcode.ai/provider/v1 — OpenAI compatible (Authorization: Bearer <CMD_API_KEY>)
+# Endpoints: POST /provider/v1/chat/completions (OpenAI), POST /provider/v1/messages (Anthropic), GET /provider/v1/models
+# Free models are billed at 0 credits while capacity lasts (DEAL 100% off). All plans except Go have API access.
+# Updated: 2026-09-16
+models:
+  - id: "commandcode/poolside/laguna-s-2.1-free"
+    display_name: "poolside/laguna-s-2.1-free"
+    provider: commandcode
+    context_length: 262144
+    score: 85
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "Free while capacity lasts (0 credits)"
+  - id: "commandcode/meituan/LongCat-2.0:free"
+    display_name: "meituan/LongCat-2.0:free"
+    provider: commandcode
+    context_length: 1048576
+    score: 84
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "Free while it lasts (0 credits, 1M context)"
+  - id: "commandcode/inclusionai/ling-3.0-flash-sante:free"
+    display_name: "inclusionai/ling-3.0-flash-sante:free"
+    provider: commandcode
+    context_length: 262144
+    score: 83
+    tier: permanent
+    verified: true
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "Free up to 100 req/day while it lasts (0 credits)"
