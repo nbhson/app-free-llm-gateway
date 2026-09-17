@@ -59,7 +59,9 @@ type SettingsState = {
   ANALYTICS_RETENTION_DAYS: number;
   PROVIDER_TIMEOUT_MS: number;
   PROVIDER_TIMEOUT_AUTO_MS: number;
+  PROVIDER_TIMEOUT_REASONING_MS: number;
   PROVIDER_PARALLEL_AUTO: number;
+  PROVIDER_PARALLEL_DEFAULT: number;
   CIRCUIT_BREAKER_THRESHOLD: number;
   CIRCUIT_BREAKER_COOLDOWN_MS: number;
   WEB_TOOLS_ENABLED: number;
@@ -140,7 +142,9 @@ const DEFAULTS: SettingsState = {
   ANALYTICS_RETENTION_DAYS: 30,
   PROVIDER_TIMEOUT_MS: 25000,
   PROVIDER_TIMEOUT_AUTO_MS: 8000,
+  PROVIDER_TIMEOUT_REASONING_MS: 35000,
   PROVIDER_PARALLEL_AUTO: 3,
+  PROVIDER_PARALLEL_DEFAULT: 2,
   CIRCUIT_BREAKER_THRESHOLD: 5,
   CIRCUIT_BREAKER_COOLDOWN_MS: 30000,
   WEB_TOOLS_ENABLED: 0,
@@ -188,6 +192,7 @@ const PRESETS: Record<string, Partial<SettingsState>> = {
     SUCCESS_WEIGHT: 3,
     PROVIDER_TIMEOUT_MS: 15000,
     PROVIDER_TIMEOUT_AUTO_MS: 5000,
+    PROVIDER_TIMEOUT_REASONING_MS: 25000,
   },
   performance: {
     SEMANTIC_CACHE_ENABLED: 1,
@@ -277,7 +282,9 @@ function validateSettings(s: SettingsState): string[] {
   if (s.ANALYTICS_RETENTION_DAYS < 1 || s.ANALYTICS_RETENTION_DAYS > 365) errs.push("ANALYTICS_RETENTION_DAYS 1..365");
   if (s.PROVIDER_TIMEOUT_MS < 1000 || s.PROVIDER_TIMEOUT_MS > 120000) errs.push("PROVIDER_TIMEOUT_MS 1000..120000");
   if (s.PROVIDER_TIMEOUT_AUTO_MS < 1000 || s.PROVIDER_TIMEOUT_AUTO_MS > 30000) errs.push("PROVIDER_TIMEOUT_AUTO_MS 1000..30000");
+  if (s.PROVIDER_TIMEOUT_REASONING_MS < 1000 || s.PROVIDER_TIMEOUT_REASONING_MS > 120000) errs.push("PROVIDER_TIMEOUT_REASONING_MS 1000..120000");
   if (s.PROVIDER_PARALLEL_AUTO < 1 || s.PROVIDER_PARALLEL_AUTO > 5) errs.push("PROVIDER_PARALLEL_AUTO 1..5");
+  if (s.PROVIDER_PARALLEL_DEFAULT < 1 || s.PROVIDER_PARALLEL_DEFAULT > 5) errs.push("PROVIDER_PARALLEL_DEFAULT 1..5");
   if (s.CIRCUIT_BREAKER_THRESHOLD < 1 || s.CIRCUIT_BREAKER_THRESHOLD > 100) errs.push("CIRCUIT_BREAKER_THRESHOLD 1..100");
   if (s.CIRCUIT_BREAKER_COOLDOWN_MS < 1000 || s.CIRCUIT_BREAKER_COOLDOWN_MS > 300000) errs.push("CIRCUIT_BREAKER_COOLDOWN_MS 1000..300000");
   if (!["tavily", "brave", "serper", "jina"].includes(s.WEB_SEARCH_PROVIDER)) errs.push("WEB_SEARCH_PROVIDER invalid");
@@ -420,7 +427,9 @@ export default function Settings() {
           ANALYTICS_RETENTION_DAYS: Number(d.ANALYTICS_RETENTION_DAYS) || 30,
           PROVIDER_TIMEOUT_MS: Number(d.PROVIDER_TIMEOUT_MS) || 25000,
           PROVIDER_TIMEOUT_AUTO_MS: Number(d.PROVIDER_TIMEOUT_AUTO_MS) || 8000,
+          PROVIDER_TIMEOUT_REASONING_MS: Number(d.PROVIDER_TIMEOUT_REASONING_MS) || 35000,
           PROVIDER_PARALLEL_AUTO: Number(d.PROVIDER_PARALLEL_AUTO) || 3,
+          PROVIDER_PARALLEL_DEFAULT: Number(d.PROVIDER_PARALLEL_DEFAULT) || 2,
           CIRCUIT_BREAKER_THRESHOLD: Number(d.CIRCUIT_BREAKER_THRESHOLD) || 5,
           CIRCUIT_BREAKER_COOLDOWN_MS: Number(d.CIRCUIT_BREAKER_COOLDOWN_MS) || 30000,
           WEB_TOOLS_ENABLED: Number(d.WEB_TOOLS_ENABLED) || 0,
@@ -626,7 +635,9 @@ SUCCESS_WEIGHT=${form.SUCCESS_WEIGHT}
 ANALYTICS_RETENTION_DAYS=${form.ANALYTICS_RETENTION_DAYS}
 PROVIDER_TIMEOUT_MS=${form.PROVIDER_TIMEOUT_MS}
 PROVIDER_TIMEOUT_AUTO_MS=${form.PROVIDER_TIMEOUT_AUTO_MS}
+PROVIDER_TIMEOUT_REASONING_MS=${form.PROVIDER_TIMEOUT_REASONING_MS}
 PROVIDER_PARALLEL_AUTO=${form.PROVIDER_PARALLEL_AUTO}
+PROVIDER_PARALLEL_DEFAULT=${form.PROVIDER_PARALLEL_DEFAULT}
 CIRCUIT_BREAKER_THRESHOLD=${form.CIRCUIT_BREAKER_THRESHOLD}
 CIRCUIT_BREAKER_COOLDOWN_MS=${form.CIRCUIT_BREAKER_COOLDOWN_MS}
 WEB_TOOLS_ENABLED=${form.WEB_TOOLS_ENABLED}
@@ -1234,7 +1245,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
 
         {/* Right col */}
         <div className="space-y-6">
-          <Section id="reliability" title="Reliability & Timeouts" icon={<ShieldAlert className="w-4 h-4" />} desc="Provider timeout, parallel auto, circuit breaker" keywords="timeout parallel breaker" onResetSection={() => handleResetSection(["PROVIDER_TIMEOUT_MS","PROVIDER_TIMEOUT_AUTO_MS","PROVIDER_PARALLEL_AUTO","CIRCUIT_BREAKER_THRESHOLD","CIRCUIT_BREAKER_COOLDOWN_MS"])}>
+          <Section id="reliability" title="Reliability & Timeouts" icon={<ShieldAlert className="w-4 h-4" />} desc="Provider timeout, parallel auto, circuit breaker" keywords="timeout parallel breaker" onResetSection={() => handleResetSection(["PROVIDER_TIMEOUT_MS","PROVIDER_TIMEOUT_AUTO_MS","PROVIDER_TIMEOUT_REASONING_MS","PROVIDER_PARALLEL_AUTO","PROVIDER_PARALLEL_DEFAULT","CIRCUIT_BREAKER_THRESHOLD","CIRCUIT_BREAKER_COOLDOWN_MS"])}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className={`${isModified("PROVIDER_TIMEOUT_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
                 <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_MS (1k..120k)</label>
@@ -1244,10 +1255,19 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_AUTO_MS (1k..30k)</label>
                 <input type="number" min={1000} max={30000} value={form.PROVIDER_TIMEOUT_AUTO_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_AUTO_MS: parseInt(e.target.value) || 8000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_AUTO_MS" />
               </div>
+              <div className={`${isModified("PROVIDER_TIMEOUT_REASONING_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
+                <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_REASONING_MS (1k..120k)</label>
+                <input type="number" min={1000} max={120000} value={form.PROVIDER_TIMEOUT_REASONING_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_REASONING_MS: parseInt(e.target.value) || 35000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_REASONING_MS" />
+              </div>
               <div className={`${isModified("PROVIDER_PARALLEL_AUTO") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
                 <label className="text-xs font-semibold text-slate-700">PROVIDER_PARALLEL_AUTO (1..5)</label>
                 <input type="range" min={1} max={5} value={form.PROVIDER_PARALLEL_AUTO} onChange={(e) => update({ PROVIDER_PARALLEL_AUTO: parseInt(e.target.value) || 3 })} className="w-full accent-amber-500 mt-2" aria-label="PROVIDER_PARALLEL_AUTO" />
                 <div className="text-xs font-mono text-center bg-slate-100 rounded py-0.5 mt-1">{form.PROVIDER_PARALLEL_AUTO}</div>
+              </div>
+              <div className={`${isModified("PROVIDER_PARALLEL_DEFAULT") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
+                <label className="text-xs font-semibold text-slate-700">PROVIDER_PARALLEL_DEFAULT (1..5)</label>
+                <input type="range" min={1} max={5} value={form.PROVIDER_PARALLEL_DEFAULT} onChange={(e) => update({ PROVIDER_PARALLEL_DEFAULT: parseInt(e.target.value) || 2 })} className="w-full accent-amber-500 mt-2" aria-label="PROVIDER_PARALLEL_DEFAULT" />
+                <div className="text-xs font-mono text-center bg-slate-100 rounded py-0.5 mt-1">{form.PROVIDER_PARALLEL_DEFAULT}</div>
               </div>
               <div className={`${isModified("CIRCUIT_BREAKER_THRESHOLD") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
                 <label className="text-xs font-semibold text-slate-700">CIRCUIT_BREAKER_THRESHOLD (1..100)</label>

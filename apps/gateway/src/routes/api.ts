@@ -465,7 +465,9 @@ apiRoute.get("/config", (c) => {
     ANALYTICS_RETENTION_DAYS: config.analyticsRetentionDays,
     PROVIDER_TIMEOUT_MS: config.providerTimeoutMs,
     PROVIDER_TIMEOUT_AUTO_MS: config.providerTimeoutAutoMs,
+    PROVIDER_TIMEOUT_REASONING_MS: config.providerTimeoutReasoningMs,
     PROVIDER_PARALLEL_AUTO: config.providerParallelAuto,
+    PROVIDER_PARALLEL_DEFAULT: config.providerParallelDefault,
     CIRCUIT_BREAKER_THRESHOLD: config.circuitBreakerThreshold,
     CIRCUIT_BREAKER_COOLDOWN_MS: config.circuitBreakerCooldownMs,
     WEB_TOOLS_ENABLED: config.webToolsEnabled ? 1 : 0,
@@ -601,10 +603,20 @@ apiRoute.put("/config", async (c) => {
     if (!Number.isFinite(v) || v <= 0) errors.push("PROVIDER_TIMEOUT_AUTO_MS must be >0");
     else pending.providerTimeoutAutoMs = Math.min(v, 30000);
   }
+  if (body.PROVIDER_TIMEOUT_REASONING_MS !== undefined) {
+    const v = parseInt(String(body.PROVIDER_TIMEOUT_REASONING_MS), 10);
+    if (!Number.isFinite(v) || v <= 0) errors.push("PROVIDER_TIMEOUT_REASONING_MS must be >0");
+    else pending.providerTimeoutReasoningMs = Math.min(v, 120000);
+  }
   if (body.PROVIDER_PARALLEL_AUTO !== undefined) {
     const v = parseInt(String(body.PROVIDER_PARALLEL_AUTO), 10);
     if (!Number.isFinite(v) || v <= 0) errors.push("PROVIDER_PARALLEL_AUTO must be >0");
     else pending.providerParallelAuto = Math.min(v, 5);
+  }
+  if (body.PROVIDER_PARALLEL_DEFAULT !== undefined) {
+    const v = parseInt(String(body.PROVIDER_PARALLEL_DEFAULT), 10);
+    if (!Number.isFinite(v) || v <= 0) errors.push("PROVIDER_PARALLEL_DEFAULT must be >0");
+    else pending.providerParallelDefault = Math.min(v, 5);
   }
   if (body.CIRCUIT_BREAKER_THRESHOLD !== undefined) {
     const v = parseInt(String(body.CIRCUIT_BREAKER_THRESHOLD), 10);
@@ -708,7 +720,7 @@ apiRoute.put("/config", async (c) => {
   }
 
   // Unknown keys warning (ignore but report)
-  const known = new Set(["SEMANTIC_CACHE_ENABLED","SEMANTIC_THRESHOLD","CACHE_TTL_S","EMBEDDING_MODEL","EMBEDDING_FALLBACKS","SEMANTIC_CACHE_MAX_MEM","SEMANTIC_CACHE_SCAN_CAP","COMPRESSION_ENABLED","COMPRESSION_MAX_TOKENS","COST_ROUTING_ENABLED","COST_WEIGHT","LATENCY_WEIGHT","HEADROOM_WEIGHT","SUCCESS_WEIGHT","ANALYTICS_RETENTION_DAYS","PROVIDER_TIMEOUT_MS","PROVIDER_TIMEOUT_AUTO_MS","PROVIDER_PARALLEL_AUTO","CIRCUIT_BREAKER_THRESHOLD","CIRCUIT_BREAKER_COOLDOWN_MS","WEB_TOOLS_ENABLED","WEB_SEARCH_PROVIDER","WEB_FETCH_TIMEOUT_MS","WEB_FETCH_MAX_BYTES","WEB_SEARCH_MAX_RESULTS","WEB_TOOLS_MAX_ITERATIONS","WEB_CACHE_TTL_S","FALLBACK_TIERS","ADAPTIVE_ROUTING_ENABLED","ADAPTIVE_EMA_ALPHA","PER_MODEL_QUOTA_ENABLED","PROMETHEUS_ENABLED","BYOK_ENABLED","LOCAL_EMBEDDING_ENABLED","LOCAL_EMBEDDING_MODEL","MCP_ENABLED","COMPARE_MAX_CONCURRENCY","ALERT_WEBHOOK_URL","ALERT_THRESHOLD_ERROR_RATE","_source"]);
+  const known = new Set(["SEMANTIC_CACHE_ENABLED","SEMANTIC_THRESHOLD","CACHE_TTL_S","EMBEDDING_MODEL","EMBEDDING_FALLBACKS","SEMANTIC_CACHE_MAX_MEM","SEMANTIC_CACHE_SCAN_CAP","COMPRESSION_ENABLED","COMPRESSION_MAX_TOKENS","COST_ROUTING_ENABLED","COST_WEIGHT","LATENCY_WEIGHT","HEADROOM_WEIGHT","SUCCESS_WEIGHT","ANALYTICS_RETENTION_DAYS","PROVIDER_TIMEOUT_MS","PROVIDER_TIMEOUT_AUTO_MS","PROVIDER_TIMEOUT_REASONING_MS","PROVIDER_PARALLEL_AUTO","PROVIDER_PARALLEL_DEFAULT","CIRCUIT_BREAKER_THRESHOLD","CIRCUIT_BREAKER_COOLDOWN_MS","WEB_TOOLS_ENABLED","WEB_SEARCH_PROVIDER","WEB_FETCH_TIMEOUT_MS","WEB_FETCH_MAX_BYTES","WEB_SEARCH_MAX_RESULTS","WEB_TOOLS_MAX_ITERATIONS","WEB_CACHE_TTL_S","FALLBACK_TIERS","ADAPTIVE_ROUTING_ENABLED","ADAPTIVE_EMA_ALPHA","PER_MODEL_QUOTA_ENABLED","PROMETHEUS_ENABLED","BYOK_ENABLED","LOCAL_EMBEDDING_ENABLED","LOCAL_EMBEDDING_MODEL","MCP_ENABLED","COMPARE_MAX_CONCURRENCY","ALERT_WEBHOOK_URL","ALERT_THRESHOLD_ERROR_RATE","_source"]);
   for (const k of Object.keys(body)) {
     if (!known.has(k) && !k.startsWith("_")) errors.push(`Unknown key: ${k}`);
   }
@@ -736,7 +748,9 @@ apiRoute.put("/config", async (c) => {
     analyticsRetentionDays: "ANALYTICS_RETENTION_DAYS",
     providerTimeoutMs: "PROVIDER_TIMEOUT_MS",
     providerTimeoutAutoMs: "PROVIDER_TIMEOUT_AUTO_MS",
+    providerTimeoutReasoningMs: "PROVIDER_TIMEOUT_REASONING_MS",
     providerParallelAuto: "PROVIDER_PARALLEL_AUTO",
+    providerParallelDefault: "PROVIDER_PARALLEL_DEFAULT",
     circuitBreakerThreshold: "CIRCUIT_BREAKER_THRESHOLD",
     circuitBreakerCooldownMs: "CIRCUIT_BREAKER_COOLDOWN_MS",
     webToolsEnabled: "WEB_TOOLS_ENABLED",

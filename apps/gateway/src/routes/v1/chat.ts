@@ -132,9 +132,10 @@ chatRoute.post(
         }
       } catch { /* ignore */ }
     }
-    // Auto uses shorter per-provider timeout to fail fast (8s vs 25s) — sequential fallback 3 providers ~24s max vs 54s before
-    // In test, keep timeout under vitest 5000ms to avoid test timeout
-    const perProviderTimeout = isAuto ? (config.nodeEnv === "test" ? 4000 : config.providerTimeoutAutoMs) : config.providerTimeoutMs;
+    // Per-provider timeout: reasoning models (agnes 3.0, glm-5.3, deepseek r1) need longer TTFB (~6s direct)
+    const isReasoningModel = /3\.0|reasoning|thinking|r1|deepseek|glm-5/i.test(model);
+    const baseTimeout = isAuto ? (config.nodeEnv === "test" ? 4000 : config.providerTimeoutAutoMs) : isReasoningModel ? config.providerTimeoutReasoningMs : config.providerTimeoutMs;
+    const perProviderTimeout = baseTimeout;
 
     const estimated = estimateChatTokens({ messages: body.messages, max_tokens: body.max_tokens });
     const startAll = Date.now();
@@ -199,10 +200,10 @@ chatRoute.post(
       logger.info({ tools: effectiveTools.length }, "web tools injected");
     }
 
-    // Helper to call provider — for auto, race 3 providers in parallel gateway-wide (not only Chat page)
-    // When x-router pinned, disable parallel to preserve pin order (test pins pollinations first)
-    // In test env, keep sequential for determinism
-    const parallelForCall = isAuto && !pinned && config.nodeEnv !== "test" ? config.providerParallelAuto : undefined;
+    // Helper to call provider — hedged parallel for all models (not only auto) to cut tail latency.
+    // Auto: parallel 3, pinned: sequential to preserve pin, specific model with >1 provider: parallel 2, single provider: sequential.
+    // In test env, keep sequential for determinism.
+    const parallelForCall = config.nodeEnv === "test" ? undefined : pinned ? undefined : isAuto ? config.providerParallelAuto : providerOrder.length > 1 ? Math.min(config.providerParallelDefault, providerOrder.length) : undefined;
     const callProvider = (msgs: unknown[], useStream: boolean | undefined, tools: unknown[] | undefined, toolChoice: unknown) =>
       tryProviders({
         providerOrder,

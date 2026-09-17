@@ -279,9 +279,18 @@ export const config = {
     const v = parseInt(process.env.PROVIDER_TIMEOUT_AUTO_MS || "8000", 10);
     return isNaN(v) || v <= 0 ? 8000 : Math.min(v, 30000);
   })(),
+  // Reasoning models (agnes 3.0, deepseek, glm-5.3 etc.) need longer headers timeout — default 35s
+  providerTimeoutReasoningMs: (() => {
+    const v = parseInt(process.env.PROVIDER_TIMEOUT_REASONING_MS || "35000", 10);
+    return isNaN(v) || v <= 0 ? 35000 : Math.min(v, 120000);
+  })(),
   providerParallelAuto: (() => {
     const v = parseInt(process.env.PROVIDER_PARALLEL_AUTO || "3", 10);
     return isNaN(v) || v <= 0 ? 3 : Math.min(v, 5);
+  })(),
+  providerParallelDefault: (() => {
+    const v = parseInt(process.env.PROVIDER_PARALLEL_DEFAULT || "2", 10);
+    return isNaN(v) || v <= 0 ? 2 : Math.min(v, 5);
   })(),
   // ---- Web tools (gateway-hosted web_search + web_fetch) ----
   webToolsEnabled: parseBoolEnv(process.env.WEB_TOOLS_ENABLED),

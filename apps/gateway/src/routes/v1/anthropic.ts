@@ -201,7 +201,9 @@ anthropicRoute.post("/", zValidator("json", anthropicSchema), async (c) => {
       logger.info({ providerOrder, isAuto }, "cost routing re-ranked (anthropic)");
     } catch { /* ignore: cost routing failed */ }
   }
-  const perProviderTimeout = isAuto ? (config.nodeEnv === "test" ? 4000 : config.providerTimeoutAutoMs) : config.providerTimeoutMs;
+  const isReasoningModel = /3\.0|reasoning|thinking|r1|deepseek|glm-5/i.test(model);
+  const baseTimeout = isAuto ? (config.nodeEnv === "test" ? 4000 : config.providerTimeoutAutoMs) : isReasoningModel ? config.providerTimeoutReasoningMs : config.providerTimeoutMs;
+  const perProviderTimeout = baseTimeout;
 
   const estimated = estimateMessagesTokens(body.messages) + (body.max_tokens || 0);
   const startAll = Date.now();
@@ -250,7 +252,7 @@ anthropicRoute.post("/", zValidator("json", anthropicSchema), async (c) => {
     providerOrder,
     quotaTokens: estimatedForQuotaBase,
     timeoutMs: perProviderTimeout,
-    parallel: isAuto ? config.providerParallelAuto : undefined,
+    parallel: config.nodeEnv === "test" ? undefined : pinned ? undefined : isAuto ? config.providerParallelAuto : providerOrder.length > 1 ? Math.min(config.providerParallelDefault, providerOrder.length) : undefined,
     shouldSkip: (pid) => {
       const fullId = model.includes("/") ? model : `${pid}/${model}`;
       if (verifiedMap.get(fullId) === "deprecated" || verifiedMap.get(model) === "deprecated") {

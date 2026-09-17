@@ -70,4 +70,31 @@ describe("Fix 1.9.2 — free-llm-gateway/auto slow 10-15s", () => {
     expect(txt).toContain("version");
     expect(txt).toMatch(/toMatch/);
   });
+
+  it("config has PROVIDER_TIMEOUT_REASONING_MS (35000) and PROVIDER_PARALLEL_DEFAULT (2)", () => {
+    const txt = readGate("apps/gateway/src/config.ts");
+    expect(txt).toContain("providerTimeoutReasoningMs");
+    expect(txt).toContain("PROVIDER_TIMEOUT_REASONING_MS");
+    expect(txt).toContain("35000");
+    expect(txt).toContain("providerParallelDefault");
+    expect(txt).toContain("PROVIDER_PARALLEL_DEFAULT");
+  });
+
+  it("chat route uses reasoning timeout for agnes 3.0 and hedged parallel for non-auto", () => {
+    const txt = readGate("apps/gateway/src/routes/v1/chat.ts");
+    expect(txt).toContain("isReasoningModel");
+    expect(txt).toContain("providerTimeoutReasoningMs");
+    expect(txt).toContain("providerParallelDefault");
+    // hedged parallel for non-auto with >1 provider
+    expect(txt).toMatch(/providerOrder\.length > 1/);
+  });
+
+  it("provider-executor budget detection only for pollinations (no 500ms overhead elsewhere)", () => {
+    const txt = readGate("apps/gateway/src/lib/provider-executor.ts");
+    expect(txt).toContain("BUDGET_SSE_PROVIDERS");
+    expect(txt).toContain("pollinations");
+    expect(txt).toContain("detectBudgetErrorInResponse(res, pid)");
+    // timeout reduced from 500 to 250 for pollinations check
+    expect(txt).toContain("timeoutMs = 250");
+  });
 });

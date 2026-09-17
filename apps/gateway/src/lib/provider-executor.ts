@@ -17,9 +17,12 @@ import { getEffectiveKeys } from "./byok-store.js";
  */
 const BUDGET_ERROR_RE = /reached its budget|budget.*exceeded|quota.*exceeded|insufficient.*quota/i;
 
-async function detectBudgetErrorInResponse(res: Response): Promise<string | null> {
-  // Only peek for responses that look like they might be budget errors; avoid
-  // consuming successful streams. Use clone + short reader timeout (400ms).
+// Budget error detection: only for pollinations which returns 200 SSE with budget error.
+// For other providers, 402/403 status already captures it — no need to clone+read (adds 500ms per success).
+const BUDGET_SSE_PROVIDERS = new Set(["pollinations"]);
+async function detectBudgetErrorInResponse(res: Response, providerId?: string): Promise<string | null> {
+  if (providerId && !BUDGET_SSE_PROVIDERS.has(providerId)) return null;
+  // Only peek for pollinations-like providers; avoid consuming successful streams for others.
   try {
     const clone = res.clone();
     const reader = clone.body?.getReader();
@@ -30,7 +33,7 @@ async function detectBudgetErrorInResponse(res: Response): Promise<string | null
     }
     const decoder = new TextDecoder();
     let acc = "";
-    const timeoutMs = 500;
+    const timeoutMs = 250;
     let timer: NodeJS.Timeout | undefined;
     const timeout = new Promise<void>((resolve) => {
       timer = setTimeout(() => resolve(), timeoutMs);
@@ -44,7 +47,7 @@ async function detectBudgetErrorInResponse(res: Response): Promise<string | null
         if (!BUDGET_ERROR_RE.test(acc) && acc.length < 400 && !done) {
           const r2 = await Promise.race([
             reader.read(),
-            new Promise<{ value: undefined; done: true }>((resolve) => setTimeout(() => resolve({ value: undefined, done: true }), 200)),
+            new Promise<{ value: undefined; done: true }>((resolve) => setTimeout(() => resolve({ value: undefined, done: true }), 100)),
           ]) as { value?: Uint8Array; done?: boolean };
           if ((r2 as { value?: Uint8Array }).value) acc += decoder.decode((r2 as { value: Uint8Array }).value!, { stream: true });
         }
@@ -172,8 +175,8 @@ async function tryProvidersParallel(opts: TryProvidersOpts, batchSize: number): 
           }
           throw { provider: pid, status: res.status, error: text.slice(0, 600), retryAfterMs } as ProviderError;
         }
-        // Stream success but body contains budget error (Pollinations returns 200 SSE with error)
-        const budgetText = await detectBudgetErrorInResponse(res);
+        // Stream success but body contains budget error (Pollinations returns 200 SSE with error) — only for pollinations to avoid 500ms overhead
+        const budgetText = await detectBudgetErrorInResponse(res, pid);
         if (budgetText) {
           recordFailure(pid);
           throw { provider: pid, status: 402, error: budgetText } as ProviderError;
@@ -286,8 +289,8 @@ export async function tryProviders(opts: TryProvidersOpts): Promise<TryProviders
         }
         continue;
       }
-      // Check streaming success that actually contains budget error in SSE body (Pollinations 200 with error)
-      const budgetTextSeq = await detectBudgetErrorInResponse(res);
+      // Check streaming success that actually contains budget error in SSE body (Pollinations 200 with error) — only pollinations
+      const budgetTextSeq = await detectBudgetErrorInResponse(res, pid);
       if (budgetTextSeq) {
         errors.push({ provider: pid, status: 402, error: budgetTextSeq });
         recordFailure(pid);

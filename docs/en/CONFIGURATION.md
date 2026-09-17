@@ -112,7 +112,9 @@ then **auto boot-sync** (`jobs/boot-sync.ts`) tự phát hiện provider mới (
 | `ANALYTICS_RETENTION_DAYS` | `30` | Days to retain admin analytics rollups (`costByProvider`, `cacheHitRate`, `p95` latency) | Slider `1..365` |
 | `PROVIDER_TIMEOUT_MS` | `25000` | Timeout for regular providers (1000..120000 ms) | Number `1k..120k` |
 | `PROVIDER_TIMEOUT_AUTO_MS` | `8000` | Timeout when `model=auto` (1000..30000) — faster failover | Number `1k..30k` |
+| `PROVIDER_TIMEOUT_REASONING_MS` | `35000` | Timeout for reasoning models (`agnes-3.0-flash`, `glm-5.3`, `deepseek r1` — TTFB 4-8s) to avoid false `502 timeout` | Number `1k..120k` |
 | `PROVIDER_PARALLEL_AUTO` | `3` | Parallel providers when `auto` (1..5) | Slider `1..5` |
+| `PROVIDER_PARALLEL_DEFAULT` | `2` | Hedged parallel for non-auto models with `>1` provider (1..5) — cuts tail latency | Slider `1..5` |
 | `CIRCUIT_BREAKER_THRESHOLD` | `5` | Consecutive failures before opening breaker (1..100) | Number `1..100` |
 | `CIRCUIT_BREAKER_COOLDOWN_MS` | `30000` | Cooldown before half-open (1000..300000 ms) | Number `1k..300k` |
 | `FALLBACK_TIERS` | `[[...default 41 providers...]]` | Provider priority order — JSON array of arrays (max 8 tiers, 200 providers, 60/tier, deduped) | JSON editor + preview chips + `Add to tier 1` + `Validate & Stage` |
