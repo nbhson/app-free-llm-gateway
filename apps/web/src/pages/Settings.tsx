@@ -24,6 +24,17 @@ import {
   FileJson,
   Sparkles,
   X,
+  Clock,
+  Timer,
+  Cpu,
+  Server,
+  Database,
+  Gauge,
+  Activity,
+  Wrench,
+  Blocks,
+  Plus,
+  ListOrdered,
 } from "lucide-react";
 import { useLang } from "../lib/i18n.tsx";
 
@@ -1085,7 +1096,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             <div className={`flex items-center justify-between py-2 px-3 rounded-lg border ${isModified("SEMANTIC_CACHE_ENABLED") ? "border-amber-300 bg-amber-50/50" : "border-transparent"}`}>
               <div>
                 <div className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                  {t("settings.semanticEnabled")} {isModified("SEMANTIC_CACHE_ENABLED") && <span className="w-2 h-2 rounded-full bg-amber-500" aria-label="modified" />}
+                  <Database className="w-3.5 h-3.5 text-slate-500" /> {t("settings.semanticEnabled")} <HelpTip text="Bật cache ngữ nghĩa: embedding query → cosine so với cache Redis/in-memory. Hit thì trả ngay không gọi upstream, giảm latency & cost. Yêu cầu EMBEDDING_MODEL reachable, ngược lại fallback hash exact." /> {isModified("SEMANTIC_CACHE_ENABLED") && <span className="w-2 h-2 rounded-full bg-amber-500" aria-label="modified" />}
                 </div>
                 <div className="text-xs text-slate-500">{t("settings.semanticEnabledDesc")}</div>
               </div>
@@ -1094,7 +1105,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
 
             <div className={`p-3 rounded-lg border ${isModified("SEMANTIC_THRESHOLD") ? "border-amber-300 bg-amber-50/30" : "border-slate-100 bg-slate-50/50"}`}>
               <label className="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                {t("settings.threshold")} <span className="font-normal text-slate-500">(0.0-1.0)</span> <HelpTip text={t("settings.thresholdDesc") || "Cosine threshold 0.92 recommended for cohere/embed-english-v3.0 — higher = stricter, fewer false hits"} />
+                <Gauge className="w-3.5 h-3.5 text-slate-500" /> {t("settings.threshold")} <span className="font-normal text-slate-500">(0.0-1.0)</span> <HelpTip text="Ngưỡng cosine để coi là hit. 0.92 khuyến nghị cho cohere/embed-english-v3.0. Cao hơn = nghiêm ngặt hơn, ít hit sai nhưng bỏ lỡ hit gần đúng; thấp hơn = nhiều hit hơn nhưng rủi ro sai nghĩa." />
                 {isModified("SEMANTIC_THRESHOLD") && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px]">modified</span>}
               </label>
               <div className="flex items-center gap-3 mt-2">
@@ -1106,7 +1117,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
 
             <div className={`${isModified("CACHE_TTL_S") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
               <label className="text-xs font-semibold text-slate-700 flex items-center gap-2">
-                {t("settings.ttl")} <HelpTip text={t("settings.ttlDesc") || "TTL seconds (3600 = 1 hour) — cap 7 days"} /> {isModified("CACHE_TTL_S") && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px]">modified</span>}
+                <Clock className="w-3.5 h-3.5 text-slate-500" /> {t("settings.ttl")} <HelpTip text="Thời gian sống của entry cache. 3600 = 1 giờ. Hết TTL thì entry bị xóa (Redis TTL / sweep in-memory). Cap 7 ngày (604800s). TTL ngắn = data tươi hơn nhưng hit ít hơn." /> {isModified("CACHE_TTL_S") && <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px]">modified</span>}
               </label>
               <input type="number" min={60} max={604800} value={form.CACHE_TTL_S} onChange={(e) => update({ CACHE_TTL_S: parseInt(e.target.value) || 3600 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500" aria-label="CACHE_TTL_S" />
               <div className="flex flex-wrap gap-1.5 mt-2">
@@ -1125,11 +1136,11 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-slate-700">MAX_MEM (100..10000)</label>
+                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Database className="w-3 h-3 text-slate-500" /> MAX_MEM (100..10000) <HelpTip text="Số entry tối đa trong map in-memory trước khi LRU evict. Cao hơn = giữ nhiều cache hơn nhưng tốn RAM. 1000 ~ vài MB." /></label>
                   <input type="number" min={100} max={10000} value={form.SEMANTIC_CACHE_MAX_MEM} onChange={(e) => update({ SEMANTIC_CACHE_MAX_MEM: parseInt(e.target.value) || 1000 })} className={`mt-1 w-full rounded-lg border px-2 py-1.5 text-sm font-mono ${isModified("SEMANTIC_CACHE_MAX_MEM") ? "border-amber-300 bg-amber-50" : "border-slate-200"}`} aria-label="SEMANTIC_CACHE_MAX_MEM" />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-slate-700">SCAN_CAP (10..1000)</label>
+                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Search className="w-3 h-3 text-slate-500" /> SCAN_CAP (10..1000) <HelpTip text="Số entry tối đa quét để tìm cosine hit. Cao hơn = chính xác hơn nhưng chậm hơn (scan Redis/mem). 200 là cân bằng, 400-1000 cho cache lớn." /></label>
                   <input type="number" min={10} max={1000} value={form.SEMANTIC_CACHE_SCAN_CAP} onChange={(e) => update({ SEMANTIC_CACHE_SCAN_CAP: parseInt(e.target.value) || 200 })} className={`mt-1 w-full rounded-lg border px-2 py-1.5 text-sm font-mono ${isModified("SEMANTIC_CACHE_SCAN_CAP") ? "border-amber-300 bg-amber-50" : "border-slate-200"}`} aria-label="SEMANTIC_CACHE_SCAN_CAP" />
                 </div>
               </div>
@@ -1138,7 +1149,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             <div className={`${isModified("EMBEDDING_MODEL") ? "border-amber-300" : "border-slate-200"} border rounded-lg p-3`}>
               <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                  {t("settings.embeddingModel")} {isModified("EMBEDDING_MODEL") && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+                  <Cpu className="w-3.5 h-3.5 text-slate-500" /> {t("settings.embeddingModel")} <HelpTip text="Model embedding chính để tạo vector cho cache. Mặc định cohere/embed-english-v3.0. Nhấn Check để gọi POST /v1/embeddings {model, input:'hello'} – ok = key & model hợp lệ, fail = thử fallback." /> {isModified("EMBEDDING_MODEL") && <span className="w-2 h-2 rounded-full bg-amber-500" />}
                 </label>
                 <button type="button" onClick={checkPrimary} disabled={embStatus === "checking"} className={`px-2.5 py-1 rounded-lg text-xs font-bold border ${embStatus === "ok" ? "bg-emerald-50 border-emerald-300 text-emerald-700" : embStatus === "error" ? "bg-red-50 border-red-300 text-red-700" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"} ${embStatus === "checking" ? "opacity-70" : ""}`} aria-live="polite">
                   {embStatus === "checking" ? (t("settings.checking") || "Checking...") : embStatus === "ok" ? "✓ OK" : embStatus === "error" ? "✗ Fail" : (t("settings.check") || "Check")}
@@ -1150,8 +1161,8 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
 
             <div className={`${isModified("EMBEDDING_FALLBACKS") ? "border-amber-300" : "border-slate-200"} border rounded-lg p-3`}>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700">
-                  {t("settings.embeddingFallbacks")} <span className="font-normal text-slate-500">(comma-separated)</span>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                  <Blocks className="w-3.5 h-3.5 text-slate-500" /> {t("settings.embeddingFallbacks")} <span className="font-normal text-slate-500">(comma-separated)</span> <HelpTip text="Chuỗi fallback khi model chính fail: thử tuần tự từng model (phân tách bởi dấu phẩy). Cuối cùng fallback hash exact. Ví dụ: nvidia-nim/nvidia/nv-embed-v1,cloudflare/.../bge-large" />
                 </label>
                 <button type="button" onClick={checkFallbacks} className="px-2.5 py-1 rounded-lg text-xs font-bold border bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
                   {Object.values(fallbackStatuses).some((v) => v === "checking") ? (t("settings.checking") || "Checking...") : (t("settings.check") || "Check")}
@@ -1177,7 +1188,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             <div className={`flex items-center justify-between py-2 px-3 rounded-lg border ${isModified("COMPRESSION_ENABLED") ? "border-amber-300 bg-amber-50/50" : "border-slate-100 bg-slate-50/50"}`}>
               <div>
                 <div className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                  {t("settings.compressionEnabled")} {isModified("COMPRESSION_ENABLED") && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+                  <Wrench className="w-3.5 h-3.5 text-slate-500" /> {t("settings.compressionEnabled")} <HelpTip text="Bật nén token khi prompt vượt COMPRESSION_MAX_TOKENS: giữ system + 3 tin nhắn gần nhất + top-5 relevant (BM25-lite so với tin nhắn cuối) + minify tools + dedup code. Giảm prompt 30-60%, tránh timeout với context lớn." /> {isModified("COMPRESSION_ENABLED") && <span className="w-2 h-2 rounded-full bg-amber-500" />}
                 </div>
                 <div className="text-xs text-slate-500">{t("settings.compressionDesc")}</div>
               </div>
@@ -1186,7 +1197,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
 
             <div className={`p-3 rounded-lg border ${isModified("COMPRESSION_MAX_TOKENS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"}`}>
               <label className="text-xs font-semibold text-slate-700 flex items-center justify-between">
-                <span>COMPRESSION_MAX_TOKENS (512..32000)</span>
+                <span className="flex items-center gap-1.5"><Gauge className="w-3.5 h-3.5 text-slate-500" /> COMPRESSION_MAX_TOKENS (512..32000) <HelpTip text="Ngưỡng token để kích hoạt nén. Khi prompt > ngưỡng, pipeline nén chạy và chỉ gửi phần đã nén sang upstream. 8192 khuyến nghị cho context lớn 130k." /></span>
                 <span className="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded border">{form.COMPRESSION_MAX_TOKENS}</span>
               </label>
               <input type="range" min={512} max={32000} step={512} value={form.COMPRESSION_MAX_TOKENS} onChange={(e) => update({ COMPRESSION_MAX_TOKENS: parseInt(e.target.value) || 4096 })} className="w-full mt-2 accent-amber-500" aria-label="COMPRESSION_MAX_TOKENS" />
@@ -1200,7 +1211,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             <div className={`flex items-center justify-between py-2 px-3 rounded-lg border ${isModified("COST_ROUTING_ENABLED") ? "border-amber-300 bg-amber-50/50" : "border-slate-100 bg-slate-50/50"}`}>
               <div>
                 <div className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                  {t("settings.costEnabled")} {isModified("COST_ROUTING_ENABLED") && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+                  <Activity className="w-3.5 h-3.5 text-slate-500" /> {t("settings.costEnabled")} <HelpTip text="Bật định tuyến theo chi phí: xếp hạng provider theo score = cost*COST_WEIGHT + latency*LATENCY_WEIGHT - headroom*HEADROOM_WEIGHT - successRate*SUCCESS_WEIGHT (success từ request-log 100 gần nhất). Ưu tiên rẻ + nhanh + còn quota + ổn định." /> {isModified("COST_ROUTING_ENABLED") && <span className="w-2 h-2 rounded-full bg-amber-500" />}
                 </div>
                 <div className="text-xs text-slate-500">{t("settings.costDesc")}</div>
               </div>
@@ -1210,15 +1221,15 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             <div className="border border-slate-200 rounded-lg p-3 space-y-3 bg-slate-50/30">
               <div className="text-xs font-bold text-slate-700">Cost Router Weights • <span className="font-mono font-normal text-slate-500">{costPreview}</span></div>
               {([
-                { k: "COST_WEIGHT" as const, label: "COST_WEIGHT", min: 0, max: 10, step: 0.5, range: "0..10" },
-                { k: "LATENCY_WEIGHT" as const, label: "LATENCY_WEIGHT", min: 0, max: 0.005, step: 0.0001, range: "0..0.005" },
-                { k: "HEADROOM_WEIGHT" as const, label: "HEADROOM_WEIGHT", min: 0, max: 1, step: 0.05, range: "0..1" },
-                { k: "SUCCESS_WEIGHT" as const, label: "SUCCESS_WEIGHT", min: 0, max: 5, step: 0.5, range: "0..5" },
+                { k: "COST_WEIGHT" as const, label: "COST_WEIGHT", min: 0, max: 10, step: 0.5, range: "0..10", tip: "Trọng số chi phí ($/1M). Cao hơn = ưu tiên rẻ hơn, bỏ qua latency." },
+                { k: "LATENCY_WEIGHT" as const, label: "LATENCY_WEIGHT", min: 0, max: 0.005, step: 0.0001, range: "0..0.005", tip: "Trọng số độ trễ (ms EMA). Cao hơn = ưu tiên nhanh hơn, phù hợp fastest preset." },
+                { k: "HEADROOM_WEIGHT" as const, label: "HEADROOM_WEIGHT", min: 0, max: 1, step: 0.05, range: "0..1", tip: "Trọng số quota headroom. Cao hơn = tránh provider gần cạn quota (429)." },
+                { k: "SUCCESS_WEIGHT" as const, label: "SUCCESS_WEIGHT", min: 0, max: 5, step: 0.5, range: "0..5", tip: "Trọng số tỉ lệ thành công (rolling). Cao hơn = hạ provider hay fail trước khi breaker mở." },
               ] as const).map((w) => (
                 <div key={w.k} className={`${isModified(w.k) ? "bg-amber-50 border-amber-200" : "bg-white border-slate-200"} border rounded-lg p-2.5`}>
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
-                      {w.label} <span className="font-normal text-slate-400">({w.range})</span> {isModified(w.k) && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+                      <SlidersHorizontal className="w-3 h-3 text-slate-500" /> {w.label} <span className="font-normal text-slate-400">({w.range})</span> <HelpTip text={w.tip} /> {isModified(w.k) && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
                     </label>
                     <span className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded border">{form[w.k]}</span>
                   </div>
@@ -1250,33 +1261,33 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
           <Section id="reliability" title="Reliability & Timeouts" icon={<ShieldAlert className="w-4 h-4" />} desc="Provider timeout, parallel auto, circuit breaker" keywords="timeout parallel breaker" onResetSection={() => handleResetSection(["PROVIDER_TIMEOUT_MS","PROVIDER_TIMEOUT_AUTO_MS","PROVIDER_TIMEOUT_REASONING_MS","PROVIDER_PARALLEL_AUTO","PROVIDER_PARALLEL_DEFAULT","CIRCUIT_BREAKER_THRESHOLD","CIRCUIT_BREAKER_COOLDOWN_MS"])}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className={`${isModified("PROVIDER_TIMEOUT_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_MS (1k..120k)</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Timer className="w-3.5 h-3.5 text-slate-500" /> PROVIDER_TIMEOUT_MS (1k..120k) <HelpTip text="Timeout cho provider thường. Là giới hạn chờ header response (không tính stream). Hết timeout → thử provider kế tiếp trong fallback." /></label>
                 <input type="number" min={1000} max={120000} value={form.PROVIDER_TIMEOUT_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_MS: parseInt(e.target.value) || 25000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_MS" />
               </div>
               <div className={`${isModified("PROVIDER_TIMEOUT_AUTO_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_AUTO_MS (1k..30k) <span className="font-normal text-slate-400">rec ≥12k</span></label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-500" /> PROVIDER_TIMEOUT_AUTO_MS (1k..30k) <span className="font-normal text-slate-400">rec ≥12k</span> <HelpTip text="Timeout khi model=auto. Ngắn hơn để fail fast (12s) và thử provider kế tiếp nhanh. Auto chạy song song 3 provider nên timeout ngắn vẫn an toàn." /></label>
                 <input type="number" min={1000} max={30000} value={form.PROVIDER_TIMEOUT_AUTO_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_AUTO_MS: parseInt(e.target.value) || 12000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_AUTO_MS" />
               </div>
               <div className={`${isModified("PROVIDER_TIMEOUT_REASONING_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_REASONING_MS (1k..120k) <span className="font-normal text-amber-600">rec ≥60k</span></label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5 text-slate-500" /> PROVIDER_TIMEOUT_REASONING_MS (1k..120k) <span className="font-normal text-amber-600">rec ≥60k</span> <HelpTip text="Timeout cho reasoning model (agnes-3.0, deepseek r1, glm-5.3). Cần dài hơn (60s) vì TTFB 4-8s và chain-of-thought dài. Log trước đây timeout 35s với 130k context." /></label>
                 <input type="number" min={1000} max={120000} value={form.PROVIDER_TIMEOUT_REASONING_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_REASONING_MS: parseInt(e.target.value) || 60000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_REASONING_MS" />
               </div>
               <div className={`${isModified("PROVIDER_PARALLEL_AUTO") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">PROVIDER_PARALLEL_AUTO (1..5)</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Server className="w-3.5 h-3.5 text-slate-500" /> PROVIDER_PARALLEL_AUTO (1..5) <HelpTip text="Số provider thử song song khi model=auto (dùng Promise.any). 3 là cân bằng: giảm tail latency nhưng không spam quota." /></label>
                 <input type="range" min={1} max={5} value={form.PROVIDER_PARALLEL_AUTO} onChange={(e) => update({ PROVIDER_PARALLEL_AUTO: parseInt(e.target.value) || 3 })} className="w-full accent-amber-500 mt-2" aria-label="PROVIDER_PARALLEL_AUTO" />
                 <div className="text-xs font-mono text-center bg-slate-100 rounded py-0.5 mt-1">{form.PROVIDER_PARALLEL_AUTO}</div>
               </div>
               <div className={`${isModified("PROVIDER_PARALLEL_DEFAULT") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">PROVIDER_PARALLEL_DEFAULT (1..5)</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Blocks className="w-3.5 h-3.5 text-slate-500" /> PROVIDER_PARALLEL_DEFAULT (1..5) <HelpTip text="Song song khi model cụ thể có >1 provider hỗ trợ (ví dụ: auto-like). 2 giúp vượt qua provider chậm mà không quá tải." /></label>
                 <input type="range" min={1} max={5} value={form.PROVIDER_PARALLEL_DEFAULT} onChange={(e) => update({ PROVIDER_PARALLEL_DEFAULT: parseInt(e.target.value) || 2 })} className="w-full accent-amber-500 mt-2" aria-label="PROVIDER_PARALLEL_DEFAULT" />
                 <div className="text-xs font-mono text-center bg-slate-100 rounded py-0.5 mt-1">{form.PROVIDER_PARALLEL_DEFAULT}</div>
               </div>
               <div className={`${isModified("CIRCUIT_BREAKER_THRESHOLD") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">CIRCUIT_BREAKER_THRESHOLD (1..100) <span className="font-normal text-slate-400">rec 8</span></label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-slate-500" /> CIRCUIT_BREAKER_THRESHOLD (1..100) <span className="font-normal text-slate-400">rec 8</span> <HelpTip text="Số lỗi liên tiếp (retryable: 429/5xx/timeout/budget) trước khi mở breaker. Mở = skip provider trong COOLDOWN_MS. 8 tránh cascade 502 khi 1 model hay timeout." /></label>
                 <input type="number" min={1} max={100} value={form.CIRCUIT_BREAKER_THRESHOLD} onChange={(e) => update({ CIRCUIT_BREAKER_THRESHOLD: parseInt(e.target.value) || 8 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="CIRCUIT_BREAKER_THRESHOLD" />
               </div>
               <div className={`sm:col-span-2 ${isModified("CIRCUIT_BREAKER_COOLDOWN_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">CIRCUIT_BREAKER_COOLDOWN_MS (1k..300k)</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Timer className="w-3.5 h-3.5 text-slate-500" /> CIRCUIT_BREAKER_COOLDOWN_MS (1k..300k) <HelpTip text="Thời gian breaker mở trước khi cho thử lại (half-open). Hết cooldown → 1 request thử, cần 2 success liên tiếp để đóng lại, fail thì mở lại." /></label>
                 <input type="number" min={1000} max={300000} value={form.CIRCUIT_BREAKER_COOLDOWN_MS} onChange={(e) => update({ CIRCUIT_BREAKER_COOLDOWN_MS: parseInt(e.target.value) || 20000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="CIRCUIT_BREAKER_COOLDOWN_MS" />
               </div>
             </div>
@@ -1309,7 +1320,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             <div className={`flex items-center justify-between py-2 px-3 rounded-lg border ${isModified("WEB_TOOLS_ENABLED") ? "border-amber-300 bg-amber-50/50" : "border-slate-100 bg-slate-50/50"}`}>
               <div>
                 <div className="text-sm font-semibold text-slate-800 flex items-center gap-1.5">
-                  WEB_TOOLS_ENABLED {isModified("WEB_TOOLS_ENABLED") && <span className="w-2 h-2 rounded-full bg-amber-500" />}
+                  <Globe className="w-3.5 h-3.5 text-slate-500" /> WEB_TOOLS_ENABLED <HelpTip text="Bật web_search/web_fetch do gateway host. Khi bật, gateway tự inject 2 tools (web_search + web_fetch) vào request và chạy loop tối đa WEB_TOOLS_MAX_ITERATIONS vòng để lấy context web trước khi trả lời." /> {isModified("WEB_TOOLS_ENABLED") && <span className="w-2 h-2 rounded-full bg-amber-500" />}
                 </div>
                 <div className="text-xs text-slate-500">Enable gateway web_search/web_fetch loop</div>
               </div>
@@ -1317,7 +1328,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className={`${isModified("WEB_SEARCH_PROVIDER") ? "border-amber-300" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">WEB_SEARCH_PROVIDER</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Search className="w-3 h-3 text-slate-500" /> WEB_SEARCH_PROVIDER <HelpTip text="Provider tìm kiếm ưu tiên: tavily (ranked, 0.008$/credit) → brave → serper → jina fallback free 500 RPM không cần key. Nếu provider chọn fail, tự fallback jina." /></label>
                 <select value={form.WEB_SEARCH_PROVIDER} onChange={(e) => update({ WEB_SEARCH_PROVIDER: e.target.value })} className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-2 text-sm bg-white" aria-label="WEB_SEARCH_PROVIDER">
                   <option value="tavily">tavily</option>
                   <option value="brave">brave</option>
@@ -1326,25 +1337,25 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 </select>
               </div>
               <div className={`${isModified("WEB_FETCH_TIMEOUT_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">FETCH_TIMEOUT_MS (1k..30k)</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Timer className="w-3 h-3 text-slate-500" /> FETCH_TIMEOUT_MS (1k..30k) <HelpTip text="Timeout fetch HTML. Quá hạn → bỏ qua URL đó, không fail cả request. 8s là cân bằng giữa chờ web và latency chat." /></label>
                 <input type="number" min={1000} max={30000} value={form.WEB_FETCH_TIMEOUT_MS} onChange={(e) => update({ WEB_FETCH_TIMEOUT_MS: parseInt(e.target.value) || 8000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-mono" aria-label="WEB_FETCH_TIMEOUT_MS" />
               </div>
               <div className="border border-slate-200 rounded-lg p-3">
-                <label className="text-xs font-semibold text-slate-700">FETCH_MAX_BYTES (1k..2M)</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><FileJson className="w-3 h-3 text-slate-500" /> FETCH_MAX_BYTES (1k..2M) <HelpTip text="Giới hạn kích thước HTML fetch. Chỉ HTML, strip script/style, trích xuất markdown 12k chars. Quá hạn → cắt ngắn để tránh tốn token." /></label>
                 <input type="number" min={1000} max={2000000} value={form.WEB_FETCH_MAX_BYTES} onChange={(e) => update({ WEB_FETCH_MAX_BYTES: parseInt(e.target.value) || 500000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-mono" aria-label="WEB_FETCH_MAX_BYTES" />
               </div>
               <div className="border border-slate-200 rounded-lg p-3">
-                <label className="text-xs font-semibold text-slate-700">SEARCH_MAX_RESULTS (1..10)</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Search className="w-3 h-3 text-slate-500" /> SEARCH_MAX_RESULTS (1..10) <HelpTip text="Số kết quả search inject vào context. 5 là mặc định: đủ đa dạng nhưng không tràn token. 10 tốn token hơn." /></label>
                 <input type="range" min={1} max={10} value={form.WEB_SEARCH_MAX_RESULTS} onChange={(e) => update({ WEB_SEARCH_MAX_RESULTS: parseInt(e.target.value) || 5 })} className="w-full accent-amber-500 mt-2" aria-label="WEB_SEARCH_MAX_RESULTS" />
                 <div className="text-xs font-mono text-center bg-slate-100 rounded py-0.5 mt-1">{form.WEB_SEARCH_MAX_RESULTS}</div>
               </div>
               <div className="border border-slate-200 rounded-lg p-3">
-                <label className="text-xs font-semibold text-slate-700">MAX_ITERATIONS (1..5)</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Activity className="w-3 h-3 text-slate-500" /> MAX_ITERATIONS (1..5) <HelpTip text="Số vòng tool-call tối đa. Mỗi vòng: LLM gọi web_search/web_fetch → gateway thực thi → inject kết quả → LLM tiếp. 3 đủ cho hỏi-đáp đa bước." /></label>
                 <input type="range" min={1} max={5} value={form.WEB_TOOLS_MAX_ITERATIONS} onChange={(e) => update({ WEB_TOOLS_MAX_ITERATIONS: parseInt(e.target.value) || 3 })} className="w-full accent-amber-500 mt-2" aria-label="WEB_TOOLS_MAX_ITERATIONS" />
                 <div className="text-xs font-mono text-center bg-slate-100 rounded py-0.5 mt-1">{form.WEB_TOOLS_MAX_ITERATIONS}</div>
               </div>
               <div className="border border-slate-200 rounded-lg p-3">
-                <label className="text-xs font-semibold text-slate-700">WEB_CACHE_TTL_S (60..86400)</label>
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><Clock className="w-3 h-3 text-slate-500" /> WEB_CACHE_TTL_S (60..86400) <HelpTip text="TTL cache cho kết quả search/fetch (theo query/url). 3600 = 1 giờ. Hit cache thì không gọi provider ngoài, tiết kiệm cost & latency." /></label>
                 <input type="number" min={60} max={86400} value={form.WEB_CACHE_TTL_S} onChange={(e) => update({ WEB_CACHE_TTL_S: parseInt(e.target.value) || 3600 })} className="mt-1 w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-mono" aria-label="WEB_CACHE_TTL_S" />
               </div>
             </div>
@@ -1352,7 +1363,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
 
           <Section id="analytics" title={t("settings.analytics") || "Analytics"} icon={<BarChart3 className="w-4 h-4" />} keywords="analytics retention" onResetSection={() => handleResetSection(["ANALYTICS_RETENTION_DAYS"])}>
             <div className={`${isModified("ANALYTICS_RETENTION_DAYS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-              <label className="text-xs font-semibold text-slate-700">ANALYTICS_RETENTION_DAYS (1..365)</label>
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5"><BarChart3 className="w-3.5 h-3.5 text-slate-500" /> ANALYTICS_RETENTION_DAYS (1..365) <HelpTip text="Số ngày giữ rollup analytics (costByProvider, cacheHitRate, p95, errorsByProvider). Quá hạn tự purge. Ảnh hưởng GET /api/analytics." /></label>
               <input type="range" min={1} max={365} value={form.ANALYTICS_RETENTION_DAYS} onChange={(e) => update({ ANALYTICS_RETENTION_DAYS: parseInt(e.target.value) || 30 })} className="w-full accent-amber-500 mt-2" aria-label="ANALYTICS_RETENTION_DAYS" />
               <div className="flex justify-between text-xs text-slate-500 font-mono">
                 <span>1</span>
@@ -1366,18 +1377,16 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
           <Section id="tiers" title="Fallback Tiers" icon={<Layers className="w-4 h-4" />} desc="FALLBACK_TIERS JSON — tier order defines routing priority (max 8 tiers, 200 providers)" keywords="fallback tiers providers routing" onResetSection={() => handleResetSection(["FALLBACK_TIERS"])}>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700"><ListOrdered className="w-3.5 h-3.5 text-slate-500" /> Add provider <HelpTip text="Thêm provider id vào tier 1 (đầu danh sách ưu tiên). Router thử tier 1 trước, hết thì xuống tier 2... Input chấp nhận a-z 0-9 . _ - / @, dedupe toàn bộ tiers." /></div>
                 <input type="text" value={newProvider} onChange={(e) => setNewProvider(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleTiersAddProvider(); } }} placeholder="Add provider id (e.g. groq)" className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-mono" aria-label="New provider id" />
-                <button type="button" onClick={handleTiersAddProvider} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800">Add to tier 1</button>
+                <button type="button" onClick={handleTiersAddProvider} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-1.5"><Plus className="w-3.5 h-3.5" /> Add to tier 1</button>
               </div>
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-700"><FileJson className="w-3.5 h-3.5 text-slate-500" /> FALLBACK_TIERS JSON <HelpTip text="JSON mảng 2 chiều: mỗi mảng con là 1 tier ưu tiên. Router thử tier 1 hết → tier 2 → ... max 8 tiers, 60 provider/tier, deduped, chạy filter chỉ giữ provider đã config + public pollinations/llm7-io." /></div>
               <textarea value={tiersText} onChange={(e) => setTiersText(e.target.value)} rows={6} className={`w-full rounded-lg border px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 ${tiersError ? "border-red-300 ring-red-500 bg-red-50/30" : isModified("FALLBACK_TIERS") ? "border-amber-300 focus:ring-amber-500 bg-amber-50/20" : "border-slate-200 focus:ring-amber-500"}`} placeholder={DEFAULT_TIER_JSON} aria-label="FALLBACK_TIERS JSON" aria-invalid={!!tiersError} />
               {tiersError && <p className="text-xs text-red-600" role="alert">{tiersError}</p>}
               <div className="flex items-center gap-2">
-                <button type="button" onClick={handleTiersSave} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800">
-                  Validate & Stage
-                </button>
-                <button type="button" onClick={() => { const norm = normalizeTiersString(DEFAULT_TIER_JSON); setTiersText(norm); update({ FALLBACK_TIERS: norm }); setTiersError(null); }} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50">
-                  Reset default
-                </button>
+                <button type="button" onClick={handleTiersSave} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> Validate & Stage</button>
+                <button type="button" onClick={() => { const norm = normalizeTiersString(DEFAULT_TIER_JSON); setTiersText(norm); update({ FALLBACK_TIERS: norm }); setTiersError(null); }} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-200 bg-white hover:bg-slate-50 flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Reset default</button>
                 <span className="text-xs text-slate-400">JSON array of arrays • deduped, max 60/tier</span>
               </div>
               <div className="flex flex-wrap gap-1.5 p-2 bg-slate-50 rounded-lg border border-slate-200 max-h-32 overflow-y-auto" role="list" aria-label="Tiers preview">
