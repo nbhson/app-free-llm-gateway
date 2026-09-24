@@ -1078,8 +1078,8 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left col */}
+      <div className="grid grid-cols-1 gap-6">
+        {/* Single column — all sections stacked */}
         <div className="space-y-6">
           <Section id="semantic" title={t("settings.semanticCache") || "Semantic Cache"} icon={<Layers className="w-4 h-4" />} desc={t("settings.enabledOnlyIf") as string} keywords="semantic cache threshold ttl embedding" onResetSection={() => handleResetSection(["SEMANTIC_CACHE_ENABLED","SEMANTIC_THRESHOLD","CACHE_TTL_S","EMBEDDING_MODEL","EMBEDDING_FALLBACKS","SEMANTIC_CACHE_MAX_MEM","SEMANTIC_CACHE_SCAN_CAP"])}>
             <div className={`flex items-center justify-between py-2 px-3 rounded-lg border ${isModified("SEMANTIC_CACHE_ENABLED") ? "border-amber-300 bg-amber-50/50" : "border-transparent"}`}>
