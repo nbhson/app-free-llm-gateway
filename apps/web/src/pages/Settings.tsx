@@ -39,14 +39,33 @@ import {
 import { useLang } from "../lib/i18n.tsx";
 
 function HelpTip({ text, id }: { text: string; id?: string }) {
+  const [open, setOpen] = useState(false);
   return (
     <span
-      title={text}
+      className="relative inline-flex group"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)}
+      onBlur={() => setOpen(false)}
+      onClick={() => setOpen((v) => !v)}
+      tabIndex={0}
+      role="button"
       aria-label={text}
       aria-describedby={id}
-      className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-100 hover:bg-slate-200 border border-slate-200 cursor-help"
     >
-      <Info className="w-3 h-3 text-slate-500" />
+      <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-slate-100 group-hover:bg-slate-200 border border-slate-200 cursor-help">
+        <Info className="w-3 h-3 text-slate-500" />
+      </span>
+      {open && (
+        <span
+          id={id}
+          role="tooltip"
+          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 max-w-[260px] z-50 px-3 py-2 rounded-lg bg-slate-900 text-white text-xs leading-relaxed shadow-xl border border-slate-700 whitespace-normal break-words"
+        >
+          {text}
+          <span className="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2 bg-slate-900 rotate-45 border-r border-b border-slate-700 -mt-1" aria-hidden />
+        </span>
+      )}
     </span>
   );
 }
@@ -953,7 +972,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
     if (!matchesSearch(`${title} ${desc || ""} ${keywords || ""} ${id}`)) return null;
     const isCollapsed = collapsed[id];
     return (
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-xl border border-slate-200 overflow-visible">
         <div className="w-full flex items-center justify-between px-5 py-3.5 bg-slate-50/70 border-b border-slate-100">
           <button
             type="button"
