@@ -74,6 +74,8 @@ type SettingsState = {
   FALLBACK_TIERS: string; // JSON string
 };
 
+const PUBLIC_PROVIDERS_UI = new Set(["pollinations", "llm7-io", "ollama-cloud", "glhf", "glhf-chat"]);
+
 const STORAGE_KEY = "gatewaySettings";
 const LAST_SAVED_KEY = "gatewaySettings_lastSaved";
 const COLLAPSED_KEY = "gatewaySettings_collapsed";
@@ -133,7 +135,7 @@ const DEFAULTS: SettingsState = {
   SEMANTIC_CACHE_MAX_MEM: 1000,
   SEMANTIC_CACHE_SCAN_CAP: 200,
   COMPRESSION_ENABLED: 0,
-  COMPRESSION_MAX_TOKENS: 4096,
+  COMPRESSION_MAX_TOKENS: 8192,
   COST_ROUTING_ENABLED: 0,
   COST_WEIGHT: 5,
   LATENCY_WEIGHT: 0.0005,
@@ -141,12 +143,12 @@ const DEFAULTS: SettingsState = {
   SUCCESS_WEIGHT: 2,
   ANALYTICS_RETENTION_DAYS: 30,
   PROVIDER_TIMEOUT_MS: 25000,
-  PROVIDER_TIMEOUT_AUTO_MS: 8000,
-  PROVIDER_TIMEOUT_REASONING_MS: 35000,
+  PROVIDER_TIMEOUT_AUTO_MS: 12000,
+  PROVIDER_TIMEOUT_REASONING_MS: 60000,
   PROVIDER_PARALLEL_AUTO: 3,
   PROVIDER_PARALLEL_DEFAULT: 2,
-  CIRCUIT_BREAKER_THRESHOLD: 5,
-  CIRCUIT_BREAKER_COOLDOWN_MS: 30000,
+  CIRCUIT_BREAKER_THRESHOLD: 8,
+  CIRCUIT_BREAKER_COOLDOWN_MS: 20000,
   WEB_TOOLS_ENABLED: 0,
   WEB_SEARCH_PROVIDER: "tavily",
   WEB_FETCH_TIMEOUT_MS: 8000,
@@ -1252,12 +1254,12 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 <input type="number" min={1000} max={120000} value={form.PROVIDER_TIMEOUT_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_MS: parseInt(e.target.value) || 25000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_MS" />
               </div>
               <div className={`${isModified("PROVIDER_TIMEOUT_AUTO_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_AUTO_MS (1k..30k)</label>
-                <input type="number" min={1000} max={30000} value={form.PROVIDER_TIMEOUT_AUTO_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_AUTO_MS: parseInt(e.target.value) || 8000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_AUTO_MS" />
+                <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_AUTO_MS (1k..30k) <span className="font-normal text-slate-400">rec ≥12k</span></label>
+                <input type="number" min={1000} max={30000} value={form.PROVIDER_TIMEOUT_AUTO_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_AUTO_MS: parseInt(e.target.value) || 12000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_AUTO_MS" />
               </div>
               <div className={`${isModified("PROVIDER_TIMEOUT_REASONING_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_REASONING_MS (1k..120k)</label>
-                <input type="number" min={1000} max={120000} value={form.PROVIDER_TIMEOUT_REASONING_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_REASONING_MS: parseInt(e.target.value) || 35000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_REASONING_MS" />
+                <label className="text-xs font-semibold text-slate-700">PROVIDER_TIMEOUT_REASONING_MS (1k..120k) <span className="font-normal text-amber-600">rec ≥60k</span></label>
+                <input type="number" min={1000} max={120000} value={form.PROVIDER_TIMEOUT_REASONING_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_REASONING_MS: parseInt(e.target.value) || 60000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_REASONING_MS" />
               </div>
               <div className={`${isModified("PROVIDER_PARALLEL_AUTO") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
                 <label className="text-xs font-semibold text-slate-700">PROVIDER_PARALLEL_AUTO (1..5)</label>
@@ -1270,14 +1272,37 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 <div className="text-xs font-mono text-center bg-slate-100 rounded py-0.5 mt-1">{form.PROVIDER_PARALLEL_DEFAULT}</div>
               </div>
               <div className={`${isModified("CIRCUIT_BREAKER_THRESHOLD") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-slate-700">CIRCUIT_BREAKER_THRESHOLD (1..100)</label>
-                <input type="number" min={1} max={100} value={form.CIRCUIT_BREAKER_THRESHOLD} onChange={(e) => update({ CIRCUIT_BREAKER_THRESHOLD: parseInt(e.target.value) || 5 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="CIRCUIT_BREAKER_THRESHOLD" />
+                <label className="text-xs font-semibold text-slate-700">CIRCUIT_BREAKER_THRESHOLD (1..100) <span className="font-normal text-slate-400">rec 8</span></label>
+                <input type="number" min={1} max={100} value={form.CIRCUIT_BREAKER_THRESHOLD} onChange={(e) => update({ CIRCUIT_BREAKER_THRESHOLD: parseInt(e.target.value) || 8 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="CIRCUIT_BREAKER_THRESHOLD" />
               </div>
               <div className={`sm:col-span-2 ${isModified("CIRCUIT_BREAKER_COOLDOWN_MS") ? "border-amber-300 bg-amber-50/30" : "border-slate-200"} border rounded-lg p-3`}>
                 <label className="text-xs font-semibold text-slate-700">CIRCUIT_BREAKER_COOLDOWN_MS (1k..300k)</label>
-                <input type="number" min={1000} max={300000} value={form.CIRCUIT_BREAKER_COOLDOWN_MS} onChange={(e) => update({ CIRCUIT_BREAKER_COOLDOWN_MS: parseInt(e.target.value) || 30000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="CIRCUIT_BREAKER_COOLDOWN_MS" />
+                <input type="number" min={1000} max={300000} value={form.CIRCUIT_BREAKER_COOLDOWN_MS} onChange={(e) => update({ CIRCUIT_BREAKER_COOLDOWN_MS: parseInt(e.target.value) || 20000 })} className="mt-1 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm font-mono" aria-label="CIRCUIT_BREAKER_COOLDOWN_MS" />
               </div>
             </div>
+            {(form.PROVIDER_TIMEOUT_REASONING_MS < 50000 || form.PROVIDER_TIMEOUT_AUTO_MS < 10000) && (
+              <div className="mt-3 flex gap-2 p-3 rounded-lg border bg-amber-50 border-amber-200 text-xs text-amber-900" role="alert">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-bold">Dễ 502 với context lớn</div>
+                  <p className="mt-1 leading-relaxed">Agnes 3.0 / reasoning với 130k tokens từng timeout 35s trong log. Khuyến nghị <span className="font-mono bg-white px-1 rounded border">REASONING_MS ≥ 60000</span> + <span className="font-mono bg-white px-1 rounded border">AUTO_MS ≥ 12000</span> và bật <span className="font-mono bg-white px-1 rounded border">COMPRESSION_ENABLED</span> (8192 tokens).</p>
+                </div>
+              </div>
+            )}
+            {form.CIRCUIT_BREAKER_THRESHOLD <= 5 && (
+              <div className="mt-2 flex gap-2 p-3 rounded-lg border bg-rose-50 border-rose-200 text-xs text-rose-800" role="alert">
+                <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <div>
+                  <div className="font-bold">Circuit breaker quá nhạy</div>
+                  <p className="mt-1">Threshold 5 + cooldown 30s khiến 5 timeout liên tiếp (như log agnes) mở breaker 30s → loạt 502 <span className="font-mono bg-white px-1 rounded border">circuit open</span>. Đã nâng default lên 8 / 20s.</p>
+                </div>
+              </div>
+            )}
+            {!form.COMPRESSION_ENABLED && (
+              <div className="mt-2 text-xs text-slate-600 bg-slate-50 border border-slate-200 rounded-lg p-3">
+                <span className="font-bold">Gợi ý:</span> Log gần đây có request 160k-220k tokens. Bật <span className="font-mono">COMPRESSION_ENABLED</span> để tự động <span className="font-mono">relevanceKeep + codeDedup</span> giảm prompt trước khi gửi upstream, giảm timeout đáng kể.
+              </div>
+            )}
           </Section>
 
           <Section id="webtools" title="Web Tools" icon={<Globe className="w-4 h-4" />} desc="Gateway-hosted web_search + web_fetch" keywords="web tools search fetch tavily" onResetSection={() => handleResetSection(["WEB_TOOLS_ENABLED","WEB_SEARCH_PROVIDER","WEB_FETCH_TIMEOUT_MS","WEB_FETCH_MAX_BYTES","WEB_SEARCH_MAX_RESULTS","WEB_TOOLS_MAX_ITERATIONS","WEB_CACHE_TTL_S"])}>
@@ -1359,16 +1384,32 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 {(() => {
                   try {
                     const tiers: string[][] = JSON.parse(tiersText);
-                    return tiers.flat().map((p: string, idx: number) => (
-                      <span key={`${p}-${idx}`} className="px-2 py-0.5 rounded-full text-xs font-mono bg-white border border-slate-200" role="listitem">
-                        {p}
-                      </span>
-                    ));
+                    const flat = tiers.flat();
+                    return flat.map((p: string, idx: number) => {
+                      const isPublic = PUBLIC_PROVIDERS_UI.has(p);
+                      return (
+                        <span key={`${p}-${idx}`} className={`px-2 py-0.5 rounded-full text-xs font-mono border ${isPublic ? "bg-blue-50 border-blue-200 text-blue-700" : "bg-white border-slate-200 text-slate-700"}`} title={isPublic ? "public (no key, free fallback)" : "requires API key"} role="listitem">
+                          {p} {isPublic ? "• public" : ""}
+                        </span>
+                      );
+                    });
                   } catch {
                     return <span className="text-xs text-slate-400">Invalid JSON</span>;
                   }
                 })()}
               </div>
+              {(() => {
+                try {
+                  const tiers: string[][] = JSON.parse(tiersText);
+                  const flat = tiers.flat();
+                  const publicCount = flat.filter((p) => PUBLIC_PROVIDERS_UI.has(p)).length;
+                  const total = flat.length;
+                  if (total < 4) return <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">⚠️ Pool quá nhỏ ({total} providers) — dễ 502 khi 1 provider timeout. Khuyến nghị ≥6 với ít nhất 2 public (pollinations, llm7-io).</p>;
+                  if (publicCount === 0) return <p className="text-xs text-blue-700 bg-blue-50 border border-blue-200 rounded px-2 py-1">💡 Chưa có public fallback (pollinations/llm7-io). Thêm pollinations để không 502 khi hết key.</p>;
+                  return <p className="text-xs text-slate-500">{total} providers • {publicCount} public • sẽ filter theo hasRealKey (đã config) khi chạy.</p>;
+                } catch { return null; }
+              })()}
+              <p className="text-xs text-slate-400">Chips xanh = public (giữ lại khi filter), trắng = cần key. Router mới chỉ fallback vào provider đã config + public.</p>
             </div>
           </Section>
 

@@ -86,9 +86,9 @@ then **auto boot-sync** (`jobs/boot-sync.ts`) tự phát hiện provider mới (
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DEFAULT_MODEL` | `auto` | Model used when the client sends none |
-| `FALLBACK_TIERS` | `[[...]]` | JSON freellms tiers: `[["nvidia-nim","groq","cerebras","google-gemini"],["cloudflare-workers-ai","cohere","sambanova","siliconflow"],["ovhcloud-ai-endpoints","modelscope","llm7-io"],["openrouter","kilo-code","pollinations"]]` |
-| `CIRCUIT_BREAKER_THRESHOLD` | `5` | Failures before opening the circuit |
-| `CIRCUIT_BREAKER_COOLDOWN_MS` | `30000` | Cooldown duration |
+| `FALLBACK_TIERS` | `[[...]]` | JSON freellms tiers (filtered at runtime to `hasRealKey \|\| isPublic` — only configured + `pollinations/llm7-io/ollama-cloud` kept): `[["nvidia-nim","groq","cerebras","google-gemini"],["cloudflare-workers-ai","cohere","sambanova","siliconflow"],["ovhcloud-ai-endpoints","modelscope","llm7-io"],["openrouter","kilo-code","pollinations"]]` |
+| `CIRCUIT_BREAKER_THRESHOLD` | `8` | Failures before opening the circuit (raised from 5 to reduce 502 cascade) |
+| `CIRCUIT_BREAKER_COOLDOWN_MS` | `20000` | Cooldown duration (reduced from 30s) |
 
 ### Vector 1+2 — Audio / Responses / Anthropic / Semantic Cache / Compression / Cost Routing / Analytics (2026-09-08) — now tunable via `/settings` + `PUT /api/config` hot-reload (no restart)
 
@@ -103,7 +103,7 @@ then **auto boot-sync** (`jobs/boot-sync.ts`) tự phát hiện provider mới (
 | `SEMANTIC_CACHE_MAX_MEM` | `1000` | Max in-memory entries before LRU evict (100..10000) | Number `100..10000` |
 | `SEMANTIC_CACHE_SCAN_CAP` | `200` | Max entries scanned for cosine hit (10..1000) | Number `10..1000` |
 | `COMPRESSION_ENABLED` | `0` | Enable token compression: query-aware `relevanceKeep` (BM25-lite vs last user message, keeps system + 3 recent + top-5 relevant) + tools minify + normalized code dedup | Toggle, dependency: only on cache miss `chat.ts:165` |
-| `COMPRESSION_MAX_TOKENS` | `4096` | Token budget before compression kicks in (512..32000) — `>80% context` triggers | Slider `512..32000` |
+| `COMPRESSION_MAX_TOKENS` | `8192` | Token budget before compression kicks in (512..32000) — `>80% context` triggers (raised from 4096 for large 130k context) | Slider `512..32000` |
 | `COST_ROUTING_ENABLED` | `0` | Enable cost-aware routing — score `cost*COST_WEIGHT + latency*LATENCY_WEIGHT - headroom*HEADROOM_WEIGHT - successRate*SUCCESS_WEIGHT` (success from request-log last100, default 1 when no data) | Toggle, live formula preview |
 | `COST_WEIGHT` | `5` | Cost weight ($/1M) — higher = prefer cheapest | Slider `0..10` |
 | `LATENCY_WEIGHT` | `0.0005` | Latency weight (ms) — higher = prefer fastest | Slider `0..0.005` |
@@ -111,13 +111,13 @@ then **auto boot-sync** (`jobs/boot-sync.ts`) tự phát hiện provider mới (
 | `SUCCESS_WEIGHT` | `2` | Success rate weight — demotes flaky providers before breaker opens (`0` disables) | Slider `0..5` |
 | `ANALYTICS_RETENTION_DAYS` | `30` | Days to retain admin analytics rollups (`costByProvider`, `cacheHitRate`, `p95` latency) | Slider `1..365` |
 | `PROVIDER_TIMEOUT_MS` | `25000` | Timeout for regular providers (1000..120000 ms) | Number `1k..120k` |
-| `PROVIDER_TIMEOUT_AUTO_MS` | `8000` | Timeout when `model=auto` (1000..30000) — faster failover | Number `1k..30k` |
-| `PROVIDER_TIMEOUT_REASONING_MS` | `35000` | Timeout for reasoning models (`agnes-3.0-flash`, `glm-5.3`, `deepseek r1` — TTFB 4-8s) to avoid false `502 timeout` | Number `1k..120k` |
+| `PROVIDER_TIMEOUT_AUTO_MS` | `12000` | Timeout when `model=auto` (1000..30000) — raised from 8000 to reduce 502 failover thrash | Number `1k..30k` |
+| `PROVIDER_TIMEOUT_REASONING_MS` | `60000` | Timeout for reasoning models (`agnes-3.0-flash`, `glm-5.3`, `deepseek r1` — TTFB 4-8s, large 130k context needs 60s) | Number `1k..120k` |
 | `PROVIDER_PARALLEL_AUTO` | `3` | Parallel providers when `auto` (1..5) | Slider `1..5` |
 | `PROVIDER_PARALLEL_DEFAULT` | `2` | Hedged parallel for non-auto models with `>1` provider (1..5) — cuts tail latency | Slider `1..5` |
-| `CIRCUIT_BREAKER_THRESHOLD` | `5` | Consecutive failures before opening breaker (1..100) | Number `1..100` |
-| `CIRCUIT_BREAKER_COOLDOWN_MS` | `30000` | Cooldown before half-open (1000..300000 ms) | Number `1k..300k` |
-| `FALLBACK_TIERS` | `[[...default 41 providers...]]` | Provider priority order — JSON array of arrays (max 8 tiers, 200 providers, 60/tier, deduped) | JSON editor + preview chips + `Add to tier 1` + `Validate & Stage` |
+| `CIRCUIT_BREAKER_THRESHOLD` | `8` | Consecutive failures before opening breaker (1..100) — raised from 5 | Number `1..100` |
+| `CIRCUIT_BREAKER_COOLDOWN_MS` | `20000` | Cooldown before half-open (1000..300000 ms) — reduced from 30s | Number `1k..300k` |
+| `FALLBACK_TIERS` | `[[...default 41 providers...]]` | Provider priority order — JSON array of arrays (max 8 tiers, 200 providers, 60/tier, deduped), runtime filtered to configured + public `pollinations/llm7-io` | JSON editor + preview chips (blue=public, white=key) + `Add to tier 1` + `Validate & Stage` + health warning |
 
 Flags are off by default (`0`) for backwards compatibility. **New:** all tunable live via `/settings` → `Apply to server` `PUT /api/config` (atomic, admin, caps, audit `logger.info`) without restart; also available via `.env` + restart (see kill/restart notes above). `GET /api/config` returns all 29 keys, `PUT` validates ranges and returns `{applied, errors}` 400 on invalid.
 

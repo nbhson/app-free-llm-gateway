@@ -15,13 +15,23 @@ let keyIndex = 0;
 /** Final fallback provider — always tried last regardless of sort. */
 const FINAL_FALLBACK = "agnes-ai";
 
+function isUsableProvider(pid: string): boolean {
+  return hasRealKey(pid) || isPublicProvider(pid);
+}
+
 export function getProvidersForRequest(model: string, strategy: Strategy = "tiered"): string[] {
+  const explicitPrefix = model.includes("/") ? resolveProviderId(model.split("/")[0]) : null;
+  const keepExplicit = (pid: string) => explicitPrefix === pid;
+
   if (strategy === "round-robin") {
     const ids = resolveProvidersForModel(model);
     // rotate
     const rotated = [...ids.slice(rrIndex % ids.length), ...ids.slice(0, rrIndex % ids.length)];
     rrIndex++;
-    return rotated.filter((id) => getProvider(id));
+    // Only return providers that are configured (hasRealKey) or public (pollinations etc.)
+    // — keeps fallback cheap and avoids trying dummy providers with no key.
+    // Explicitly requested prefix is kept even if not configured to surface proper "no key" error.
+    return rotated.filter((id) => getProvider(id) && (isUsableProvider(id) || keepExplicit(id)));
   }
 
   // tiered: respect FALLBACK_TIERS strictly (user-defined single tier = only those 8, no append)
@@ -46,17 +56,21 @@ export function getProvidersForRequest(model: string, strategy: Strategy = "tier
     }
   }
   // For strict single-tier (user-defined 8), keep exact tier order as specified, no re-sort
+  // Still filter to only configured providers (+ public like pollinations) to avoid hardcode bloat.
+  // Explicit prefix is kept to allow "groq/xxx" to surface "no key" rather than empty fallback.
   if (isSingleTierStrict) {
-    return ordered;
+    return ordered.filter((p) => isUsableProvider(p) || keepExplicit(p));
   }
-  // Priority: real key -> public free (pollinations) -> dummy/no-key.
+  // Filter to only configured providers (+ public like pollinations) — no hardcode dummy.
+  const filtered = ordered.filter((p) => isUsableProvider(p) || keepExplicit(p));
+  // Priority: real key -> public free (pollinations).
   // If no real keys are configured, public providers go first so `auto` hits
   // live free instead of failing fast.
   const hasRealKeyFor = (pid: string): boolean => {
     return hasRealKey(pid);
   };
-  ordered.sort((a, b) => {
-    // FINAL_FALLBACK always last — never pulled up by sort.
+  filtered.sort((a, b) => {
+    // FINAL_FALLBACK always last — never pulled up by sort (if it passed isUsable).
     if (a === FINAL_FALLBACK && b !== FINAL_FALLBACK) return 1;
     if (b === FINAL_FALLBACK && a !== FINAL_FALLBACK) return -1;
     const aReal = hasRealKeyFor(a);
@@ -64,17 +78,17 @@ export function getProvidersForRequest(model: string, strategy: Strategy = "tier
     if (aReal !== bReal) return aReal ? -1 : 1;
     const aPublic = isPublicProvider(a);
     const bPublic = isPublicProvider(b);
-    if (aPublic !== bPublic) return aPublic ? -1 : 1; // public before dummy
+    if (aPublic !== bPublic) return aPublic ? -1 : 1; // public before dummy (dummy already filtered)
     const aHas = hasRealKey(a);
     const bHas = hasRealKey(b);
     if (aHas !== bHas) return aHas ? -1 : 1;
     return 0;
   });
   // Keep FINAL_FALLBACK last even if sort stability changes
-  if (ordered.includes(FINAL_FALLBACK)) {
-    return [...ordered.filter((p) => p !== FINAL_FALLBACK), FINAL_FALLBACK];
+  if (filtered.includes(FINAL_FALLBACK)) {
+    return [...filtered.filter((p) => p !== FINAL_FALLBACK), FINAL_FALLBACK];
   }
-  return ordered;
+  return filtered;
 }
 
 export function getNextKey(providerId: string): string | null {

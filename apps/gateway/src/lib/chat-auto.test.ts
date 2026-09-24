@@ -11,14 +11,14 @@ function readGate(file: string): string {
 }
 
 describe("Fix 1.9.2 — free-llm-gateway/auto slow 10-15s", () => {
-  it("config has PROVIDER_TIMEOUT_AUTO_MS (8000 default) distinct from 25000", () => {
+  it("config has PROVIDER_TIMEOUT_AUTO_MS (12000 default) distinct from 25000", () => {
     const txt = readGate("apps/gateway/src/config.ts");
     expect(txt).toContain("providerTimeoutMs");
     expect(txt).toContain("PROVIDER_TIMEOUT_MS");
     expect(txt).toContain("25000");
     expect(txt).toContain("providerTimeoutAutoMs");
     expect(txt).toContain("PROVIDER_TIMEOUT_AUTO_MS");
-    expect(txt).toContain("8000");
+    expect(txt).toContain("12000");
   });
 
   it("provider-executor supports per-call timeoutMs param", () => {
@@ -71,11 +71,11 @@ describe("Fix 1.9.2 — free-llm-gateway/auto slow 10-15s", () => {
     expect(txt).toMatch(/toMatch/);
   });
 
-  it("config has PROVIDER_TIMEOUT_REASONING_MS (35000) and PROVIDER_PARALLEL_DEFAULT (2)", () => {
+  it("config has PROVIDER_TIMEOUT_REASONING_MS (60000) and PROVIDER_PARALLEL_DEFAULT (2)", () => {
     const txt = readGate("apps/gateway/src/config.ts");
     expect(txt).toContain("providerTimeoutReasoningMs");
     expect(txt).toContain("PROVIDER_TIMEOUT_REASONING_MS");
-    expect(txt).toContain("35000");
+    expect(txt).toContain("60000");
     expect(txt).toContain("providerParallelDefault");
     expect(txt).toContain("PROVIDER_PARALLEL_DEFAULT");
   });

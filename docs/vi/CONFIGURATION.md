@@ -86,9 +86,9 @@ then **auto boot-sync** (`jobs/boot-sync.ts`) tự phát hiện provider mới (
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DEFAULT_MODEL` | `auto` | Model used when the client sends none |
-| `FALLBACK_TIERS` | `[[...]]` | JSON freellms tiers: `[["nvidia-nim","groq","cerebras","google-gemini"],["cloudflare-workers-ai","cohere","sambanova","siliconflow"],["ovhcloud-ai-endpoints","modelscope","llm7-io"],["openrouter","kilo-code","pollinations"]]` |
-| `CIRCUIT_BREAKER_THRESHOLD` | `5` | Failures before opening the circuit |
-| `CIRCUIT_BREAKER_COOLDOWN_MS` | `30000` | Cooldown duration |
+| `FALLBACK_TIERS` | `[[...]]` | JSON freellms tiers (runtime filter `hasRealKey \|\| isPublic` — chỉ giữ provider đã config + `pollinations/llm7-io/ollama-cloud`): `[["nvidia-nim","groq","cerebras","google-gemini"],["cloudflare-workers-ai","cohere","sambanova","siliconflow"],["ovhcloud-ai-endpoints","modelscope","llm7-io"],["openrouter","kilo-code","pollinations"]]` |
+| `CIRCUIT_BREAKER_THRESHOLD` | `8` | Failures before opening the circuit (tăng từ 5 để giảm cascade 502) |
+| `CIRCUIT_BREAKER_COOLDOWN_MS` | `20000` | Cooldown duration (giảm từ 30s) |
 
 ### Vector 1+2 — Audio / Responses / Anthropic / Semantic Cache / Compression / Cost Routing / Analytics (2026-09-08)
 

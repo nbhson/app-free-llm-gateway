@@ -206,8 +206,8 @@ export const config = {
   encryptionKey: process.env.ENCRYPTION_KEY || "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
   defaultModel: process.env.DEFAULT_MODEL || "auto",
   fallbackTiers: parseTiers(),
-  circuitBreakerThreshold: parseInt(process.env.CIRCUIT_BREAKER_THRESHOLD || "5", 10),
-  circuitBreakerCooldownMs: parseInt(process.env.CIRCUIT_BREAKER_COOLDOWN_MS || "30000", 10),
+  circuitBreakerThreshold: parseInt(process.env.CIRCUIT_BREAKER_THRESHOLD || "8", 10),
+  circuitBreakerCooldownMs: parseInt(process.env.CIRCUIT_BREAKER_COOLDOWN_MS || "20000", 10),
   // Experiential Labs OpenAI-compatible base (used in registry)
   experientialApiBase: process.env.EXPERIENTIAL_API_BASE || "https://api.experientiallabs.ai/v1",
   // Vector 2 flags - validated with safe defaults
@@ -234,8 +234,8 @@ export const config = {
   compressionEnabled: parseBoolEnv(process.env.COMPRESSION_ENABLED),
   // token budget for compression pipeline (harness 02 Build Context) - default 80% of context
   compressionMaxTokens: (() => {
-    const v = parseInt(process.env.COMPRESSION_MAX_TOKENS || "4096", 10);
-    if (isNaN(v) || v <= 0) return 4096;
+    const v = parseInt(process.env.COMPRESSION_MAX_TOKENS || "8192", 10);
+    if (isNaN(v) || v <= 0) return 8192;
     return Math.min(v, 32000);
   })(),
   costRoutingEnabled: parseBoolEnv(process.env.COST_ROUTING_ENABLED),
@@ -276,13 +276,13 @@ export const config = {
     return isNaN(v) || v <= 0 ? 25000 : Math.min(v, 120000);
   })(),
   providerTimeoutAutoMs: (() => {
-    const v = parseInt(process.env.PROVIDER_TIMEOUT_AUTO_MS || "8000", 10);
-    return isNaN(v) || v <= 0 ? 8000 : Math.min(v, 30000);
+    const v = parseInt(process.env.PROVIDER_TIMEOUT_AUTO_MS || "12000", 10);
+    return isNaN(v) || v <= 0 ? 12000 : Math.min(v, 30000);
   })(),
-  // Reasoning models (agnes 3.0, deepseek, glm-5.3 etc.) need longer headers timeout — default 35s
+  // Reasoning models (agnes 3.0, deepseek, glm-5.3 etc.) need longer headers timeout — default 60s for large context
   providerTimeoutReasoningMs: (() => {
-    const v = parseInt(process.env.PROVIDER_TIMEOUT_REASONING_MS || "35000", 10);
-    return isNaN(v) || v <= 0 ? 35000 : Math.min(v, 120000);
+    const v = parseInt(process.env.PROVIDER_TIMEOUT_REASONING_MS || "60000", 10);
+    return isNaN(v) || v <= 0 ? 60000 : Math.min(v, 120000);
   })(),
   providerParallelAuto: (() => {
     const v = parseInt(process.env.PROVIDER_PARALLEL_AUTO || "3", 10);
