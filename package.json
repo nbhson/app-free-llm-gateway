@@ -2,7 +2,7 @@
   "name": "app-auto-llm-free",
   "private": true,
   "type": "module",
-  "version": "1.11.3",
+  "version": "1.11.4",
   "workspaces": [
     "apps/*",
     "packages/*"

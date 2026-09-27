@@ -2,6 +2,12 @@
 
 Tất cả thay đổi đáng chú ý sẽ được ghi ở đây. Format theo [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.11.4] - 2026-09-27
+
+### Changed
+- **`.env.example` sync tuned defaults từ `.env`** — `FALLBACK_TIERS` về list ngắn 12 providers đã verify (`kiraai → pollinations → llm7-io → kilo-code → agnes-ai → ollama-cloud → nvidia-nim → openrouter → opencode → b-ai → tokenharbor → google-gemini`), `CIRCUIT_BREAKER_THRESHOLD` `8→12`, `CIRCUIT_BREAKER_COOLDOWN_MS` `20000→15000`, `WEB_TOOLS_ENABLED` `1→0` (opt-in, khớp code default) — người dùng mới copy là chạy, không mất thời gian tune
+- **Version** — `1.11.3→1.11.4` (`package.json`, `apps/gateway/package.json`, `apps/web/package.json`)
+
 ## [1.11.3] - 2026-09-15
 
 ### Added
