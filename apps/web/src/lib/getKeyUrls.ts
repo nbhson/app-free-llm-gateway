@@ -55,6 +55,12 @@ export const getKeyUrls: Record<string, string> = {
   anthropic: "https://console.anthropic.com/settings/keys",
   "claude-code": "https://console.anthropic.com/settings/keys",
   codex: "https://platform.openai.com/api-keys",
+  routeway: "https://routeway.ai",
+  ainative: "https://ainative.studio",
+  navy: "https://api.navy",
+  aihorde: "https://aihorde.net",
+  longcat: "https://longcat.chat/platform",
+  huggingface: "https://huggingface.co/settings/tokens",
 };
 
 export function getKeyUrl(slug: string): string {
@@ -118,6 +124,12 @@ export const providerInfoUrls: Record<string, string> = {
   anthropic: "https://www.anthropic.com",
   "claude-code": "https://www.anthropic.com",
   codex: "https://openai.com/codex",
+  routeway: "https://routeway.ai",
+  ainative: "https://ainative.studio",
+  navy: "https://api.navy",
+  aihorde: "https://aihorde.net",
+  longcat: "https://longcat.chat",
+  huggingface: "https://huggingface.co",
 };
 
 export function getProviderInfoUrl(slug: string): string {

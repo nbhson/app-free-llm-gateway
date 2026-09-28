@@ -8,6 +8,10 @@ export const PUBLIC_PROVIDERS: ReadonlySet<string> = new Set([
   "ollama-cloud",
   "glhf-chat",
   "glhf",
+  // anonymous tiers (no key needed,mirrors freellmapi behavior):
+  // aihorde accepts 0000000000, ovh serves 2 req/min per IP per model
+  "aihorde",
+  "ovhcloud-ai-endpoints",
 ]);
 
 export function isPublicProvider(providerId: string): boolean {

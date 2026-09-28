@@ -54,6 +54,12 @@ export const baseUrls: Record<string, string> = {
   anthropic: "https://api.anthropic.com/v1",
   "claude-code": "https://api.anthropic.com/v1",
   codex: "https://api.openai.com/v1",
+  routeway: "https://api.routeway.ai/v1",
+  ainative: "https://api.ainative.studio/api/v1",
+  navy: "https://api.navy/v1",
+  aihorde: "https://oai.aihorde.net/v1",
+  longcat: "https://api.longcat.chat/openai/v1",
+  huggingface: "https://router.huggingface.co/v1",
 };
 
 export function getBaseUrl(slug: string): string {

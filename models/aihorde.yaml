@@ -1,0 +1,54 @@
+# Provider: aihorde — community volunteer workers, queue-based (oai.aihorde.net/v1)
+# Anonymous key 0000000000 works (lowest priority); registered key raises priority.
+# Live /v1/models 2026-09-28 (29 rows). No tool support; allow up to ~120s per call.
+models:
+  - id: "aihorde/koboldcpp/Llama-3.2-3B"
+    display_name: "koboldcpp/Llama-3.2-3B"
+    provider: aihorde
+    context_length: 8192
+    score: 55
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text]
+    limit: "community queue (kudos, not tokens)"
+  - id: "aihorde/aphrodite/TheDrummer/Skyfall-31B-v4.2"
+    display_name: "aphrodite/TheDrummer/Skyfall-31B-v4.2"
+    provider: aihorde
+    context_length: 8192
+    score: 58
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text]
+    limit: "community queue (kudos, not tokens)"
+  - id: "aihorde/aphrodite/DeepSeek-V4.1-Flash"
+    display_name: "aphrodite/DeepSeek-V4.1-Flash"
+    provider: aihorde
+    context_length: 65536
+    score: 62
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "community queue (kudos, not tokens)"
+  - id: "aihorde/koboldcpp/Qwen/Qwen3.5-0.8B"
+    display_name: "koboldcpp/Qwen/Qwen3.5-0.8B"
+    provider: aihorde
+    context_length: 8192
+    score: 50
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text]
+    limit: "community queue (kudos, not tokens)"
+  - id: "aihorde/koboldcpp/L3-8B-Stheno-v3.2"
+    display_name: "koboldcpp/L3-8B-Stheno-v3.2"
+    provider: aihorde
+    context_length: 8192
+    score: 54
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text]
+    limit: "community queue (kudos, not tokens)"

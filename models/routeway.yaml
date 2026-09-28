@@ -1,0 +1,52 @@
+# Provider: routeway — live /v1/models 2026-09-28 (278 rows, 9 :free)
+models:
+  - id: "routeway/deepseek-v4-flash:free"
+    display_name: "deepseek-v4-flash:free"
+    provider: routeway
+    context_length: 42000
+    score: 70
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "Free (:free tier, ~5 RPM)"
+  - id: "routeway/minimax-m2.7:free"
+    display_name: "minimax-m2.7:free"
+    provider: routeway
+    context_length: 42000
+    score: 68
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "Free (:free tier, ~5 RPM)"
+  - id: "routeway/muse-glimmer-30b:free"
+    display_name: "muse-glimmer-30b:free"
+    provider: routeway
+    context_length: 131072
+    score: 66
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "Free (:free tier, ~5 RPM)"
+  - id: "routeway/gemma-4-26b-a4b-it-chimerax:free"
+    display_name: "gemma-4-26b-a4b-it-chimerax:free"
+    provider: routeway
+    context_length: 62000
+    score: 60
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text]
+    limit: "Free (:free tier, ~5 RPM)"
+  - id: "routeway/gemma-4-26b-a4b-it-meromero:free"
+    display_name: "gemma-4-26b-a4b-it-meromero:free"
+    provider: routeway
+    context_length: 62000
+    score: 60
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text]
+    limit: "Free (:free tier, ~5 RPM)"

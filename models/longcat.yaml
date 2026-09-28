@@ -1,0 +1,14 @@
+# Provider: longcat — LongCat (Meituan), daily free quota, email signup ok
+# NOTE: model ids below are seeds — run Sync Live / verify with LONGCAT_API_KEYS
+# set and the live /v1/models sync becomes the source of truth.
+models:
+  - id: "longcat/auto"
+    display_name: "auto"
+    provider: longcat
+    context_length: 131072
+    score: 60
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text]
+    limit: "daily free quota"

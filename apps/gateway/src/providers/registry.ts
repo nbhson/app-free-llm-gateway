@@ -41,6 +41,12 @@ export const providers: Record<string, Provider> = {
   deepseek: OPENAI({ id: "deepseek", baseUrl: "https://api.deepseek.com/v1" }),
   openrouter: OPENAI({ id: "openrouter", baseUrl: "https://openrouter.ai/api/v1" }), // 17 free
   unorouter: OPENAI({ id: "unorouter", baseUrl: "https://api.unorouter.com/v1" }), // 219 free :free suffix, 1 req/min per model, OpenAI compatible (https://unorouter.com/en/models, key: https://unorouter.com/en/token)
+  routeway: OPENAI({ id: "routeway", baseUrl: "https://api.routeway.ai/v1" }), // 9 :free suffix, ~5 RPM observed, browser UA required (https://routeway.ai, key no card)
+  ainative: OPENAI({ id: "ainative", baseUrl: "https://api.ainative.studio/api/v1" }), // ~10M tokens/month free allocation, no card (https://ainative.studio)
+  navy: OPENAI({ id: "navy", baseUrl: "https://api.navy/v1" }), // 150K tokens/day + 20 RPM free (https://api.navy, Discord dashboard)
+  aihorde: OPENAI({ id: "aihorde", baseUrl: "https://oai.aihorde.net/v1" }), // community volunteer workers, queue-based, anonymous 0000000000 works (https://aihorde.net)
+  longcat: OPENAI({ id: "longcat", baseUrl: "https://api.longcat.chat/openai/v1" }), // daily free quota, email signup outside CN (https://api.longcat.chat)
+  huggingface: OPENAI({ id: "huggingface", baseUrl: "https://router.huggingface.co/v1" }), // $0.10/mo router credit, no card (https://huggingface.co)
   "ollama-cloud": OPENAI({ id: "ollama-cloud", baseUrl: "https://ollama.com/v1" }), // 6 free: gemma4:31b, gpt-oss:120b/20b, nemotron-3-super, etc. (was api.ollama.com 301)
   commandcode: OPENAI({ id: "commandcode", baseUrl: "https://api.commandcode.ai/provider/v1" }), // 3 free: laguna-s-2.1-free, longcat-2.0:free, ling-3.0-flash-sante:free (https://commandcode.ai/docs/resources/pricing-limits#models, https://commandcode.ai/docs/provider, Auth Bearer <CMD_API_KEY>)
   "alibaba-cloud-model-studio": OPENAI({ id: "alibaba-cloud-model-studio", baseUrl: "https://dashscope.aliyuncs.com/compatible-mode/v1" }),
@@ -124,6 +130,12 @@ export const providerMeta: Record<string, { name: string; tier: string; tier_typ
   siliconflow: { name: "SiliconFlow", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   deepseek: { name: "DeepSeek", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   unorouter: { name: "UnoRouter", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","vision","code"], noCard: true },
+  routeway: { name: "Routeway", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
+  ainative: { name: "AINative Studio", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","code","vision"], noCard: true },
+  navy: { name: "NavyAI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
+  aihorde: { name: "AI Horde", tier: "Permanent Free", tier_type: "permanent", caps: ["text"], noCard: true },
+  longcat: { name: "LongCat", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
+  huggingface: { name: "HuggingFace Router", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","vision","code"], noCard: true },
   commandcode: { name: "CommandCode", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","vision","code"], noCard: true },
   orcarouter: { name: "OrcaRouter", tier: "Custom", tier_type: "custom", caps: ["text","reasoning"], noCard: true },
   freeai: { name: "FreeAI", tier: "Custom", tier_type: "custom", caps: ["text"], noCard: true },
@@ -222,7 +234,7 @@ export const modelAliases: Record<string, string[]> = {
   "b-ai/glm-5.3-flash": ["b-ai"],
   // TokenHarbor — 3 :free tier (https://tokenharbor.ai/models?category=free)
   "deepseek-v4.1-flash:free": ["tokenharbor", "unorouter"],
-  "deepseek-v4-flash:free": ["tokenharbor", "unorouter"],
+  "deepseek-v4-flash:free": ["routeway", "tokenharbor", "unorouter"],
   "mimo-v2.5:free": ["tokenharbor", "b-ai", "unorouter"],
   "tokenharbor/deepseek-v4.1-flash:free": ["tokenharbor"],
   "tokenharbor/deepseek-v4-flash:free": ["tokenharbor"],
@@ -250,7 +262,7 @@ export const modelAliases: Record<string, string[]> = {
   "dots-3-note-preview:free": ["unorouter"],
   "lfm-2.5-2.6b:free": ["unorouter"],
   "sensenova-6.8-flash-lite:free": ["unorouter"],
-   "muse-glimmer-30b:free": ["kiosapi", "unorouter"],
+   "muse-glimmer-30b:free": ["routeway", "kiosapi", "unorouter"],
   "unorouter/gpt-oss-120b:free": ["unorouter"],
   "unorouter/gpt-oss-20b:free": ["unorouter"],
   "unorouter/deepseek-v4-flash:free": ["unorouter"],
@@ -260,6 +272,38 @@ export const modelAliases: Record<string, string[]> = {
   "unorouter/glm-5.3-flash:free": ["unorouter"],
   "unorouter/ling-3.0-flash-fin:free": ["unorouter"],
   unorouter: ["unorouter"],
+  // Routeway — 9 :free suffix (live /v1/models 2026-09-28, ~5 RPM)
+  "routeway/deepseek-v4-flash:free": ["routeway"],
+  "routeway/minimax-m2.7:free": ["routeway"],
+  "routeway/muse-glimmer-30b:free": ["routeway"],
+  "routeway/gemma-4-26b-a4b-it-chimerax:free": ["routeway"],
+  "routeway/gemma-4-26b-a4b-it-meromero:free": ["routeway"],
+  routeway: ["routeway"],
+  // AINative Studio — ~/10M tokens/month (live /v1/models 86 rows)
+  "deepseek-v4-flash-ainative": ["ainative"],
+  "ainative/deepseek-v4-flash": ["ainative"],
+  "ainative/deepseek-v4-pro": ["ainative"],
+  "ainative/glm-5.3": ["ainative"],
+  "ainative/kimi-k3": ["ainative"],
+  "ainative/gpt-oss-120b": ["ainative"],
+  "ainative/gpt-oss-20b": ["ainative"],
+  "ainative/qwen3-coder-next": ["ainative"],
+  ainative: ["ainative"],
+  // NavyAI — 150K tokens/day, 20 RPM
+  "navy/auto": ["navy"],
+  navy: ["navy"],
+  // AI Horde — community queue (anonymous 0000000000 lowest priority)
+  "aihorde/default": ["aihorde"],
+  aihorde: ["aihorde"],
+  // LongCat (Meituan) — daily free quota
+  "longcat/longcat-flash": ["longcat"],
+  longcat: ["longcat"],
+  // HuggingFace Inference Providers router — $0.10/mo credit
+  "hf/kimi-k2.6": ["huggingface"],
+  "huggingface/moonshotai/Kimi-K2.6": ["huggingface"],
+  "huggingface/deepseek-ai/DeepSeek-V4-Flash": ["huggingface"],
+  "huggingface/Qwen/Qwen3-Coder-Next": ["huggingface"],
+  huggingface: ["huggingface"],
   // CommandCode Provider API — 3 free (https://api.commandcode.ai/provider/v1, https://commandcode.ai/docs/resources/pricing-limits#models, https://commandcode.ai/docs/provider)
   // Free models: poolside/laguna-s-2.1-free (256K), meituan/LongCat-2.0:free (1M), inclusionai/ling-3.0-flash-sante:free (262K)
   "laguna-s-2.1-free": ["commandcode", "kilo-code", "openrouter"],
@@ -346,7 +390,7 @@ export const modelAliases: Record<string, string[]> = {
   "kiosapi/north-mini-code": ["kiosapi"],
   "auto/coding": ["kilo-code", "opencode", "cohere", "kiosapi"],
   "aion-labs/aion-3.0": ["aion-labs"],
-  "minimax-m2.7": ["llm7-io", "sambanova"],
+  "minimax-m2.7": ["routeway", "llm7-io", "sambanova"],
   "gpt-oss": ["llm7-io", "cerebras", "ollama-cloud"],
   "gpt-4": ["groq", "cerebras", "google-gemini", "openrouter", "nvidia-nim"],
   "gpt-3.5": ["groq", "pollinations", "ovhcloud-ai-endpoints", "modelscope"],

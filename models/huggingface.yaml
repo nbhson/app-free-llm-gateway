@@ -1,0 +1,63 @@
+# Provider: huggingface — Inference Providers router (router.huggingface.co/v1)
+# Recurring $0.10/mo router credit, no card. Sample of freellms-verified free rows.
+models:
+  - id: "huggingface/deepseek-ai/DeepSeek-V4-Flash"
+    display_name: "deepseek-ai/DeepSeek-V4-Flash"
+    provider: huggingface
+    context_length: 131072
+    score: 70
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "$0.10/mo router credit"
+  - id: "huggingface/moonshotai/Kimi-K2.6"
+    display_name: "moonshotai/Kimi-K2.6"
+    provider: huggingface
+    context_length: 131072
+    score: 68
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "$0.10/mo router credit"
+  - id: "huggingface/Qwen/Qwen3-Coder-Next"
+    display_name: "Qwen/Qwen3-Coder-Next"
+    provider: huggingface
+    context_length: 131072
+    score: 68
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, code]
+    limit: "$0.10/mo router credit"
+  - id: "huggingface/MiniMaxAI/MiniMax-M3"
+    display_name: "MiniMaxAI/MiniMax-M3"
+    provider: huggingface
+    context_length: 131072
+    score: 66
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "$0.10/mo router credit"
+  - id: "huggingface/openai/gpt-oss-120b"
+    display_name: "openai/gpt-oss-120b"
+    provider: huggingface
+    context_length: 131072
+    score: 66
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "$0.10/mo router credit"
+  - id: "huggingface/tencent/Hy3"
+    display_name: "tencent/Hy3"
+    provider: huggingface
+    context_length: 131072
+    score: 64
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "$0.10/mo router credit"

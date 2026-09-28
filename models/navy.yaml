@@ -1,0 +1,14 @@
+# Provider: navy — NavyAI unified API, free plan 150K tokens/day + 20 RPM
+# NOTE: model ids below are seeds — run Sync Live / verify with NAVY_API_KEYS
+# set and the live /v1/models sync becomes the source of truth.
+models:
+  - id: "navy/auto"
+    display_name: "auto"
+    provider: navy
+    context_length: 131072
+    score: 60
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text]
+    limit: "150K tokens/day free"

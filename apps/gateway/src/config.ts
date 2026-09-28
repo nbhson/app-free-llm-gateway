@@ -161,6 +161,12 @@ export const DEFAULT_FALLBACK_TIER: readonly string[] = [
   "nebius",
   "ai21-labs",
   "anthropic",
+  "routeway",
+  "ainative",
+  "huggingface",
+  "longcat",
+  "navy",
+  "aihorde",
 ];
 
 function parseTiers(): string[][] {
@@ -395,6 +401,12 @@ export const config = {
     "b-ai": parseKeys(process.env.BAI_API_KEYS || process.env.B_AI_API_KEYS),
     tokenharbor: parseKeys(process.env.TOKENHARBOR_API_KEYS || process.env.TOKEN_HARBOR_API_KEYS),
     unorouter: parseKeys(process.env.UNOROUTER_API_KEYS),
+    routeway: parseKeys(process.env.ROUTEWAY_API_KEYS),
+    ainative: parseKeys(process.env.AINATIVE_API_KEYS),
+    navy: parseKeys(process.env.NAVY_API_KEYS),
+    aihorde: parseKeys(process.env.AIHORDE_API_KEYS),
+    longcat: parseKeys(process.env.LONGCAT_API_KEYS),
+    huggingface: parseKeys(process.env.HUGGINGFACE_API_KEYS || process.env.HF_TOKEN),
     commandcode: parseKeys(process.env.COMMANDCODE_API_KEYS || process.env.COMMAND_CODE_API_KEYS || process.env.CMD_API_KEYS),
     anthropic: parseKeys(process.env.ANTHROPIC_API_KEYS || process.env.CLAUDE_API_KEYS),
     "claude-code": parseKeys(process.env.CLAUDE_CODE_API_KEYS || process.env.ANTHROPIC_API_KEYS || process.env.CLAUDE_API_KEYS),

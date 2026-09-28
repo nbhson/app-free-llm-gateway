@@ -10,6 +10,7 @@ import { hasRealKey, isPublicProvider } from "../lib/provider-keys.js";
 import { errMessage, type FreellmsModelEntry, type FreellmsProviderEntry } from "../lib/types.js";
 import { getAdaptiveScores, getAdaptiveState } from "../lib/adaptive-router.js";
 import { getByokForVk, setByokKeys } from "../lib/byok-store.js";
+import { loadModelsYaml } from "../lib/models-yaml.js";
 import { getStats as getRequestStats } from "../lib/request-log.js";
 import fs from "node:fs";
 import path from "node:path";
@@ -83,33 +84,16 @@ apiRoute.get("/providers", (c) => {
   const countBySlug = new Map<string, number>();
   for (const m of freeModelsArr) if (m.slug) countBySlug.set(m.slug, (countBySlug.get(m.slug) || 0) + 1);
   try {
-    // Prefer split models/ directory (per-provider files), fallback to legacy models.yaml
-    let yamlText = "";
-    const roots = [resolveDataPath(".."), resolveDataPath("."), path.resolve(".")];
-    for (const root of roots) {
-      try {
-        const dir = path.join(root, "models");
-        if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
-          const files = fs.readdirSync(dir).filter((f) => f.endsWith(".yaml"));
-          yamlText = files.map((f) => fs.readFileSync(path.join(dir, f), "utf-8")).join("\n");
-          if (yamlText) break;
-        }
-      } catch { /* ignore */ }
+    // Count per-provider models from models/ directory (per-provider YAML files).
+    // loadModelsYaml() already resolves repo-root models/ robustly (dev + prod),
+    // so new providers (routeway/ainative/navy/aihorde/longcat/huggingface) show
+    // correct free_models without a freellms-providers.json entry.
+    const providerCounts = new Map<string, number>();
+    for (const m of loadModelsYaml()) {
+      const s = String(m.provider || m.owned_by || "").trim();
+      if (s) providerCounts.set(s, (providerCounts.get(s) || 0) + 1);
     }
-    if (!yamlText) {
-      const yamlCandidates = [resolveDataPath("../models.yaml"), resolveDataPath("models.yaml"), path.resolve("models.yaml")];
-      for (const p of yamlCandidates) {
-        try { if (fs.existsSync(p)) { yamlText = fs.readFileSync(p, "utf-8"); if (yamlText) break; } } catch { /* ignore */ }
-      }
-    }
-    if (yamlText) {
-      const providerCounts = new Map<string, number>();
-      for (const m of yamlText.matchAll(/provider:\s*([^\n]+)/g)) {
-        const s = m[1].trim();
-        providerCounts.set(s, (providerCounts.get(s) || 0) + 1);
-      }
-      for (const [k, v] of providerCounts) if (!freellms.find((x) => x.slug === k)) countBySlug.set(k, v);
-    }
+    for (const [k, v] of providerCounts) if (!freellms.find((x) => x.slug === k)) countBySlug.set(k, v);
   } catch { /* ignore */ }
   // fingerprint for newest provider tracking (sau khi update .env và restart)
   let fingerprint: Record<string, { hasKey: boolean; addedAt?: string }> = {};
@@ -192,7 +176,7 @@ apiRoute.get("/providers/health", async (c) => {
     providerIds.map(async (id) => {
       const keys = config.providerKeys[id] || [];
       const hasKey = keys.length > 0;
-      const isPublic = ["pollinations", "llm7-io", "ollama-cloud", "glhf-chat"].includes(id);
+      const isPublic = ["pollinations", "llm7-io", "ollama-cloud", "glhf-chat", "glhf", "aihorde", "ovhcloud-ai-endpoints"].includes(id);
       if (!hasKey && !isPublic) {
         results.push({ id, status: "no-key", keys: 0, latency_ms: 0, breaker: breakers[id]?.state || "closed" });
         return;

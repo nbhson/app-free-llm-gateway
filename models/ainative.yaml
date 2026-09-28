@@ -1,0 +1,82 @@
+# Provider: ainative — live /v1/models 2026-09-28 (86 rows, ~10M tokens/month free)
+models:
+  - id: "ainative/deepseek-v4-flash"
+    display_name: "deepseek-v4-flash"
+    provider: ainative
+    context_length: 131072
+    score: 70
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "~10M tokens/month free"
+  - id: "ainative/deepseek-v4-pro"
+    display_name: "deepseek-v4-pro"
+    provider: ainative
+    context_length: 131072
+    score: 72
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "~10M tokens/month free"
+  - id: "ainative/glm-5.3"
+    display_name: "glm-5.3"
+    provider: ainative
+    context_length: 1048576
+    score: 68
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "~10M tokens/month free"
+  - id: "ainative/kimi-k3"
+    display_name: "kimi-k3"
+    provider: ainative
+    context_length: 262144
+    score: 68
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "~10M tokens/month free"
+  - id: "ainative/gpt-oss-120b"
+    display_name: "gpt-oss-120b"
+    provider: ainative
+    context_length: 65536
+    score: 66
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "~10M tokens/month free"
+  - id: "ainative/gpt-oss-20b"
+    display_name: "gpt-oss-20b"
+    provider: ainative
+    context_length: 65536
+    score: 64
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, reasoning]
+    limit: "~10M tokens/month free"
+  - id: "ainative/qwen3-coder-next"
+    display_name: "qwen3-coder-next"
+    provider: ainative
+    context_length: 131072
+    score: 66
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text, code]
+    limit: "~10M tokens/month free"
+  - id: "ainative/llama-3-3-70b-instruct"
+    display_name: "llama-3-3-70b-instruct"
+    provider: ainative
+    context_length: 131072
+    score: 64
+    tier: permanent
+    verified: false
+    no_card: true
+    capabilities: [text]
+    limit: "~10M tokens/month free"
