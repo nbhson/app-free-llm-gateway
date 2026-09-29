@@ -87,6 +87,47 @@ describe("openai-compatible provider", () => {
     expect((calls[2].init.body as FormData).get("model")).toBe("w");
   });
 
+  it("agnes-ai images fans out n>1 into n=1 calls (upstream only accepts n=1)", async () => {
+    const seen: unknown[] = [];
+    let i = 0;
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: any, init: any) => {
+        seen.push(JSON.parse(init.body));
+        i++;
+        return new Response(JSON.stringify({ created: 7, data: [{ url: `https://img/${i}.png` }] }), { status: 200 });
+      })
+    );
+    const p = createOpenAICompatibleProvider({ id: "agnes-ai", baseUrl: "https://a.test/v1" });
+    const res = await p.images!({ model: "agnes-ai/agnes-image-2.1-flash", prompt: "cat", n: 2 }, "k");
+    expect(res.ok).toBe(true);
+    expect(seen).toHaveLength(2);
+    expect(seen[0]).toMatchObject({ model: "agnes-image-2.1-flash", n: 1 });
+    expect(seen[1]).toMatchObject({ n: 1 });
+    const data = await res.json() as { data?: Array<{ url?: string }> };
+    expect(data.data).toHaveLength(2);
+    expect(data.data?.[0]?.url).toBe("https://img/1.png");
+  });
+
+  it("agnes-ai images defaults to single n=1 call, other providers forward n as-is", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (_url: any, init: any) => {
+        calls.push({ url: String(_url), init });
+        return new Response(JSON.stringify({ created: 1, data: [{ url: "https://img/1.png" }] }), { status: 200 });
+      })
+    );
+    const agnes = createOpenAICompatibleProvider({ id: "agnes-ai", baseUrl: "https://a.test/v1" });
+    await agnes.images!({ model: "agnes-ai/agnes-image-2.0-flash", prompt: "dog" }, "k");
+    expect(calls).toHaveLength(1);
+    expect(JSON.parse(calls[0].init.body).n).toBe(1);
+
+    calls.length = 0;
+    const other = createOpenAICompatibleProvider({ id: "openrouter", baseUrl: "https://o.test/v1" });
+    await other.images!({ model: "openrouter/m", prompt: "dog", n: 3 }, "k");
+    expect(JSON.parse(calls[0].init.body).n).toBe(3);
+  });
+
   it("speech strips prefix, models() prefixes ids, health false on throw", async () => {
     stub();
     const p = createOpenAICompatibleProvider({ id: "groq", baseUrl: "https://g.test/v1" });

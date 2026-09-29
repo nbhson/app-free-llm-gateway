@@ -204,6 +204,29 @@ export function createOpenAICompatibleProvider(opts: {
         if (m.includes("/")) m = m.split("/").slice(1).join("/");
         body.model = m;
       }
+      // Agnes upstream only accepts n=1 (400 "n must be 1" otherwise).
+      // Fulfill the OpenAI contract (n<=4) with sequential n=1 calls and merge.
+      if (opts.id === "agnes-ai") {
+        const want = Math.min(Math.max(req.n ?? 1, 1), 4);
+        const single: Record<string, unknown> = { ...body, n: 1 };
+        if (req.size) single.size = req.size;
+        if (req.response_format) single.response_format = req.response_format;
+        if (req.user) single.user = req.user;
+        const merged: unknown[] = [];
+        let created = Math.floor(Date.now() / 1000);
+        for (let i = 0; i < want; i++) {
+          const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(single) });
+          if (!res.ok) return res;
+          const data = (await res.json().catch(() => ({}))) as { data?: unknown[]; created?: number };
+          if (typeof data.created === "number") created = data.created;
+          if (Array.isArray(data.data)) merged.push(...data.data);
+          else merged.push(data);
+        }
+        return new Response(JSON.stringify({ created, data: merged }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
       if (req.n) body.n = req.n;
       if (req.size) body.size = req.size;
       if (req.response_format) body.response_format = req.response_format;
