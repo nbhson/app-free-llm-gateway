@@ -9,7 +9,7 @@ import { estimateChatTokens } from "../../lib/token-estimator.js";
 import { recordUsage } from "../../lib/quota-tracker.js";
 import { addLog } from "../../lib/request-log.js";
 import { hasScope } from "../../lib/virtual-keys.js";
-import { compressWithMetrics } from "../../lib/compression.js";
+import { compressWithMetricsAsync } from "../../lib/compression.js";
 import { logGenAI } from "../../lib/otel.js";
 import { FREELLMS_COST, rankProvidersByCostAndLatency } from "../../lib/cost-router.js";
 import { adaptiveRank } from "../../lib/adaptive-router.js";
@@ -170,12 +170,12 @@ chatRoute.post(
     let compressedTokens: number | undefined;
     if (config.compressionEnabled && body.messages?.length > 6) {
       const maxTokens = config.compressionMaxTokens || 4096;
-      const comp = compressWithMetrics(body.messages, { maxTokens: estimated.prompt > maxTokens ? maxTokens : undefined });
+      const comp = await compressWithMetricsAsync(body.messages, { maxTokens: estimated.prompt > maxTokens ? maxTokens : undefined });
       if (comp.metrics.applied) {
         messagesToSend = comp.messages;
         compressionRatio = comp.ratio;
         compressedTokens = Math.max(0, estimated.prompt - comp.savedTokens);
-        logger.info({ model, original: body.messages.length, compressed: messagesToSend.length, ratio: comp.ratio, savedTokens: comp.savedTokens, durationMs: comp.metrics.durationMs }, "compression applied");
+        logger.info({ model, original: body.messages.length, compressed: messagesToSend.length, ratio: comp.ratio, savedTokens: comp.savedTokens, durationMs: comp.metrics.durationMs, summarized: comp.summarized, summaryVia: comp.summaryVia, droppedMessages: comp.droppedMessages }, "compression applied");
       }
     }
     const estimatedForQuota = estimateChatTokens({ messages: messagesToSend, max_tokens: body.max_tokens });

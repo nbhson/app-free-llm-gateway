@@ -2,13 +2,18 @@ import { describe, it, expect } from "vitest";
 import {
   toolsMinify,
   historySummarize,
+  historyCondense,
+  historySummarizeLLM,
   codeDedup,
   normalizeCodeBlock,
   relevanceScore,
   relevanceKeep,
   compressMessages,
+  compressMessagesAsync,
   compressWithMetrics,
+  compressWithMetricsAsync,
 } from "./compression.js";
+import { _clearSummaryCache } from "./summarizer.js";
 
 describe("compression toolsMinify", () => {
   it("truncates long tool descriptions, keeps required/enum", () => {
@@ -146,6 +151,123 @@ describe("compression relevanceKeep", () => {
   });
 });
 
+describe("compression historyCondense (extractive, no deletion)", () => {
+  it("keeps short history as-is", () => {
+    const msgs = Array.from({ length: 6 }, (_, i) => ({ role: "user", content: `m${i}` }));
+    const r = historyCondense(msgs);
+    expect(r.messages).toHaveLength(6);
+    expect(r.summary).toBeNull();
+  });
+
+  it("folds older messages into a labeled summary, keeps last 6 + system verbatim", () => {
+    const msgs = [
+      { role: "system", content: "sys" },
+      ...Array.from({ length: 10 }, (_, i) => ({ role: "user", content: `important-fact-${i} `.repeat(10) })),
+    ];
+    const r = historyCondense(msgs);
+    // system + summary + last 6
+    expect(r.messages).toHaveLength(8);
+    expect(r.messages[0]).toMatchObject({ role: "system", content: "sys" });
+    expect(r.droppedCount).toBe(4);
+    expect(r.summary).toContain("4 older messages");
+    // dropped content survives as excerpts (not deleted)
+    const summaryText = String(r.messages[1].content);
+    expect(summaryText).toContain("important-fact-0");
+    // recent kept verbatim
+    expect(String(r.messages[r.messages.length - 1].content)).toContain("important-fact-9");
+  });
+});
+
+describe("compression historySummarizeLLM", () => {
+  it("keeps everything verbatim when under budget (no LLM call)", async () => {
+    let called = 0;
+    const msgs = [
+      { role: "system", content: "sys" },
+      ...Array.from({ length: 10 }, (_, i) => ({ role: "user", content: `m${i}` })),
+    ];
+    const r = await historySummarizeLLM(msgs, {
+      maxTokens: 100000,
+      summarize: async () => { called++; return { text: "SHOULD NOT HAPPEN", via: "llm" as const }; },
+    });
+    expect(called).toBe(0);
+    expect(r.messages).toHaveLength(msgs.length);
+    expect(r.summary).toBeNull();
+  });
+
+  it("summarizes older messages via injected summarizer when over budget", async () => {
+    const msgs = [
+      { role: "system", content: "sys" },
+      ...Array.from({ length: 10 }, (_, i) => ({ role: "user", content: `deploy token ABC${i} `.repeat(50) })),
+    ];
+    const r = await historySummarizeLLM(msgs, {
+      maxTokens: 100,
+      summarize: async (dropped) => ({ text: `condensed ${dropped.length} msgs, token ABC0 inside`, via: "llm" as const }),
+    });
+    expect(r.droppedCount).toBe(4);
+    expect(r.via).toBe("llm");
+    // system + summary + last 6
+    expect(r.messages).toHaveLength(8);
+    expect(String(r.messages[1].content)).toContain("condensed 4 msgs");
+  });
+
+  it("mode=off keeps history untouched", async () => {
+    const msgs = Array.from({ length: 12 }, (_, i) => ({ role: "user", content: `m${i} `.repeat(100) }));
+    const r = await historySummarizeLLM(msgs, { maxTokens: 10, mode: "off" });
+    expect(r.messages).toHaveLength(12);
+    expect(r.summary).toBeNull();
+  });
+});
+
+describe("compression compressMessagesAsync", () => {
+  it("no longer silently deletes: older content survives as summary", async () => {
+    _clearSummaryCache();
+    const msgs = [
+      { role: "system", content: "sys" },
+      ...Array.from({ length: 20 }, (_, i) => ({ role: "user", content: `message ${i} `.repeat(20) })),
+    ];
+    const res = await compressMessagesAsync(msgs, {
+      mode: "extractive",
+      summarize: async () => { throw new Error("must not be called in extractive mode"); },
+    });
+    expect(res.summarized).toBe(true);
+    expect(res.droppedMessages).toBeGreaterThan(0);
+    const all = res.messages.map((m) => String(m.content)).join("\n");
+    expect(all).toContain("message 0"); // oldest still present via summary
+    expect(all).toContain("message 19"); // newest verbatim
+  });
+
+  it("falls back to extractive when LLM summarizer throws", async () => {
+    _clearSummaryCache();
+    const msgs = Array.from({ length: 12 }, (_, i) => ({ role: "user", content: `fallback-check-${i} `.repeat(40) }));
+    const res = await compressMessagesAsync(msgs, {
+      maxTokens: 200,
+      summarize: async () => { throw new Error("provider down"); },
+    });
+    expect(res.summarized).toBe(true);
+    expect(res.summaryVia).toBe("extractive");
+    expect(res.messages.map((m) => String(m.content)).join("\n")).toContain("fallback-check-0");
+  });
+
+  it("budget loop protects the summary message", async () => {
+    _clearSummaryCache();
+    const msgs = Array.from({ length: 20 }, (_, i) => ({ role: "user", content: `x`.repeat(500) + i }));
+    const res = await compressMessagesAsync(msgs, { maxTokens: 100, mode: "extractive" });
+    const all = res.messages.map((m) => String(m.content)).join("\n");
+    expect(all).toContain("older messages");
+  });
+
+  it("compressWithMetricsAsync reports summarized + via", async () => {
+    _clearSummaryCache();
+    const msgs = [
+      { role: "system", content: "sys" },
+      ...Array.from({ length: 20 }, (_, i) => ({ role: "user", content: `message ${i} `.repeat(20) })),
+    ];
+    const res = await compressWithMetricsAsync(msgs, { mode: "extractive" });
+    expect(res.metrics.stage).toBe("compression");
+    expect(res.summarized).toBe(true);
+    expect(res.summaryVia).toBe("extractive");
+  });
+});
 describe("compression compressMessages / compressWithMetrics", () => {
   it("compresses long history (ratio < 1, savedTokens > 0)", () => {
     const msgs = [
@@ -167,11 +289,13 @@ describe("compression compressMessages / compressWithMetrics", () => {
   it("compressWithMetrics reports applied + durationMs", () => {
     const msgs = [
       { role: "system", content: "sys" },
-      ...Array.from({ length: 20 }, (_, i) => ({ role: "user", content: `message ${i} `.repeat(20) })),
+      ...Array.from({ length: 20 }, (_, i) => ({ role: "user", content: `message ${i} `.repeat(60) })),
     ];
     const res = compressWithMetrics(msgs);
     expect(res.metrics.stage).toBe("compression");
     expect(res.metrics.applied).toBe(true);
+    expect(res.summarized).toBe(true);
+    expect(res.summaryVia).toBe("extractive");
     expect(res.metrics.durationMs).toBeGreaterThanOrEqual(0);
     expect(res.metrics.originalTokens).toBeGreaterThan(res.metrics.compressedTokens);
   });

@@ -2,6 +2,12 @@
 
 Tất cả thay đổi đáng chú ý sẽ được ghi ở đây. Format theo [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Added
+- **History summarization thay vì xóa (SUMMARY_*)** — `apps/gateway/src/lib/summarizer.ts:1` mới: condense tin nhắn cũ thành 1 summary message qua provider nhanh (`SUMMARY_MODEL=free-llm-gateway/auto`, sequential để đỡ đốt quota), cache prefix theo `sha256` (`SUMMARY_CACHE_SIZE=200`), fail-open về extractive khi timeout/lỗi nên request chính không bao giờ fail vì bước này; `lib/compression.ts:1` thêm `historyCondense` (sync, extractive) + `historySummarizeLLM`/`compressMessagesAsync`/`compressWithMetricsAsync` (chỉ tóm tắt khi vượt budget, dưới budget giữ nguyên lossless), vòng budget bảo vệ summary message; `routes/v1/chat.ts` + `anthropic.ts` chuyển sang compress async; `SUMMARY_MODE=llm|extractive|off` (`SUMMARY_KEEP_RECENT=6`, `SUMMARY_MAX_TOKENS=600`, `SUMMARY_TIMEOUT_MS=10000`) config được qua `.env` + hot-reload `PUT /api/config`; `POST /api/compression/preview` trả thêm `summarized/summaryVia/droppedMessages`; 9 tests mới, `compression.test.ts` 24 pass
+- **Docs** — `.env.example` + `docs/en|vi/CONFIGURATION.md` + `docs/en|vi/API.md` mô tả `SUMMARY_*` và hành vi condense-thay-xóa
+
 ## [1.11.4] - 2026-09-27
 
 ### Changed

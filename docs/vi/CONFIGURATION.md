@@ -99,7 +99,14 @@ then **auto boot-sync** (`jobs/boot-sync.ts`) tự phát hiện provider mới (
 | `SEMANTIC_THRESHOLD` | `0.92` | Cosine similarity threshold for cache hit (0.0–1.0, higher = stricter). Tuned for `cohere/embed-english-v3.0` |
 | `CACHE_TTL_S` | `3600` | TTL in seconds for cached completions (1 hour). Evicted via Redis TTL or in-memory sweep |
 | `EMBEDDING_MODEL` | `cohere/embed-english-v3.0` | Embedding model for semantic cache. Uses Cohere embeddings; swap to any compatible endpoint |
-| `COMPRESSION_ENABLED` | `0` | Enable token compression: query-aware `relevanceKeep` (BM25-lite vs last user message, keeps system + 3 recent + top-5 relevant) + tools minify + normalized code dedup |
+| `COMPRESSION_ENABLED` | `0` | Enable token compression: history được TÓM TẮT thành summary (không bao giờ xóa lặng) + tools minify + normalized code dedup |
+| `COMPRESSION_MAX_TOKENS` | `8192` | Token budget trước khi compression kích hoạt (512..32000) |
+| `SUMMARY_MODE` | `llm` | Cách condense tin nhắn cũ: `llm` = tóm tắt thật qua provider nhanh (fail-open về extractive, có cache), `extractive` = cắt ngắn deterministic (không gọi mạng), `off` = giữ nguyên (chỉ cắt theo budget) |
+| `SUMMARY_KEEP_RECENT` | `6` | Số tin nhắn cuối giữ nguyên verbatim; tin cũ hơn gộp vào summary (1..20) |
+| `SUMMARY_MAX_TOKENS` | `600` | Số tokens tối đa cho summary LLM viết (100..4000) |
+| `SUMMARY_TIMEOUT_MS` | `10000` | Timeout cho summarizer — quá hạn thì dùng extractive, request chính không bao giờ fail vì bước này |
+| `SUMMARY_MODEL` | `free-llm-gateway/auto` | Model dùng để tóm tắt (map sang default free model của từng provider) |
+| `SUMMARY_CACHE_SIZE` | `200` | Số entry cache summary trong RAM (history prefix giống nhau tái dùng summary) |
 | `COST_ROUTING_ENABLED` | `0` | Enable cost-aware routing — score `cost*COST_WEIGHT + latency*LATENCY_WEIGHT - headroom*HEADROOM_WEIGHT - successRate*SUCCESS_WEIGHT` (success from request-log last100, default 1 when no data) |
 | `ANALYTICS_RETENTION_DAYS` | `30` | Days to retain admin analytics rollups (cost tracking, savings, per-key billing, `costByProvider`, `cacheHitRate`, `p95` latency) |
 | `SUCCESS_WEIGHT` | `2` | Cost-router weight for rolling success rate — demotes flaky providers before the breaker opens (`0` disables) |

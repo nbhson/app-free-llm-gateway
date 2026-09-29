@@ -335,7 +335,7 @@ Không cần auth, trả status gateway + provider pool.
 | `GET` | `/api/analytics?interval=hour\|day&groupBy=provider\|key\|model` | Thống kê tổng hợp (tokens, requests theo provider/key/model, interval `hour`/`day`, kèm `costBreakdown` và `savings`) |
 | `GET` | `/api/cache/stats` | Thống kê cache (hits, misses, size) |
 | `DELETE` | `/api/cache` | Xóa cache gateway |
-| `POST` | `/api/compression/preview` | Preview nén prompt (ước tính tiết kiệm tokens) |
+| `POST` | `/api/compression/preview` | Preview nén prompt — body `{messages:[], maxTokens}` → `{original, compressed, ratio, savedTokens, summarized, summaryVia, droppedMessages, preview}` (tin cũ được TÓM TẮT thành summary, không xóa; cần 7+ msgs) |
 
 **Tạo key**:
 

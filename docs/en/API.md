@@ -337,7 +337,7 @@ No auth required; returns gateway status and provider pool.
 | `PUT` | `/api/config` | **New hot-reload**: Update runtime config in-memory (admin only, atomic). Body is partial `SettingsState` JSON. Validates ranges (`threshold 0..1`, `TTL 60..604800`, `tiers 8*60 deduped 200`), strict bool `0/1/true/false`, caps, returns `{applied, updated, message}` or `400 {errors, applied:{}}` without mutating on error. Audit `logger.info`. Persists only in-memory — copy `.env snippet` + restart to persist |
 | `GET` | `/api/cache/stats` | Cache stats — `{enabled, hits, misses, hitRate, size}` pretty in Settings Cache Live banner (poll 30s) |
 | `DELETE` | `/api/cache` | Clear gateway cache — `DELETE /api/cache` (admin, confirm in Settings Danger Zone) |
-| `POST` | `/api/compression/preview` | Preview compression for a prompt — body `{messages:[], maxTokens}` → `{original, compressed, ratio, savedTokens, preview}` (needs 7+ msgs to trigger `ratio<1`, sample in Settings) |
+| `POST` | `/api/compression/preview` | Preview compression for a prompt — body `{messages:[], maxTokens}` → `{original, compressed, ratio, savedTokens, summarized, summaryVia, droppedMessages, preview}` (older messages are condensed into a summary, never deleted; needs 7+ msgs to trigger) |
 
 **Create a key**:
 

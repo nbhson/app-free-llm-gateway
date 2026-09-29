@@ -102,8 +102,14 @@ then **auto boot-sync** (`jobs/boot-sync.ts`) tự phát hiện provider mới (
 | `EMBEDDING_FALLBACKS` | `nvidia-nim/... ,cloudflare/...` | Comma-separated fallback chain → final `hash exact` | Text + per-model `Check` chips `✓/✗/…` |
 | `SEMANTIC_CACHE_MAX_MEM` | `1000` | Max in-memory entries before LRU evict (100..10000) | Number `100..10000` |
 | `SEMANTIC_CACHE_SCAN_CAP` | `200` | Max entries scanned for cosine hit (10..1000) | Number `10..1000` |
-| `COMPRESSION_ENABLED` | `0` | Enable token compression: query-aware `relevanceKeep` (BM25-lite vs last user message, keeps system + 3 recent + top-5 relevant) + tools minify + normalized code dedup | Toggle, dependency: only on cache miss `chat.ts:165` |
+| `COMPRESSION_ENABLED` | `0` | Enable token compression: history condensed into a summary (never silently deleted) + tools minify + normalized code dedup | Toggle, dependency: only on cache miss `chat.ts:165` |
 | `COMPRESSION_MAX_TOKENS` | `8192` | Token budget before compression kicks in (512..32000) — `>80% context` triggers (raised from 4096 for large 130k context) | Slider `512..32000` |
+| `SUMMARY_MODE` | `llm` | How older messages are condensed: `llm` = real summary via fast provider call (fail-open to extractive, prefix-cached), `extractive` = deterministic truncation (no network), `off` = keep verbatim (budget cap only) | Select `llm/extractive/off` |
+| `SUMMARY_KEEP_RECENT` | `6` | Trailing non-system messages kept verbatim; older ones folded into the summary (1..20) | Number `1..20` |
+| `SUMMARY_MAX_TOKENS` | `600` | Max tokens for the LLM-written summary (100..4000) | Number `100..4000` |
+| `SUMMARY_TIMEOUT_MS` | `10000` | Summarizer timeout — falls back to extractive on timeout so the main request never fails because of this | Number `1k..60k` |
+| `SUMMARY_MODEL` | `free-llm-gateway/auto` | Model used for summarization (mapped per-provider to its default free model) | Text |
+| `SUMMARY_CACHE_SIZE` | `200` | In-memory prefix-summary cache entries (identical history prefixes reuse the summary) | Number |
 | `COST_ROUTING_ENABLED` | `0` | Enable cost-aware routing — score `cost*COST_WEIGHT + latency*LATENCY_WEIGHT - headroom*HEADROOM_WEIGHT - successRate*SUCCESS_WEIGHT` (success from request-log last100, default 1 when no data) | Toggle, live formula preview |
 | `COST_WEIGHT` | `5` | Cost weight ($/1M) — higher = prefer cheapest | Slider `0..10` |
 | `LATENCY_WEIGHT` | `0.0005` | Latency weight (ms) — higher = prefer fastest | Slider `0..0.005` |

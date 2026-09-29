@@ -441,6 +441,12 @@ apiRoute.get("/config", (c) => {
     SEMANTIC_CACHE_SCAN_CAP: config.semanticCacheScanCap,
     COMPRESSION_ENABLED: config.compressionEnabled ? 1 : 0,
     COMPRESSION_MAX_TOKENS: config.compressionMaxTokens,
+    SUMMARY_MODE: config.summaryMode,
+    SUMMARY_KEEP_RECENT: config.summaryKeepRecent,
+    SUMMARY_MAX_TOKENS: config.summaryMaxTokens,
+    SUMMARY_TIMEOUT_MS: config.summaryTimeoutMs,
+    SUMMARY_MODEL: config.summaryModel,
+    SUMMARY_CACHE_SIZE: config.summaryCacheSize,
     COST_ROUTING_ENABLED: config.costRoutingEnabled ? 1 : 0,
     COST_WEIGHT: config.costWeight,
     LATENCY_WEIGHT: config.latencyWeight,
@@ -555,6 +561,36 @@ apiRoute.put("/config", async (c) => {
     const v = parseInt(String(body.COMPRESSION_MAX_TOKENS), 10);
     if (!Number.isFinite(v) || v <= 0) errors.push("COMPRESSION_MAX_TOKENS must be >0");
     else pending.compressionMaxTokens = Math.min(v, 32000);
+  }
+  if (body.SUMMARY_MODE !== undefined) {
+    const v = String(body.SUMMARY_MODE).trim().toLowerCase();
+    if (v !== "llm" && v !== "extractive" && v !== "off") errors.push("SUMMARY_MODE must be llm/extractive/off");
+    else pending.summaryMode = v;
+  }
+  if (body.SUMMARY_KEEP_RECENT !== undefined) {
+    const v = parseInt(String(body.SUMMARY_KEEP_RECENT), 10);
+    if (!Number.isFinite(v) || v < 1) errors.push("SUMMARY_KEEP_RECENT must be >=1");
+    else pending.summaryKeepRecent = Math.min(v, 20);
+  }
+  if (body.SUMMARY_MAX_TOKENS !== undefined) {
+    const v = parseInt(String(body.SUMMARY_MAX_TOKENS), 10);
+    if (!Number.isFinite(v) || v <= 0) errors.push("SUMMARY_MAX_TOKENS must be >0");
+    else pending.summaryMaxTokens = Math.min(v, 4000);
+  }
+  if (body.SUMMARY_TIMEOUT_MS !== undefined) {
+    const v = parseInt(String(body.SUMMARY_TIMEOUT_MS), 10);
+    if (!Number.isFinite(v) || v <= 0) errors.push("SUMMARY_TIMEOUT_MS must be >0");
+    else pending.summaryTimeoutMs = Math.min(v, 60000);
+  }
+  if (body.SUMMARY_MODEL !== undefined) {
+    const v = String(body.SUMMARY_MODEL).trim();
+    if (!v) errors.push("SUMMARY_MODEL must be non-empty");
+    else pending.summaryModel = v;
+  }
+  if (body.SUMMARY_CACHE_SIZE !== undefined) {
+    const v = parseInt(String(body.SUMMARY_CACHE_SIZE), 10);
+    if (!Number.isFinite(v) || v <= 0) errors.push("SUMMARY_CACHE_SIZE must be >0");
+    else pending.summaryCacheSize = Math.min(v, 2000);
   }
   if (body.COST_ROUTING_ENABLED !== undefined) {
     const b = parseBoolStrict(body.COST_ROUTING_ENABLED);
@@ -704,7 +740,7 @@ apiRoute.put("/config", async (c) => {
   }
 
   // Unknown keys warning (ignore but report)
-  const known = new Set(["SEMANTIC_CACHE_ENABLED","SEMANTIC_THRESHOLD","CACHE_TTL_S","EMBEDDING_MODEL","EMBEDDING_FALLBACKS","SEMANTIC_CACHE_MAX_MEM","SEMANTIC_CACHE_SCAN_CAP","COMPRESSION_ENABLED","COMPRESSION_MAX_TOKENS","COST_ROUTING_ENABLED","COST_WEIGHT","LATENCY_WEIGHT","HEADROOM_WEIGHT","SUCCESS_WEIGHT","ANALYTICS_RETENTION_DAYS","PROVIDER_TIMEOUT_MS","PROVIDER_TIMEOUT_AUTO_MS","PROVIDER_TIMEOUT_REASONING_MS","PROVIDER_PARALLEL_AUTO","PROVIDER_PARALLEL_DEFAULT","CIRCUIT_BREAKER_THRESHOLD","CIRCUIT_BREAKER_COOLDOWN_MS","WEB_TOOLS_ENABLED","WEB_SEARCH_PROVIDER","WEB_FETCH_TIMEOUT_MS","WEB_FETCH_MAX_BYTES","WEB_SEARCH_MAX_RESULTS","WEB_TOOLS_MAX_ITERATIONS","WEB_CACHE_TTL_S","FALLBACK_TIERS","ADAPTIVE_ROUTING_ENABLED","ADAPTIVE_EMA_ALPHA","PER_MODEL_QUOTA_ENABLED","PROMETHEUS_ENABLED","BYOK_ENABLED","LOCAL_EMBEDDING_ENABLED","LOCAL_EMBEDDING_MODEL","MCP_ENABLED","COMPARE_MAX_CONCURRENCY","ALERT_WEBHOOK_URL","ALERT_THRESHOLD_ERROR_RATE","_source"]);
+  const known = new Set(["SEMANTIC_CACHE_ENABLED","SEMANTIC_THRESHOLD","CACHE_TTL_S","EMBEDDING_MODEL","EMBEDDING_FALLBACKS","SEMANTIC_CACHE_MAX_MEM","SEMANTIC_CACHE_SCAN_CAP","COMPRESSION_ENABLED","COMPRESSION_MAX_TOKENS","SUMMARY_MODE","SUMMARY_KEEP_RECENT","SUMMARY_MAX_TOKENS","SUMMARY_TIMEOUT_MS","SUMMARY_MODEL","SUMMARY_CACHE_SIZE","COST_ROUTING_ENABLED","COST_WEIGHT","LATENCY_WEIGHT","HEADROOM_WEIGHT","SUCCESS_WEIGHT","ANALYTICS_RETENTION_DAYS","PROVIDER_TIMEOUT_MS","PROVIDER_TIMEOUT_AUTO_MS","PROVIDER_TIMEOUT_REASONING_MS","PROVIDER_PARALLEL_AUTO","PROVIDER_PARALLEL_DEFAULT","CIRCUIT_BREAKER_THRESHOLD","CIRCUIT_BREAKER_COOLDOWN_MS","WEB_TOOLS_ENABLED","WEB_SEARCH_PROVIDER","WEB_FETCH_TIMEOUT_MS","WEB_FETCH_MAX_BYTES","WEB_SEARCH_MAX_RESULTS","WEB_TOOLS_MAX_ITERATIONS","WEB_CACHE_TTL_S","FALLBACK_TIERS","ADAPTIVE_ROUTING_ENABLED","ADAPTIVE_EMA_ALPHA","PER_MODEL_QUOTA_ENABLED","PROMETHEUS_ENABLED","BYOK_ENABLED","LOCAL_EMBEDDING_ENABLED","LOCAL_EMBEDDING_MODEL","MCP_ENABLED","COMPARE_MAX_CONCURRENCY","ALERT_WEBHOOK_URL","ALERT_THRESHOLD_ERROR_RATE","_source"]);
   for (const k of Object.keys(body)) {
     if (!known.has(k) && !k.startsWith("_")) errors.push(`Unknown key: ${k}`);
   }
@@ -724,6 +760,12 @@ apiRoute.put("/config", async (c) => {
     semanticCacheScanCap: "SEMANTIC_CACHE_SCAN_CAP",
     compressionEnabled: "COMPRESSION_ENABLED",
     compressionMaxTokens: "COMPRESSION_MAX_TOKENS",
+    summaryMode: "SUMMARY_MODE",
+    summaryKeepRecent: "SUMMARY_KEEP_RECENT",
+    summaryMaxTokens: "SUMMARY_MAX_TOKENS",
+    summaryTimeoutMs: "SUMMARY_TIMEOUT_MS",
+    summaryModel: "SUMMARY_MODEL",
+    summaryCacheSize: "SUMMARY_CACHE_SIZE",
     costRoutingEnabled: "COST_ROUTING_ENABLED",
     costWeight: "COST_WEIGHT",
     latencyWeight: "LATENCY_WEIGHT",
@@ -864,7 +906,7 @@ apiRoute.post("/compression/preview", async (c) => {
   try {
     const { compressMessages } = await import("../lib/compression.js");
     const result = compressMessages(messages, body.maxTokens ? { maxTokens: body.maxTokens } : undefined);
-    return c.json({ original: messages.length, compressed: result.messages.length, ratio: result.ratio, savedTokens: result.savedTokens, preview: result.messages.slice(0, 3) });
+    return c.json({ original: messages.length, compressed: result.messages.length, ratio: result.ratio, savedTokens: result.savedTokens, summarized: result.summarized, summaryVia: result.summaryVia, droppedMessages: result.droppedMessages, preview: result.messages.slice(0, 3) });
   } catch (e) {
     return c.json({ error: errMessage(e) }, 500);
   }

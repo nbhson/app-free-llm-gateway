@@ -244,6 +244,34 @@ export const config = {
     if (isNaN(v) || v <= 0) return 8192;
     return Math.min(v, 32000);
   })(),
+  // ---- History summarization (replaces destructive drop in historySummarize) ----
+  // SUMMARY_MODE=llm: condense older messages via fast provider call (fail-open to extractive).
+  // extractive: deterministic per-message truncation, no network. off: verbatim (only budget cap).
+  summaryMode: (() => {
+    const v = (process.env.SUMMARY_MODE || "llm").trim().toLowerCase();
+    return v === "extractive" || v === "off" ? v : "llm";
+  })() as "llm" | "extractive" | "off",
+  summaryKeepRecent: (() => {
+    const v = parseInt(process.env.SUMMARY_KEEP_RECENT || "6", 10);
+    if (isNaN(v) || v < 1) return 6;
+    return Math.min(v, 20);
+  })(),
+  summaryMaxTokens: (() => {
+    const v = parseInt(process.env.SUMMARY_MAX_TOKENS || "600", 10);
+    if (isNaN(v) || v <= 0) return 600;
+    return Math.min(v, 4000);
+  })(),
+  summaryTimeoutMs: (() => {
+    const v = parseInt(process.env.SUMMARY_TIMEOUT_MS || "10000", 10);
+    if (isNaN(v) || v <= 0) return 10000;
+    return Math.min(v, 60000);
+  })(),
+  summaryModel: (process.env.SUMMARY_MODEL || "free-llm-gateway/auto").trim() || "free-llm-gateway/auto",
+  summaryCacheSize: (() => {
+    const v = parseInt(process.env.SUMMARY_CACHE_SIZE || "200", 10);
+    if (isNaN(v) || v <= 0) return 200;
+    return Math.min(v, 2000);
+  })(),
   costRoutingEnabled: parseBoolEnv(process.env.COST_ROUTING_ENABLED),
   // configurable weights for cost-router (harness 06 Decide Tools) - env overrides fix doc/code drift
   costWeight: (() => {

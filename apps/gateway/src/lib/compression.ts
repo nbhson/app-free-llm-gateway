@@ -1,5 +1,7 @@
 import { estimateMessagesTokens } from "./token-estimator.js";
 import type { CompressibleMessage, TokenCountMessage } from "./types.js";
+import { config } from "../config.js";
+import { extractiveSummary, summarizeHistory, type SummaryResult } from "./summarizer.js";
 
 export interface CompressOpts {
   maxTokens?: number;
@@ -75,6 +77,102 @@ export interface CompressResult {
   messages: CompressibleMessage[];
   ratio: number;
   savedTokens: number;
+  /** true when older messages were condensed into a summary message */
+  summarized?: boolean;
+  /** how the summary was produced (llm = provider call, cache, extractive) */
+  summaryVia?: SummaryResult["via"];
+  /** number of older messages folded into the summary */
+  droppedMessages?: number;
+}
+
+export interface CondenseOpts {
+  /** trailing non-system messages kept verbatim (default config.summaryKeepRecent) */
+  keepRecent?: number;
+}
+
+/**
+ * Sync extractive condense: keep system + last N verbatim, fold older messages
+ * into ONE summary message built by deterministic truncation (no network).
+ * Unlike historySummarize (drop), no information is silently deleted — older
+ * content survives as labeled excerpts.
+ */
+export function historyCondense(
+  messages: CompressibleMessage[],
+  opts: CondenseOpts = {}
+): { messages: CompressibleMessage[]; summary: string | null; droppedCount: number } {
+  const keepRecent = opts.keepRecent ?? config.summaryKeepRecent;
+  const system = messages.filter((m) => m.role === "system");
+  const rest = messages.filter((m) => m.role !== "system");
+  if (rest.length <= keepRecent) return { messages, summary: null, droppedCount: 0 };
+  const kept = rest.slice(-keepRecent);
+  const dropped = rest.slice(0, -keepRecent);
+  const summary =
+    `[Earlier conversation — ${dropped.length} older messages, truncated excerpts]:\n` +
+    extractiveSummary(dropped);
+  const summaryMsg: CompressibleMessage = { role: "system", content: summary };
+  const out: CompressibleMessage[] = [...system, summaryMsg, ...kept];
+  return { messages: out, summary, droppedCount: dropped.length };
+}
+
+export interface SummarizeLlmOpts extends CondenseOpts {
+  /** token budget: only condense when total exceeds it (undefined = condense whenever older exist) */
+  maxTokens?: number;
+  /** llm (default) | extractive | off */
+  mode?: "llm" | "extractive" | "off";
+  /** injectable summarizer (tests) */
+  summarize?: (dropped: CompressibleMessage[]) => Promise<SummaryResult>;
+}
+
+/**
+ * Async condense with real summarization: keep system + last N verbatim, fold
+ * older messages into ONE LLM-written summary (fail-open to extractive).
+ * Lossless when everything already fits maxTokens — no LLM call, no deletion.
+ */
+export async function historySummarizeLLM(
+  messages: CompressibleMessage[],
+  opts: SummarizeLlmOpts = {}
+): Promise<{ messages: CompressibleMessage[]; summary: string | null; via: SummaryResult["via"] | null; droppedCount: number }> {
+  const keepRecent = opts.keepRecent ?? config.summaryKeepRecent;
+  const mode = opts.mode ?? config.summaryMode;
+  const system = messages.filter((m) => m.role === "system");
+  const rest = messages.filter((m) => m.role !== "system");
+  if (rest.length <= keepRecent || mode === "off") {
+    return { messages, summary: null, via: null, droppedCount: 0 };
+  }
+  // No budget pressure -> keep everything verbatim (lossless, no LLM cost).
+  if (opts.maxTokens !== undefined && opts.maxTokens > 0) {
+    const total = estimateMessagesTokens(messages as TokenCountMessage[]);
+    if (total <= opts.maxTokens) return { messages, summary: null, via: null, droppedCount: 0 };
+  }
+  const kept = rest.slice(-keepRecent);
+  const dropped = rest.slice(0, -keepRecent);
+  let summary: string;
+  let via: SummaryResult["via"];
+  if (mode === "extractive") {
+    summary =
+      `[Earlier conversation — ${dropped.length} older messages, truncated excerpts]:\n` +
+      extractiveSummary(dropped);
+    via = "extractive";
+  } else {
+    const fn = opts.summarize ?? summarizeHistory;
+    try {
+      const res = await fn(dropped);
+      via = res.via;
+      const label =
+        res.via === "extractive"
+          ? `[Earlier conversation — ${dropped.length} older messages, truncated excerpts]`
+          : `[Earlier conversation — ${dropped.length} older messages condensed]`;
+      summary = `${label}:\n${res.text}`;
+    } catch (e) {
+      // Injected or unexpected summarizer failure — same fail-open as summarizeHistory.
+      summary =
+        `[Earlier conversation — ${dropped.length} older messages, truncated excerpts]:\n` +
+        extractiveSummary(dropped);
+      via = "extractive";
+    }
+  }
+  const summaryMsg: CompressibleMessage = { role: "system", content: summary };
+  return { messages: [...system, summaryMsg, ...kept], summary, via, droppedCount: dropped.length };
 }
 
 function truncateSchemaStrings(obj: unknown, maxStrLen = 200): unknown {
@@ -251,25 +349,40 @@ export function compressWithMetrics(messages: CompressibleMessage[], opts: Compr
  * Harness 02 Build Context: respects maxTokens budget (drop oldest non-system).
  */
 export function compressMessages(messages: CompressibleMessage[], opts: CompressOpts = {}): CompressResult {
-  // relevance first (shrinks by importance), then recency cap, then dedup
-  const engines = opts.engines ?? ["toolsMinify", "relevanceKeep", "historySummarize", "codeDedup"];
+  // condense (summarize, not delete) replaces the old relevanceKeep+historySummarize drop
+  const engines = opts.engines ?? ["toolsMinify", "historyCondense", "codeDedup"];
   const originalLength = calcLength(messages);
   const originalTokens = estimateMessagesTokens(messages as TokenCountMessage[]);
 
   let out: CompressibleMessage[] = [...messages];
+  let summarized = false;
+  let summaryVia: SummaryResult["via"] | undefined;
+  let droppedMessages = 0;
+  let summaryRef: CompressibleMessage | null = null;
 
   if (engines.includes("toolsMinify")) out = toolsMinify(out);
   if (engines.includes("relevanceKeep")) out = relevanceKeep(out, opts.relevance);
   if (engines.includes("historySummarize")) out = historySummarize(out);
+  if (engines.includes("historyCondense")) {
+    const r = historyCondense(out);
+    out = r.messages;
+    if (r.summary) {
+      summarized = true;
+      summaryVia = "extractive";
+      droppedMessages = r.droppedCount;
+      summaryRef = out.find((m) => typeof m.content === "string" && m.content === r.summary) ?? null;
+    }
+  }
   if (engines.includes("codeDedup")) out = codeDedup(out);
 
-  // Optional token budget truncation: drop oldest non-system until under maxTokens
+  // Optional token budget truncation: drop oldest non-system until under maxTokens.
+  // The summary message is protected — recent verbatim messages go first.
   if (opts.maxTokens && opts.maxTokens > 0) {
     let tokens = estimateMessagesTokens(out as TokenCountMessage[]);
-    while (tokens > opts.maxTokens && out.length > 1) {
-      // remove second element (keep system at 0)
-      const hasSystem = out[0]?.role === "system";
-      const idx = hasSystem ? 1 : 0;
+    let guard = 0;
+    while (tokens > opts.maxTokens && out.length > 1 && guard++ < 1000) {
+      const idx = out.findIndex((m, i) => m !== summaryRef && !(i === 0 && m.role === "system"));
+      if (idx === -1) break;
       out.splice(idx, 1);
       tokens = estimateMessagesTokens(out as TokenCountMessage[]);
     }
@@ -283,5 +396,105 @@ export function compressMessages(messages: CompressibleMessage[], opts: Compress
   const ratio = Number((originalTokens > 0 ? tokenRatio : lengthRatio).toFixed(3));
   const savedTokens = Math.max(0, originalTokens - compressedTokens);
 
-  return { messages: out, ratio, savedTokens };
+  return { messages: out, ratio, savedTokens, summarized, summaryVia, droppedMessages };
+}
+
+/**
+ * Async variant: same pipeline but the condense step uses a real LLM summary
+ * (fail-open to extractive). The summary message is protected from the token
+ * budget truncation loop — only recent verbatim messages are dropped, and if
+ * nothing else can go, the summary text itself is halved progressively.
+ */
+export async function compressMessagesAsync(
+  messages: CompressibleMessage[],
+  opts: CompressOpts & SummarizeLlmOpts = {}
+): Promise<CompressResult> {
+  const engines = opts.engines ?? ["toolsMinify", "codeDedup", "historySummarizeLLM"];
+  const originalLength = calcLength(messages);
+  const originalTokens = estimateMessagesTokens(messages as TokenCountMessage[]);
+
+  let out: CompressibleMessage[] = [...messages];
+  let summarized = false;
+  let summaryVia: SummaryResult["via"] | undefined;
+  let droppedMessages = 0;
+  let summaryRef: CompressibleMessage | null = null;
+
+  if (engines.includes("toolsMinify")) out = toolsMinify(out);
+  if (engines.includes("codeDedup")) out = codeDedup(out);
+  if (engines.includes("relevanceKeep")) out = relevanceKeep(out, opts.relevance);
+  if (engines.includes("historySummarize")) out = historySummarize(out);
+  if (engines.includes("historyCondense")) {
+    const r = historyCondense(out, { keepRecent: opts.keepRecent });
+    out = r.messages;
+    if (r.summary) {
+      summarized = true;
+      summaryVia = "extractive";
+      droppedMessages = r.droppedCount;
+      summaryRef = out.find((m) => typeof m.content === "string" && m.content === r.summary) ?? null;
+    }
+  }
+  if (engines.includes("historySummarizeLLM")) {
+    const r = await historySummarizeLLM(out, {
+      keepRecent: opts.keepRecent,
+      maxTokens: opts.maxTokens,
+      mode: opts.mode,
+      summarize: opts.summarize,
+    });
+    out = r.messages;
+    if (r.summary) {
+      summarized = true;
+      summaryVia = r.via ?? undefined;
+      droppedMessages = r.droppedCount;
+      summaryRef = out.find((m) => typeof m.content === "string" && m.content === r.summary) ?? null;
+    }
+  }
+
+  // Token budget truncation: drop oldest non-system, never the summary first.
+  if (opts.maxTokens && opts.maxTokens > 0) {
+    let tokens = estimateMessagesTokens(out as TokenCountMessage[]);
+    let guard = 0;
+    while (tokens > opts.maxTokens && out.length > 1 && guard++ < 1000) {
+      const idx = out.findIndex((m, i) => m !== summaryRef && !(i === 0 && m.role === "system"));
+      if (idx === -1) {
+        // Only system + summary left: shrink the summary text itself.
+        if (summaryRef && typeof summaryRef.content === "string" && summaryRef.content.length > 500) {
+          summaryRef.content = summaryRef.content.slice(0, Math.floor(summaryRef.content.length / 2)) + "…";
+          tokens = estimateMessagesTokens(out as TokenCountMessage[]);
+          continue;
+        }
+        break;
+      }
+      out.splice(idx, 1);
+      tokens = estimateMessagesTokens(out as TokenCountMessage[]);
+    }
+  }
+
+  const compressedLength = calcLength(out);
+  const compressedTokens = estimateMessagesTokens(out as TokenCountMessage[]);
+  const tokenRatio = originalTokens === 0 ? 1 : compressedTokens / originalTokens;
+  const lengthRatio = originalLength === 0 ? 1 : compressedLength / originalLength;
+  const ratio = Number((originalTokens > 0 ? tokenRatio : lengthRatio).toFixed(3));
+  const savedTokens = Math.max(0, originalTokens - compressedTokens);
+
+  return { messages: out, ratio, savedTokens, summarized, summaryVia, droppedMessages };
+}
+
+export async function compressWithMetricsAsync(
+  messages: CompressibleMessage[],
+  opts: CompressOpts & SummarizeLlmOpts = {}
+): Promise<CompressResult & { metrics: CompressionStageMetrics }> {
+  const start = Date.now();
+  const result = await compressMessagesAsync(messages, opts);
+  const durationMs = Date.now() - start;
+  return {
+    ...result,
+    metrics: {
+      stage: "compression",
+      durationMs,
+      originalTokens: result.savedTokens + estimateMessagesTokens(result.messages),
+      compressedTokens: estimateMessagesTokens(result.messages),
+      ratio: result.ratio,
+      applied: result.ratio < 0.95 && result.savedTokens > 0,
+    },
+  };
 }

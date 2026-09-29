@@ -9,7 +9,7 @@ import { estimateTokens, estimateMessagesTokens } from "../../lib/token-estimato
 import { recordUsage } from "../../lib/quota-tracker.js";
 import { addLog } from "../../lib/request-log.js";
 import { hasScope } from "../../lib/virtual-keys.js";
-import { compressWithMetrics } from "../../lib/compression.js";
+import { compressWithMetricsAsync } from "../../lib/compression.js";
 import { rankProvidersByCostAndLatency } from "../../lib/cost-router.js";
 import { semanticCache } from "../../lib/semantic-cache.js";
 import { loadVerifiedMap } from "../../lib/model-store.js";
@@ -237,12 +237,12 @@ anthropicRoute.post("/", zValidator("json", anthropicSchema), async (c) => {
   if (config.compressionEnabled && body.messages?.length > 6) {
     const maxTokens = config.compressionMaxTokens || 4096;
     const promptTokens = estimateMessagesTokens(body.messages);
-    const comp = compressWithMetrics(body.messages, { maxTokens: promptTokens > maxTokens ? maxTokens : undefined });
+    const comp = await compressWithMetricsAsync(body.messages, { maxTokens: promptTokens > maxTokens ? maxTokens : undefined });
     if (comp.metrics.applied) {
       messagesToSend = comp.messages;
       compressionRatio = comp.ratio;
       compressedTokens = Math.max(0, estimated - comp.savedTokens);
-      logger.info({ model, original: body.messages.length, compressed: messagesToSend.length, ratio: comp.ratio, savedTokens: comp.savedTokens }, "compression applied (anthropic)");
+      logger.info({ model, original: body.messages.length, compressed: messagesToSend.length, ratio: comp.ratio, savedTokens: comp.savedTokens, summarized: comp.summarized, summaryVia: comp.summaryVia, droppedMessages: comp.droppedMessages }, "compression applied (anthropic)");
     }
   }
 
