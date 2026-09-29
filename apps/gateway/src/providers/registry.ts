@@ -116,7 +116,7 @@ export const providerMeta: Record<string, { name: string; tier: string; tier_typ
   groq: { name: "Groq", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   "llm7-io": { name: "LLM7.io", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   cerebras: { name: "Cerebras", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
-  "agnes-ai": { name: "Agnes AI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","vision"], noCard: true },
+  "agnes-ai": { name: "Agnes AI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","vision","image","video"], noCard: true },
   "aion-labs": { name: "Aion Labs", tier: "Permanent Free", tier_type: "permanent", caps: ["text"], noCard: true },
   "z-ai-zhipu-ai": { name: "Z AI (Zhipu AI)", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning"], noCard: true },
   "b-ai": { name: "B.AI", tier: "Permanent Free", tier_type: "permanent", caps: ["text","reasoning","image","video"], noCard: true },

@@ -35,7 +35,7 @@
 | **Chutes.ai** | `chutes-ai` / `chutes` | `https://api.chutes.ai/v1` | 2 | live | — | text,reasoning | `CHUTES_API_KEYS` |
 | **Glhf.chat** | `glhf-chat` / `glhf` | `https://glhf.chat/api/openai/v1` | 2 | live public | — | text | `GLHF_API_KEYS` |
 | **Z AI (Zhipu)** | `z-ai-zhipu-ai` | `https://api.z.ai/api/paas/v4` | 3 (glm-4.7-flash, glm-4.5-flash, glm-4.6v-flash) | live | 1 concurrent | text,reasoning,image,video | `Z_AI_API_KEYS` |
-| **Agnes AI** | `agnes-ai` | `https://apihub.agnes-ai.com/v1` | 5 | live | 30 RPM | text,vision | `AGNES_API_KEYS` |
+| **Agnes AI** | `agnes-ai` | `https://apihub.agnes-ai.com/v1` | 6 | live | 30 RPM | text,vision,image,video | `AGNES_API_KEYS` |
 | **Aion Labs** | `aion-labs` | `https://api.aionlabs.ai/v1` | 5 | live | — | text | `AION_API_KEYS` |
 | **LLM7.io** | `llm7-io` | `https://api.llm7.io/v1` | 6 | live public | — | text,reasoning | `LLM7_API_KEYS` |
 | **Cerebras** | `cerebras` | `https://api.cerebras.ai/v1` | 5 | live | 15 RPM/30K TPM/1M TPD, 128K ctx | text,reasoning | `CEREBRAS_API_KEYS` |
