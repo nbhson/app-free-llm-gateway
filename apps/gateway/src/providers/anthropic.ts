@@ -63,6 +63,9 @@ export const anthropicProvider: Provider = {
     };
 
     const url = ANTHROPIC_API_URL;
+    const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
+      ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
+      : undefined;
 
     // Streaming: forward SSE directly
     if (req.stream) {
@@ -71,6 +74,7 @@ export const anthropicProvider: Provider = {
         method: "POST",
         headers,
         body: JSON.stringify(body),
+        ...(signal ? { signal } : {}),
       });
       if (!res.ok) return res;
       // Pass through Anthropic SSE stream as-is (caller may convert)
@@ -88,6 +92,7 @@ export const anthropicProvider: Provider = {
       method: "POST",
       headers,
       body: JSON.stringify(body),
+      ...(signal ? { signal } : {}),
     });
     return res;
   },

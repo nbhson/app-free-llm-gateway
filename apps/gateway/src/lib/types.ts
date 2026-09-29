@@ -226,9 +226,31 @@ export interface ReadyResponse {
   ready?: boolean;
 }
 
-/** Extract message from unknown throwables (replaces `catch (e: any) => e.message`). */
+/** Extract message from unknown throwables (replaces `catch (e: any) => e.message`).
+ * Includes `cause` chain (undici `fetch failed` hides ECONNRESET/ETIMEDOUT/DNS/TLS in cause). */
 export function errMessage(e: unknown): string {
-  if (e instanceof Error) return e.message;
+  if (e instanceof Error) {
+    const parts: string[] = [e.message || String(e)];
+    // Unwrap cause chain (max 3 levels to avoid bloat)
+    let cause = (e as { cause?: unknown }).cause;
+    for (let i = 0; i < 3 && cause; i++) {
+      if (cause instanceof Error) {
+        parts.push(`cause: ${cause.message}`);
+        cause = (cause as { cause?: unknown }).cause;
+      } else if (typeof cause === "string") {
+        parts.push(`cause: ${cause}`);
+        break;
+      } else {
+        try {
+          parts.push(`cause: ${JSON.stringify(cause).slice(0, 200)}`);
+        } catch {
+          parts.push(`cause: ${String(cause).slice(0, 200)}`);
+        }
+        break;
+      }
+    }
+    return parts.join(" | ");
+  }
   return String(e);
 }
 

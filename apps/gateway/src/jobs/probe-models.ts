@@ -25,7 +25,18 @@ export async function probeModel(providerId: string, fullModelId: string, timeou
   if (keys.length === 0 && !isPublic) {
     return { id: fullModelId, provider: providerId, model: fullModelId, status: "no-key", error: "no API key configured" };
   }
-  const key = keys[0] || "";
+  // Don't probe upstream with placeholder keys (xxx/change-me): report no-key locally
+  // instead of leaking placeholder upstream and getting misleading usable/401.
+  const realKey = keys.find((k) => {
+    const t = (k || "").trim();
+    if (!t || t.length <= 20) return false;
+    const low = t.toLowerCase();
+    return !low.includes("xxx") && !low.includes("change-me") && !low.includes("please-generate");
+  });
+  if (!realKey && !isPublic) {
+    return { id: fullModelId, provider: providerId, model: fullModelId, status: "no-key", error: "placeholder key (set a real API key in .env)" };
+  }
+  const key = realKey || keys[0] || "";
 
   // Extract model after provider prefix for providers that need it, but keep full for gateway routing
   // For probe, we pass fullModelId (gateway will handle prefix stripping in openai-compatible)

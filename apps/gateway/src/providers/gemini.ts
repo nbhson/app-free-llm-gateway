@@ -60,11 +60,16 @@ export const geminiProvider: Provider = {
 
     const geminiBody = translateOpenAIToGemini(req);
 
+    const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
+      ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
+      : undefined;
+
     if (!isStream) {
       const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(geminiBody),
+        ...(signal ? { signal } : {}),
       });
       if (!res.ok) return res;
       const data = (await res.json()) as {
@@ -82,6 +87,7 @@ export const geminiProvider: Provider = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(geminiBody),
+      ...(signal ? { signal } : {}),
     });
     if (!res.ok) return res;
     const stream = res.body;

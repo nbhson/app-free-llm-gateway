@@ -72,7 +72,7 @@ export function createOpenAICompatibleProvider(opts: {
         xai: "grok-2",
         deepseek: "deepseek-chat",
         openrouter: "openrouter/auto",
-        "ollama-cloud": "llama3.1:70b",
+        "ollama-cloud": "gemma4:31b-cloud",
         "alibaba-cloud-model-studio": "qwen-plus",
         nscale: "meta-llama/Llama-3.1-70B",
         nebius: "meta-llama/Meta-Llama-3.1-70B-Instruct",
@@ -140,11 +140,17 @@ export function createOpenAICompatibleProvider(opts: {
       if (req.tools !== undefined && req.tools !== null) body.tools = req.tools;
       if (req.tool_choice !== undefined && req.tool_choice !== null) body.tool_choice = req.tool_choice;
       if (req.user !== undefined && req.user !== null) body.user = req.user;
+      // Abort underlying socket on timeout so Promise.race in provider-executor
+      // doesn't leak hanging fetches (storm of "fetch failed" on next requests).
+      const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
+        ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
+        : undefined;
       // Initial fetch with auto session header if needed
       let res = await fetch(url, {
         method: "POST",
         headers,
         body: JSON.stringify(body),
+        ...(signal ? { signal } : {}),
       });
       // Generic auto-retry for session-gated providers (opencode free, etc.)
       // opencode now returns plain 401 Unauthorized without SessionID hint for models like deepseek/laguna/longcat
@@ -168,6 +174,7 @@ export function createOpenAICompatibleProvider(opts: {
             method: "POST",
             headers: retryHeaders,
             body: JSON.stringify(body),
+            ...(signal ? { signal } : {}),
           });
         }
       }

@@ -495,8 +495,14 @@ chatRoute.post(
 
     const errors = result.errors;
 
-    // Log failure with full provider summary (not just first)
+    // Distinguish gateway-misconfig / rate-limit from true upstream 502 so clients
+    // don't see "502 oan": missing/placeholder keys -> 400, all-429 -> 429.
+    const isMissingKey = (e: { error?: string }) => /no key configured|missing key/i.test(e.error || "");
+    const isRateLimited = (e: { status?: number; retryAfterMs?: number }) => e.status === 429 || e.retryAfterMs !== undefined;
+
+    // Log failure with full provider summary (not just first) — keep cause chain (2000 chars)
     logger.warn({ model, providerOrder, errors: errors.slice(0, 5), latency: Date.now() - startAll }, "all providers failed for chat");
+    const logStatus = errors.length > 0 && errors.every(isMissingKey) ? 400 : errors.length > 0 && errors.every(isRateLimited) ? 429 : 502;
     addLog({
       id: `req-${Date.now()}`,
       timestamp: new Date().toISOString(),
@@ -507,8 +513,8 @@ chatRoute.post(
       promptTokens: estimated.prompt,
       totalTokens: estimated.total,
       latencyMs: Date.now() - startAll,
-      status: 502,
-      error: JSON.stringify(errors).slice(0, 800),
+      status: logStatus,
+      error: JSON.stringify(errors).slice(0, 2000),
     });
 
     if (process.env.ALLOW_MOCK === "1" && config.nodeEnv === "development" && errors.length > 0) {
@@ -546,6 +552,16 @@ chatRoute.post(
           ? "Model không tồn tại trên provider này — thử chọn model trong danh sách Chat (6 default + Favorites) hoặc dùng free-llm-gateway/auto."
           : "Thử chọn model khác hoặc tắt/bật Web Tools trong Settings rồi gửi lại.";
     const detailedMessage = `All providers failed (${errors.length} tried). ${topErrors}. Gợi ý: ${suggestion}`;
+    // Missing/placeholder keys are a client config error, not a bad gateway: 400.
+    if (errors.length > 0 && errors.every(isMissingKey)) {
+      return c.json({ error: { message: detailedMessage, type: "missing_key", provider_errors: errors, hint: "Thêm API key thật vào .env (key hiện tại là placeholder xxx) hoặc dùng free-llm-gateway/auto với provider public." } }, 400);
+    }
+    // All upstreams rate-limited: surface 429 + Retry-After so client backs off instead of retry-storm -> 502.
+    if (errors.length > 0 && errors.every(isRateLimited)) {
+      const retryAfterMs = Math.max(0, ...errors.map((e) => e.retryAfterMs ?? 10000));
+      c.header("Retry-After", String(Math.ceil(retryAfterMs / 1000)));
+      return c.json({ error: { message: detailedMessage, type: "rate_limit", provider_errors: errors, hint: suggestion, retryAfterMs } }, 429);
+    }
     return c.json({ error: { message: detailedMessage, type: "provider_error", provider_errors: errors, hint: suggestion } }, 502);
   }
 );

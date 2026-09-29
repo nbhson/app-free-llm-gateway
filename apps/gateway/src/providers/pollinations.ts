@@ -14,6 +14,9 @@ export const pollinationsProvider: Provider = {
     // If POLLINATIONS_API_KEY is configured (enter.pollinations.ai), send it so per-key budget is tracked correctly
     // Pollinations accepts Authorization: Bearer <key> for authenticated budget; anonymous still works without it
     if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+    const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
+      ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
+      : undefined;
     return fetch(url, {
       method: "POST",
       headers,
@@ -24,6 +27,7 @@ export const pollinationsProvider: Provider = {
         max_tokens: req.max_tokens,
         stream: req.stream ?? false,
       }),
+      ...(signal ? { signal } : {}),
     });
   },
   async models(): Promise<ModelInfo[]> {

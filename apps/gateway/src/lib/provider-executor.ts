@@ -5,6 +5,7 @@ import { checkQuotaAsync, recordUsage } from "./quota-tracker.js";
 import { isOpen, recordSuccess, recordFailure, recordFailureIfRetryable } from "./circuit-breaker.js";
 import { logger } from "../middleware/logger.js";
 import { isPublicProvider } from "./provider-keys.js";
+import { isPlaceholderKey } from "./provider-keys.js";
 import { errMessage, type ProviderError } from "./types.js";
 import { config } from "../config.js";
 import { updateLatencyEMA } from "./adaptive-router.js";
@@ -134,6 +135,11 @@ async function tryProvidersParallel(opts: TryProvidersOpts, batchSize: number): 
       }
       if (key === null) throw { provider: pid, error: `no key configured (set ${pid.toUpperCase().replace(/-/g, "_")}_API_KEYS)` } as ProviderError;
       if (!key && !isPublicProvider(pid)) throw { provider: pid, error: "missing key" } as ProviderError;
+      // Don't burn upstream with placeholder keys (hf_xxx, ag_xxx...): fail fast locally
+      // so pinned models surface "missing key" instead of cryptic upstream 401/fetch failed -> 502.
+      // Skipped in test env so mocked providers (placeholder keys) keep working.
+      const isTestEnv = process.env.NODE_ENV === "test" || !!process.env.VITEST;
+      if (key && !isTestEnv && isPlaceholderKey(key) && !isPublicProvider(pid)) throw { provider: pid, error: `missing key (placeholder for ${pid}, set ${pid.toUpperCase().replace(/-/g, "_")}_API_KEYS with a real key)` } as ProviderError;
       if (opts.quotaTokens !== undefined) {
         const quota = await checkQuotaAsync(pid, key, opts.quotaTokens!, opts.quotaModel);
         if (!quota.allowed) {
@@ -173,7 +179,7 @@ async function tryProvidersParallel(opts: TryProvidersOpts, batchSize: number): 
           } else {
             recordFailureIfRetryable(pid, res.status);
           }
-          throw { provider: pid, status: res.status, error: text.slice(0, 600), retryAfterMs } as ProviderError;
+          throw { provider: pid, status: res.status, error: text.slice(0, 1000), retryAfterMs } as ProviderError;
         }
         // Stream success but body contains budget error (Pollinations returns 200 SSE with error) — only for pollinations to avoid 500ms overhead
         const budgetText = await detectBudgetErrorInResponse(res, pid);
@@ -231,6 +237,13 @@ export async function tryProviders(opts: TryProvidersOpts): Promise<TryProviders
       errors.push({ provider: pid, error: "missing key" });
       continue;
     }
+    // Don't burn upstream with placeholder keys (hf_xxx, ag_xxx...): fail fast locally.
+    // Skipped in test env so mocked providers keep working.
+    const isTestEnvSeq = process.env.NODE_ENV === "test" || !!process.env.VITEST;
+    if (key && !isTestEnvSeq && isPlaceholderKey(key) && !isPublicProvider(pid)) {
+      errors.push({ provider: pid, error: `missing key (placeholder for ${pid}, set ${pid.toUpperCase().replace(/-/g, "_")}_API_KEYS with a real key)` });
+      continue;
+    }
 
     if (opts.quotaTokens !== undefined) {
       const quota = await checkQuotaAsync(pid, key, opts.quotaTokens, opts.quotaModel);
@@ -279,7 +292,7 @@ export async function tryProviders(opts: TryProvidersOpts): Promise<TryProviders
           retryAfterMs = Number.isNaN(retry) ? 60000 : retry;
           markRateLimited(pid, key, retryAfterMs);
         }
-        errors.push({ provider: pid, status: res.status, error: text.slice(0, 600), retryAfterMs });
+        errors.push({ provider: pid, status: res.status, error: text.slice(0, 1000), retryAfterMs });
         if (res.status === 402 || res.status === 403) {
           const isBudget = BUDGET_ERROR_RE.test(text);
           if (isBudget) recordFailure(pid);
