@@ -45,7 +45,10 @@ export function createApp() {
   // fetch MASTER_KEY without auth.
   function isBootstrapExposed(): boolean {
     const v = (process.env.EXPOSE_BOOTSTRAP ?? "0").toLowerCase().trim();
-    return v === "1" || v === "true" || v === "yes" || v === "on";
+    const enabled = v === "1" || v === "true" || v === "yes" || v === "on";
+    // Hard block in production regardless of env — bootstrap leaks MASTER_KEY.
+    if (config.nodeEnv === "production") return false;
+    return enabled;
   }
   const bootstrapHandler = (c: { json: (o: unknown, s?: number) => unknown }) => {
     if (!isBootstrapExposed()) {
