@@ -55,10 +55,12 @@ export const geminiProvider: Provider = {
     const geminiModel = sanitizeGeminiModel(req.model);
     const isStream = req.stream ?? false;
     const endpoint = isStream ? "streamGenerateContent" : "generateContent";
-    // alt=sse for true SSE from Gemini
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:${endpoint}${isStream ? "?alt=sse&key=" : "?key="}${apiKey}`;
+    // Key truyền qua header x-goog-api-key — KHÔNG dùng ?key= query: URL
+    // (kèm key) bị ghi vào access logs, metrics, error messages.
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:${endpoint}${isStream ? "?alt=sse" : ""}`;
 
     const geminiBody = translateOpenAIToGemini(req);
+    const authHeaders = { "Content-Type": "application/json", "x-goog-api-key": apiKey };
 
     const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
       ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
@@ -67,7 +69,7 @@ export const geminiProvider: Provider = {
     if (!isStream) {
       const res = await fetch(url, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders,
         body: JSON.stringify(geminiBody),
         ...(signal ? { signal } : {}),
       });
@@ -85,7 +87,7 @@ export const geminiProvider: Provider = {
 
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: authHeaders,
       body: JSON.stringify(geminiBody),
       ...(signal ? { signal } : {}),
     });
@@ -106,7 +108,10 @@ export const geminiProvider: Provider = {
   async models(apiKey?: string): Promise<ModelInfo[]> {
     if (!apiKey) return [{ id: "gemini/gemini-3.6-flash", provider: "gemini", contextLength: 1_000_000 }];
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      // Key ở header — không vào URL (query strings bị log rộng rãi hơn).
+      const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+        headers: { "x-goog-api-key": apiKey },
+      });
       if (!res.ok) return [{ id: "gemini/gemini-3.6-flash", provider: "gemini" }];
       const data = (await res.json()) as { models?: Array<{ name: string; displayName?: string }> };
       return (data.models || []).map((m) => ({
@@ -120,7 +125,9 @@ export const geminiProvider: Provider = {
   },
   async health(apiKey: string): Promise<boolean> {
     try {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+      const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+        headers: { "x-goog-api-key": apiKey },
+      });
       return res.ok;
     } catch {
       return false;

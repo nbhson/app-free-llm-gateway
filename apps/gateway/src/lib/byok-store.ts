@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { resolveDataPath } from "./paths.js";
 import { encrypt, decrypt } from "./key-manager.js";
+import { logger } from "../middleware/logger.js";
 
 export type ByokMap = Record<string, Record<string, string[]>>; // vkId -> provider -> keys[]
 
@@ -16,20 +17,35 @@ function saveRaw(map: ByokMap): void {
   try { fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true }); fs.writeFileSync(STORE_PATH, JSON.stringify(map, null, 2)); } catch { /* ignore */ }
 }
 
-// Encrypted at rest: store as encrypted JSON blob
+// Encrypted at rest: store as encrypted JSON blob.
+// SECURITY NOTE: khi decrypt fail (ENCRYPTION_KEY sai / file corrupt), store fallback về
+// plaintext — chỉ chấp nhận được khi file chưa tồn tại (fresh install). Nếu file có
+// nội dung mã hóa mà không giải mã được → không load, báo lỗi thay vì để plaintext lộ.
 function load(): ByokMap {
   try {
     if (!fs.existsSync(STORE_PATH)) return {};
     const raw = fs.readFileSync(STORE_PATH, "utf-8");
-    // try encrypted blob first
-    if (raw.trim().startsWith("{") && raw.includes(":")) {
-      // heuristic: if file contains ":...:...:" pattern for encrypted, try decrypt wrapper
+    // Nếu là encrypted blob (wrapper {__enc, updatedAt}) — bắt buộc giải mã.
+    // Không fallback về plaintext khi decryption fail (trước đây bỏ qua cả try/catch).
+    if (raw.trim().startsWith("{")) {
       const j = JSON.parse(raw);
       if (j.__enc) {
-        const dec = decrypt(j.__enc);
-        return JSON.parse(dec) as ByokMap;
+        try {
+          const dec = decrypt(j.__enc);
+          return JSON.parse(dec) as ByokMap;
+        } catch {
+          // Decryption failed — do NOT fallback to plaintext if the file has
+          // an __enc field (means it was encrypted). Only use plaintext for
+          // legacy files that were never encrypted.
+          logger.error({ storePath: STORE_PATH }, "BYOK store decryption failed — remove the file to reset");
+          return {}; // Fresh start; user must re-upload keys after reconfiguring ENCRYPTION_KEY
+        }
       }
-      // plain map
+      // No __enc field: this is a plaintext legacy file or a brand-new store.
+      // Accept it silently (fresh install = no keys yet). Log warning in production.
+      if (raw.trim() !== "{}") {
+        logger.warn("BYOK store is unencrypted — re-encrypt via saving new keys");
+      }
       return j as ByokMap;
     }
   } catch { /* ignore */ }

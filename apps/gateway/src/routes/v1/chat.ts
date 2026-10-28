@@ -429,7 +429,16 @@ chatRoute.post(
           });
         }
 
-        const data = (await res.json().catch(async () => ({ text: await res.text() }))) as UpstreamChatCompletion;
+        // ĐỌC BODY MỘT LẦN: res.json() tiêu thụ body — .catch(res.text()) trước
+        // đây không bao giờ chạy được (body đã consumed) và nổ "body used already"
+        // với upstream trả non-JSON.
+        const rawText = await res.text().catch(() => "");
+        let data: UpstreamChatCompletion;
+        try {
+          data = JSON.parse(rawText) as UpstreamChatCompletion;
+        } catch {
+          data = { text: rawText } as unknown as UpstreamChatCompletion;
+        }
         if (data.choices) {
           c.header("X-Provider", pid);
           c.header("X-Verified", vStatus);

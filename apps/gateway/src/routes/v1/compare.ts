@@ -7,6 +7,10 @@ import { config } from "../../config.js";
 import { providers, getProvider, resolveProviderId } from "../../providers/registry.js";
 import { estimateMessagesTokens } from "../../lib/token-estimator.js";
 import { metrics } from "../../lib/metrics.js";
+import { hasScope } from "../../lib/virtual-keys.js";
+import { getNextKeyManaged, recordUsage, markSuccess, markRateLimited } from "../../lib/key-manager.js";
+import { checkQuotaAsync } from "../../lib/quota-tracker.js";
+import { isOpen, recordSuccess, recordFailureIfRetryable } from "../../lib/circuit-breaker.js";
 
 export const compareRoute = new Hono();
 
@@ -25,6 +29,8 @@ const compareSchema = z.object({
  *  - usage parsing supports prompt_tokens/completion_tokens/total_tokens
  *  - no cross-fallback by design (isolated); provider resolution uses first capable provider only
  *  - errors classified (no_key / unknown_provider / upstream HTTP) with accurate timing
+ *  - vk scope + circuit breaker + quota enforced per model (trước đây route này
+ *    BYPASS toàn bộ: vk user-role gọi được model bất kỳ, không tốn quota)
  * Returns: { results: [{model, provider, latencyMs, content, usage, ok, error}] }
  */
 compareRoute.post("/compare", zValidator("json", compareSchema), async (c) => {
@@ -35,8 +41,15 @@ compareRoute.post("/compare", zValidator("json", compareSchema), async (c) => {
   // For each model, resolve provider order (respect fallback + adaptive if enabled)
   const modelProviders: Array<{ model: string; providerId: string }> = [];
   for (const m of body.models) {
+    // Scope check — khớp hành vi /completions: key không được phép model/provider → 403.
+    if (vk && !hasScope(vk, m, undefined)) {
+      return c.json({ error: { message: `Key not allowed for model ${m}`, type: "insufficient_scope" } }, 403);
+    }
     const order = getProvidersForRequest(m);
     const pid = order[0] || "pollinations";
+    if (vk && !hasScope(vk, undefined, pid)) {
+      return c.json({ error: { message: `Key not allowed for provider ${pid}`, type: "insufficient_scope" } }, 403);
+    }
     modelProviders.push({ model: m, providerId: pid });
   }
 
@@ -52,10 +65,20 @@ compareRoute.post("/compare", zValidator("json", compareSchema), async (c) => {
     if (!provider) {
       return { model, providerId, ok: false as const, error: `unknown provider: ${providerId}`, latencyMs: Date.now() - t0, content: "", usage: null as unknown };
     }
-    const key = (config.providerKeys[providerId] || [])[0] || "";
+    // Circuit breaker — khớp tryProviders: provider đang open thì không đốt upstream.
+    if (isOpen(providerId)) {
+      return { model, providerId, ok: false as const, error: "circuit open (cooldown)", latencyMs: Date.now() - t0, content: "", usage: null as unknown };
+    }
+    // Key rotation qua key-manager (trước đây: luôn lấy key[0] — burn 1 key).
+    const key = getNextKeyManaged(providerId) || (config.providerKeys[providerId] || [])[0] || "";
     const isPublic = ["pollinations", "llm7-io", "ollama-cloud"].includes(providerId);
     if (!key && !isPublic) {
       return { model, providerId, ok: false as const, error: `no key for provider ${providerId} — add key in Providers`, latencyMs: Date.now() - t0, content: "", usage: null as unknown };
+    }
+    // Quota pre-check + commit — compare trước đây tiêu thụ upstream miễn phí.
+    const quota = await checkQuotaAsync(providerId, key, quotaTokens + (body.max_tokens || 1024), model);
+    if (!quota.allowed) {
+      return { model, providerId, ok: false as const, error: quota.reason || "quota exceeded", latencyMs: Date.now() - t0, content: "", usage: null as unknown };
     }
     try {
       const req = {
@@ -69,6 +92,11 @@ compareRoute.post("/compare", zValidator("json", compareSchema), async (c) => {
       const latencyMs = Date.now() - t0;
       if (!res.ok) {
         const txt = await res.text().catch(() => "");
+        if (res.status === 429) {
+          const retry = parseInt(res.headers.get("retry-after") || "60", 10) * 1000;
+          markRateLimited(providerId, key, Number.isNaN(retry) ? 60000 : retry);
+        }
+        recordFailureIfRetryable(providerId, res.status);
         try { metrics.llmLatency(providerId, model, latencyMs); } catch { /* ignore */ }
         return { model, providerId, ok: false as const, error: `HTTP ${res.status}: ${txt.slice(0, 500)}`, latencyMs, content: "", usage: null as unknown };
       }
@@ -79,10 +107,14 @@ compareRoute.post("/compare", zValidator("json", compareSchema), async (c) => {
       const rawContent = data.choices?.[0]?.message?.content ?? "";
       const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
       const usage = data.usage && typeof data.usage === "object" ? data.usage : null;
+      recordSuccess(providerId);
+      markSuccess(providerId, key);
+      recordUsage(providerId, key, usage?.total_tokens || quotaTokens + (body.max_tokens || 1024), model);
       try { metrics.llmLatency(providerId, model, latencyMs); } catch { /* ignore */ }
       return { model, providerId, ok: true as const, content, latencyMs, usage };
     } catch (e) {
       const latencyMs = Date.now() - t0;
+      recordFailureIfRetryable(providerId);
       try { metrics.llmLatency(providerId, model, latencyMs); } catch { /* ignore */ }
       return { model, providerId, ok: false as const, error: (e as Error).message?.slice(0, 500) || "unknown error", latencyMs, content: "", usage: null as unknown };
     }

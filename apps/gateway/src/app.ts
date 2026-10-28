@@ -160,8 +160,17 @@ export function createApp() {
     const key = extractBearer(c);
     const vk = key ? isValidVirtualKeyLive(key) : null;
     if (!vk) return c.json({ error: { message: "Unauthorized", type: "invalid_api_key" } }, 401);
-    // For /api/keys POST/DELETE and PUT /api/config require admin
-    if (((c.req.path.startsWith("/api/keys") && c.req.method !== "GET") || (c.req.path === "/api/config" && c.req.method === "PUT")) && vk.role !== "admin") {
+    // Admin-only surface: trước đây CHỈ /api/keys POST/DELETE + /api/config PUT
+    // cần admin — vk role=user vẫn gọi được /sync/boot, /models/live/sync,
+    // /models/health/mark, DELETE /models/health, DELETE /cache, /alerts/test…
+    // = control plane bị user-key thao tác. Quy tắc: mọi mutation (non-GET)
+    // + các GET nhạy cảm (config/keys/logs/quota) đều cần admin; /api/byok*
+    // là dữ liệu per-vk nên tự kiểm ownership bên trong route.
+    const sensitiveReads = ["/api/config", "/api/keys", "/api/logs", "/api/quota"];
+    const needsAdmin =
+      (c.req.method !== "GET" && !c.req.path.startsWith("/api/byok")) ||
+      sensitiveReads.some((p) => c.req.path === p || c.req.path.startsWith(p + "/"));
+    if (needsAdmin && vk.role !== "admin") {
       return c.json({ error: { message: "Admin required", type: "forbidden" } }, 403);
     }
     setRequestVk(c, vk);
@@ -174,7 +183,8 @@ export function createApp() {
 
   app.onError((err, c) => {
     logger.error({ err, path: c.req.path }, "unhandled error");
-    return c.json({ error: { message: err.message || "Internal error", type: "internal_error" } }, 500);
+    // Generic message — err.message có thể chứa đường dẫn file, SQL, key shape.
+    return c.json({ error: { message: "Internal server error", type: "internal_error" } }, 500);
   });
 
   return app;

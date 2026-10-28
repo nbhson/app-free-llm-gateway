@@ -1,31 +1,35 @@
 import dns from "node:dns/promises";
 import { isIP } from "node:net";
+import net from "node:net";
 
 // Lightweight SSRF guard without external deps.
 // Best practice: OWASP SSRF Prevention + PraisonAI GHSA-qg25 mitigation (DNS rebinding).
 
 const BLOCKED_HOSTNAMES = new Set(["localhost", "metadata.google.internal"]);
 
+// BlockList covering ALL private/reserved ranges — danh sách manual trước đây
+// chỉ rải vài prefix (10., 192.168., 172.16-31, 169.254., fc/fd/fe80/ff) và
+// bỏ sót: 100.64/10 (CGNAT), 192.0.0/24, 198.18/15 (benchmark), 224/4+240/4,
+// ::ffff:0:0/96 (IPv4-mapped), 2001:db8::/32, ::/128 ... → SSRF qua các dải đó.
+const blocked = new net.BlockList();
+for (const cidr of [
+  "0.0.0.0/8", "10.0.0.0/8", "100.64.0.0/10", "127.0.0.0/8",
+  "169.254.0.0/16", "172.16.0.0/12", "192.0.0.0/24", "192.0.2.0/24",
+  "192.168.0.0/16", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24",
+  "224.0.0.0/4", "240.0.0.0/4",
+]) blocked.addSubnet(cidr.split("/")[0] as string, Number(cidr.split("/")[1]), "ipv4");
+for (const cidr of [
+  "::/128", "::1/128", "fc00::/7", "fe80::/10", "ff00::/8",
+  "::ffff:0:0/96", "2001:db8::/32",
+]) blocked.addSubnet(cidr.split("/")[0] as string, Number(cidr.split("/")[1]), "ipv6");
+
 function isPrivateIp(ip: string): boolean {
-  if (!isIP(ip)) return false;
-  // Use Node's isIP + manual checks for private ranges
-  // Check loopback, private, link-local, unspecified, multicast
-  if (ip === "127.0.0.1" || ip === "::1" || ip === "0.0.0.0" || ip === "::") return true;
-  // IPv4 private
-  if (ip.startsWith("10.")) return true;
-  if (ip.startsWith("192.168.")) return true;
-  // 172.16.0.0/12
-  const m172 = ip.match(/^172\.(\d+)\./);
-  if (m172) {
-    const oct = parseInt(m172[1], 10);
-    if (oct >= 16 && oct <= 31) return true;
-  }
-  // Link-local 169.254.0.0/16 (AWS metadata) + 169.254.169.254 specifically
-  if (ip.startsWith("169.254.")) return true;
-  // IPv6 private/link-local
-  if (ip.startsWith("fc") || ip.startsWith("fd") || ip.startsWith("fe80:") || ip.startsWith("ff")) return true;
-  // Check via Node's BlockList would be better but keep simple
-  return false;
+  const t = ip.trim();
+  // IPv4-mapped IPv6 (::ffff:127.0.0.1) — normalize về IPv4 để BlockList bắt.
+  const mapped = t.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
+  const candidate = mapped ? mapped[1] : t;
+  if (!isIP(candidate)) return false;
+  return blocked.check(candidate);
 }
 
 export function isBlockedHostname(hostname: string): boolean {
@@ -134,6 +138,11 @@ export async function fetchWithSsrfGuard(
       throw e;
     }
     clearTimeout(t);
+
+    // NOTE (TOCTOU residual risk): fetch() tự resolve DNS lần nữa — kẻ tấn
+    // công kiểm soát DNS có thể rebind trong cửa sổ giữa check và fetch. Mitigation
+    // hiện có: validate lại MỌI redirect hop + BlockList đầy đủ. Pin-by-IP cần
+    // custom dispatcher (undici) — follow-up khi thêm dependency.
 
     // Handle redirect manually with re-validation
     if (res.status >= 300 && res.status < 400) {
