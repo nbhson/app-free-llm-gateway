@@ -3,6 +3,71 @@
 > Free LLM Gateway: Hono API gateway đa provider (OpenAI-compatible), virtual keys,
 > circuit breaker, quota, semantic cache, BYOK, web tools. Monorepo `apps/gateway` + `apps/web`.
 
+## Round 3 (2026-10-29)
+
+### Goals (2 follow-ups ghi nhận từ Round 2)
+
+1. **Dark mode retrofit** cho web dashboard (Round 2 đã defer vì rủi ro contrast khi
+   sửa ~7,400 dòng UI một lượt).
+2. **SSRF DNS pinning**: chặn DNS rebinding giữa bước validate và bước connect.
+
+### Kết quả — SSRF DNS pinning (gateway)
+
+- `lib/pinned-fetch.ts` (mới): undici `Agent` với connect-lookup tùy biến — resolve hostname
+  **một lần**, validate **từng** địa chỉ trả về qua blocklist SSRF, cache IP đã pin
+  (TTL 60s) rồi connect tới IP đó. SNI/Host giữ nguyên hostname (URL không đổi) nên
+  TLS cert vẫn verify theo hostname. Cửa sổ rebind giữa "validate" và "connect" đã đóng.
+- `pinnedFetch` thay `fetch` ở 21 call site provider: openai-compatible (12), anthropic (4),
+  gemini (4), pollinations (2) — BYOK baseUrl do user kiểm soát là surface SSRF chính.
+- `pinnedFetch` validate IP-literal ngay từ đầu: literal không bao giờ đi qua DNS lookup
+  của connector (test thật: 127.0.0.1 kết nối được trước fix).
+- **2 bug thật tìm thấy khi viết test:**
+  1. **CRITICAL (pre-existing từ Round 1)**: thêm `::ffff:0:0/96` vào `net.BlockList`
+     (kiểu ipv6) khiến Node match **mọi IPv4 thuần** vào dải đó → `isPrivateIp("8.8.8.8")`
+     trả true (block nhầm mọi public IP literal). Fix: normalize IPv4-mapped trong
+     `isPrivateIp` thay vì đưa vào blocklist.
+  2. **CRITICAL (pre-existing, Node build này)**: `net.BlockList` IPv6 **im lặng không
+     match** trên Node 22.23.3 (`addSubnet("fc00::",7)`, `addRange`, thậm chí
+     `SocketAddress("::1")` nổ ERR_INVALID_ADDRESS) → fc00::/7, fe80::/10, ::1...
+     chưa bao giờ bị block thật. Fix: IPv6 check bằng BigInt range thủ công
+     (fc00::/7, fe80::/10, ff00::/8, ::, ::1, 2001:db8::/32), giữ BlockList cho IPv4.
+- Tests: `pinned-fetch.test.ts` — 10 test với mock DNS (setPinnedLookup): pin cache
+  (1 resolve/TTL), block A/AAAA mixed, mapped-v6 (`::ffff:10.0.0.5` + hex `::ffff:7f00:1`),
+  IP-literal private, TTL re-validate, từ chối connect tới 127.0.0.1 thật.
+- Provider tests mock `../lib/pinned-fetch.js` → passthrough global fetch (stub),
+  tránh DNS/network thật trong unit test.
+
+### Kết quả Round 3 — findings mới
+
+| # | Severity | Vị trí | Vấn đề | Fix |
+|---|----------|--------|--------|-----|
+| 1 | CRITICAL | ssrf-guard.ts | `::ffff:0:0/96` trong BlockList → mọi IPv4 public bị coi là private (over-block, fail-closed) | Normalize IPv4-mapped bằng regex/BigInt, bỏ range khỏi list |
+| 2 | CRITICAL | ssrf-guard.ts + Node 22.23.3 | `net.BlockList` IPv6 không match (addSubnet/addRange/SocketAddress im lặng fail) → fc00::/7, fe80::/10, ::1, 2001:db8 không bị chặn từ Round 1 | IPv6 ranges tự kiểm bằng BigInt; BlockList chỉ dành cho IPv4 |
+| 3 | MAJOR | pinned-fetch (mới) | TOCTOU DNS-rebind: validate xong, fetch resolve lại DNS | Custom undici Agent pin-by-IP với TTL cache + validate mọi hop redirect |
+| 4 | MAJOR | pinned-fetch | IP-literal (127.0.0.1) không qua connector lookup → pinnedFetch ban đầu vẫn connect được | Pre-validate URL + resolveAndPin trước khi dispatch |
+| 5 | MINOR | Usage.tsx topology SVG | Màu node/border/text hardcode hex (light-only) | Đổi sang token vars (--app-surface, --violet-ink, ...) |
+
+### Trạng thái Round 3
+
+- [x] SSRF DNS pinning + 2 bug blocklist + 10 test mới
+- [x] Dark mode: tokens + toggle + no-FOUC bootstrap + migrate ~1,400 class usages
+- [x] Recharts/SVG màu hardcode → token vars; code block always-dark (github-dark)
+- [x] `tsc --noEmit` gateway + web: 0 error
+- [x] vitest: **356/356 pass, 51/51 files** (346 baseline + 10 mới, không regress)
+- [x] `vite build` web + `tsc -p apps/gateway` (build): pass
+- [x] Commits: pinned-fetch + blocklist fix, dark mode tokens, overlay fix
+
+### Không làm (cân nhắc, ghi nhận)
+
+- **Pin cache TTL 60s tĩnh**: DNS TTL thật của record không được đọc (dns.lookup không
+  trả TTL) — cửa sổ re-validate 60s là chấp nhận được vì mỗi lần re-resolve vẫn qua validator.
+- **Global undici dispatcher**: không dùng — sẽ pin cả traffic nội bộ/localhost của test
+  và các call nội bộ; chỉ áp dụng cho provider egress ( BYOK surface).
+- **Dark mode cho recharts Tooltip** (nền trắng mặc định): minor, tooltip vẫn đọc được;
+  để follow-up nếu cần polish.
+- **Live theme switch theo OS** (không reload): bootstrap luôn set data-theme, đổi
+  prefers-color-scheme giữa phiên cần toggle tay — chấp nhận cho round này.
+
 ## Round 2 (2026-10-29)
 
 ### Goals
