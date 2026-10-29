@@ -3,6 +3,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import crypto from "node:crypto";
+import { createRequire } from "node:module";
+
+// Single source of truth for the gateway version — read from this workspace's
+// package.json instead of hardcoding a string in 3 places (they had drifted:
+// app.ts said 1.11.3 while package.json said 1.11.4).
+const _require = createRequire(import.meta.url);
+export const APP_VERSION: string = (_require("../package.json") as { version?: string }).version ?? "0.0.0";
 
 // Load .env from repo root regardless of cwd (npm run dev -w apps/gateway sets cwd to apps/gateway)
 let loadedEnvPath: string | null = null;
@@ -204,6 +211,7 @@ function parseBoolEnv(v: string | undefined): boolean {
 export const config = {
   port: parseInt(process.env.PORT || "7373", 10),
   nodeEnv: process.env.NODE_ENV || "development",
+  appVersion: APP_VERSION,
   logLevel: process.env.LOG_LEVEL || "info",
   corsOrigin: process.env.CORS_ORIGIN || "*",
   databaseUrl: process.env.DATABASE_URL || "file:./data.db",
