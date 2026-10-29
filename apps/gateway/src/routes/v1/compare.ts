@@ -8,8 +8,8 @@ import { providers, getProvider, resolveProviderId } from "../../providers/regis
 import { estimateMessagesTokens } from "../../lib/token-estimator.js";
 import { metrics } from "../../lib/metrics.js";
 import { hasScope } from "../../lib/virtual-keys.js";
-import { getNextKeyManaged, recordUsage, markSuccess, markRateLimited } from "../../lib/key-manager.js";
-import { checkQuotaAsync } from "../../lib/quota-tracker.js";
+import { getNextKeyManaged, markSuccess, markRateLimited } from "../../lib/key-manager.js";
+import { checkQuotaAsync, recordUsage } from "../../lib/quota-tracker.js";
 import { isOpen, recordSuccess, recordFailureIfRetryable } from "../../lib/circuit-breaker.js";
 
 export const compareRoute = new Hono();
