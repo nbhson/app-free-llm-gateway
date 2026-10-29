@@ -4,6 +4,7 @@ export type Lang = "vi" | "en";
 
 const dict: Record<Lang, Record<string, string>> = {
   vi: {
+    "a11y.skipToContent": "Tới nội dung chính",
     "nav.dashboard": "Dashboard",
     "nav.providers": "Providers",
     "nav.models": "Models",
@@ -432,6 +433,7 @@ const dict: Record<Lang, Record<string, string>> = {
     "benchmark.stats_link": "/api/stats",
   },
   en: {
+    "a11y.skipToContent": "Skip to content",
     "nav.dashboard": "Dashboard",
     "nav.providers": "Providers",
     "nav.models": "Models",

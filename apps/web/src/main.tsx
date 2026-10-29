@@ -13,6 +13,9 @@ import Chat from "./pages/Chat.tsx";
 import Compare from "./pages/Compare.tsx";
 import "./index.css";
 import { LangProvider, useLang } from "./lib/i18n.tsx";
+import pkg from "../package.json";
+
+const APP_VERSION = pkg.version;
 
 function getMasterKey() {
   return localStorage.getItem("masterKey") || "fgk-master-dev-key";
@@ -24,8 +27,29 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
   const [showKey, setShowKey] = React.useState(false);
   const [copiedKey, setCopiedKey] = React.useState(false);
   const [langMenuOpen, setLangMenuOpen] = React.useState(false);
+  const langMenuRef = React.useRef<HTMLDivElement | null>(null);
   const [headerStats, setHeaderStats] = React.useState<{ providers?: number; count?: number; free_models?: number } | null>(null);
   const { lang, setLang, t } = useLang();
+
+  // Close the language menu on outside click / Escape (it previously stayed
+  // open until another click on the toggle itself)
+  React.useEffect(() => {
+    if (!langMenuOpen) return;
+    const onPointerDown = (e: MouseEvent | TouchEvent) => {
+      if (langMenuRef.current && !langMenuRef.current.contains(e.target as Node)) setLangMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLangMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("touchstart", onPointerDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("touchstart", onPointerDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [langMenuOpen]);
 
   React.useEffect(() => {
     const saved = localStorage.getItem("masterKey");
@@ -91,9 +115,16 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
   const settingsNav = { to: "/settings", label: t("nav.settings"), icon: <SettingsIcon className="w-4 h-4" /> };
   const chatNav = { to: "/chat", label: t("nav.chat"), icon: <MessageSquare className="w-4 h-4" /> };
   const compareNav = { to: "/compare", label: t("nav.compare"), icon: <GitCompare className="w-4 h-4" /> };
+  const utilityNav = [chatNav, compareNav, settingsNav];
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50/60">
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-slate-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+      >
+                {t("a11y.skipToContent")}
+      </a>
       <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
         <div className="max-w-[1440px] mx-auto px-3 sm:px-4 lg:px-6">
           <div className="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-slate-100/80">
@@ -103,7 +134,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   <Zap className="w-4 h-4 fill-white stroke-white" />
                 </div>
                 <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors">Free LLM Gateway</span>
-                <span className="font-mono text-[10px] font-semibold text-slate-500 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/60 hidden sm:inline-flex">v1.11.0</span>
+                <span className="font-mono text-[10px] font-semibold text-slate-500 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/60 hidden sm:inline-flex">v{APP_VERSION}</span>
               </NavLink>
 
               <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border shadow-2xs ${health === "ok" ? "bg-emerald-50 text-emerald-700 border-emerald-200/80" : health === "down" ? "bg-rose-50 text-rose-700 border-rose-200/80" : "bg-slate-100 text-slate-600 border-slate-200/80"}`}>
@@ -124,19 +155,28 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
             </div>
 
             <div className="flex items-center gap-2.5">
-              <div className="relative">
+              <div className="relative" ref={langMenuRef}>
                 <button
                   type="button"
                   onClick={() => setLangMenuOpen(!langMenuOpen)}
+                  aria-haspopup="listbox"
+                  aria-expanded={langMenuOpen}
+                  aria-label={t("nav.settings") === "Settings" ? "Change language" : "Thay đổi ngôn ngữ"}
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-200 transition-colors shadow-2xs"
                 >
                   <span>{lang === "en" ? "🇬🇧 EN" : "🇻🇳 VI"}</span>
-                  <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${langMenuOpen ? "rotate-180" : ""}`} />
                 </button>
                 {langMenuOpen && (
-                  <div className="absolute right-0 mt-1.5 w-32 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50">
+                  <div
+                    role="listbox"
+                    aria-label="Language"
+                    className="absolute right-0 mt-1.5 w-32 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50"
+                  >
                     <button
                       type="button"
+                      role="option"
+                      aria-selected={lang === "en"}
                       onClick={() => { setLang("en"); setLangMenuOpen(false); }}
                       className="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between"
                     >
@@ -145,6 +185,8 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                     </button>
                     <button
                       type="button"
+                      role="option"
+                      aria-selected={lang === "vi"}
                       onClick={() => { setLang("vi"); setLangMenuOpen(false); }}
                       className="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between"
                     >
@@ -210,49 +252,28 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                 </NavLink>
               ))}
               <div className="ml-auto pl-4 border-l border-slate-200 ml-4 flex items-center gap-1.5 sm:gap-2">
-                <NavLink
-                  to={chatNav.to}
-                  className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}
-                >
-                  {({ isActive }) => (
-                    <>
-                      <span className={isActive ? "text-amber-400" : "text-slate-500"}>{chatNav.icon}</span>
-                      <span>{chatNav.label}</span>
-                      {isActive && <div className="absolute inset-0 rounded-lg -z-10 bg-slate-900" />}
-                    </>
-                  )}
-                </NavLink>
-                <NavLink
-                  to={compareNav.to}
-                  className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}
-                >
-                  {({ isActive }) => (
-                    <>
-                      <span className={isActive ? "text-amber-400" : "text-slate-500"}>{compareNav.icon}</span>
-                      <span>{compareNav.label}</span>
-                      {isActive && <div className="absolute inset-0 rounded-lg -z-10 bg-slate-900" />}
-                    </>
-                  )}
-                </NavLink>
-                <NavLink
-                  to={settingsNav.to}
-                  className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}
-                >
-                  {({ isActive }) => (
-                    <>
-                      <span className={isActive ? "text-amber-400" : "text-slate-500"}>{settingsNav.icon}</span>
-                      <span>{settingsNav.label}</span>
-                      {isActive && <div className="absolute inset-0 rounded-lg -z-10 bg-slate-900" />}
-                    </>
-                  )}
-                </NavLink>
+                {utilityNav.map((item) => (
+                  <NavLink
+                    key={item.to}
+                    to={item.to}
+                    className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}
+                  >
+                    {({ isActive }) => (
+                      <>
+                        <span className={isActive ? "text-amber-400" : "text-slate-500"}>{item.icon}</span>
+                        <span>{item.label}</span>
+                        {isActive && <div className="absolute inset-0 rounded-lg -z-10 bg-slate-900" />}
+                      </>
+                    )}
+                  </NavLink>
+                ))}
               </div>
             </nav>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 max-w-[1440px] w-full mx-auto px-3 sm:px-4 lg:px-6 pt-6 pb-12">{children}</main>
+      <main id="main" className="flex-1 max-w-[1440px] w-full mx-auto px-3 sm:px-4 lg:px-6 pt-6 pb-12">{children}</main>
     </div>
   );
 }

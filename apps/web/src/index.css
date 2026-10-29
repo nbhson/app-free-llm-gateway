@@ -5,6 +5,19 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+/* Global focus-visible ring — consistent, visible keyboard focus everywhere
+   (buttons, links, inputs) without cluttering mouse users. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-amber-500);
+    outline-offset: 2px;
+    border-radius: 0.375rem;
+  }
+  ::selection {
+    background: rgba(245, 158, 11, 0.25);
+  }
+}
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.6); }
