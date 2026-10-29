@@ -55,7 +55,7 @@ describe("gemini provider", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url: any, init: any) => {
-        seen.push({ url: String(url), body: JSON.parse(init.body) });
+        seen.push({ url: String(url), body: JSON.parse(init.body), headers: init.headers });
         return new Response(
           JSON.stringify({
             candidates: [{ content: { parts: [{ text: "gem-hi" }] }, finishReason: "STOP" }],
@@ -70,7 +70,10 @@ describe("gemini provider", () => {
       "APIKEY"
     );
     expect(seen[0].url).toContain("gemini-3.6-flash:generateContent");
-    expect(seen[0].url).toContain("key=APIKEY");
+    // Key travels in the x-goog-api-key header (Round 1) — never in the URL query,
+    // which gets written to access logs / metrics / error messages.
+    expect(seen[0].url).not.toContain("key=");
+    expect(seen[0].headers["x-goog-api-key"]).toBe("APIKEY");
     const data = await resJson<{ choices?: Array<{ message?: { content?: string } }> }>(res);
     expect(data.choices?.[0]?.message?.content).toBe("gem-hi");
   });

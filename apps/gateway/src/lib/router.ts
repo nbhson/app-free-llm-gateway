@@ -25,13 +25,17 @@ export function getProvidersForRequest(model: string, strategy: Strategy = "tier
 
   if (strategy === "round-robin") {
     const ids = resolveProvidersForModel(model);
-    // rotate
-    const rotated = [...ids.slice(rrIndex % ids.length), ...ids.slice(0, rrIndex % ids.length)];
-    rrIndex++;
-    // Only return providers that are configured (hasRealKey) or public (pollinations etc.)
-    // — keeps fallback cheap and avoids trying dummy providers with no key.
+    // Filter to usable providers FIRST, then rotate the usable list. Rotating the usable list. Rotating the
+    // raw alias list before filtering is a no-op whenever the entries ahead of the
+    // cursor are unusable (e.g. kiraai without a key), so "round-robin" wouldn't
+    // actually rotate between requests.
     // Explicitly requested prefix is kept even if not configured to surface proper "no key" error.
-    return rotated.filter((id) => getProvider(id) && (isUsableProvider(id) || keepExplicit(id)));
+    const usable = ids.filter((id) => getProvider(id) && (isUsableProvider(id) || keepExplicit(id)));
+    if (usable.length === 0) return [];
+    const k = rrIndex % usable.length;
+    const rotated = [...usable.slice(k), ...usable.slice(0, k)];
+    rrIndex++;
+    return rotated;
   }
 
   // tiered: respect FALLBACK_TIERS strictly (user-defined single tier = only those 8, no append)

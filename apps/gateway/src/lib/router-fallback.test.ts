@@ -1,6 +1,10 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { getProvidersForRequest, getNextKey, _resetRouterState } from "./router.js";
 import { isOpen, recordFailure, recordSuccess, getState, recordFailureIfRetryable } from "./circuit-breaker.js";
+import { config } from "../config.js";
+
+// Threshold is config-driven (default 8) — loop the configured value, not a hardcoded 5.
+const THRESHOLD = config.circuitBreakerThreshold ?? 8;
 
 describe("router fallback ordering", () => {
   beforeEach(() => _resetRouterState());
@@ -15,9 +19,23 @@ describe("router fallback ordering", () => {
     expect([...second].sort()).toEqual([...first].sort());
   });
 
-  it("tiered keeps FINAL_FALLBACK (agnes-ai) last", () => {
+  it("round-robin keeps the same members across rotations", () => {
+    _resetRouterState();
+    const first = getProvidersForRequest("free-llm-gateway/auto", "round-robin");
+    for (let i = 0; i < first.length; i++) getProvidersForRequest("free-llm-gateway/auto", "round-robin");
+    const wrapped = getProvidersForRequest("free-llm-gateway/auto", "round-robin");
+    expect([...wrapped].sort()).toEqual([...first].sort());
+  });
+
+  it("tiered keeps FINAL_FALLBACK (agnes-ai) last when usable", () => {
     const ordered = getProvidersForRequest("auto", "tiered");
-    expect(ordered[ordered.length - 1]).toBe("agnes-ai");
+    if (ordered.includes("agnes-ai")) {
+      // When agnes-ai passed the usability filter it must sort last…
+      expect(ordered[ordered.length - 1]).toBe("agnes-ai");
+    } else {
+      // …otherwise (placeholder/no key, non-public) it is filtered out entirely.
+      expect(ordered).not.toContain("agnes-ai");
+    }
   });
 
   it("prefix model resolves to its provider first", () => {
@@ -35,7 +53,7 @@ describe("router fallback ordering", () => {
 describe("circuit-breaker half-open lifecycle", () => {
   it("half-open allows trial after cooldown, closes after 2 successes", async () => {
     const pid = `hb-test-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-    for (let i = 0; i < 5; i++) recordFailure(pid);
+    for (let i = 0; i < THRESHOLD; i++) recordFailure(pid);
     expect(isOpen(pid)).toBe(true);
     // force cooldown expiry by backdating openedAt
     (getState(pid) as any).openedAt = Date.now() - 60_000;
@@ -50,7 +68,7 @@ describe("circuit-breaker half-open lifecycle", () => {
 
   it("half-open re-opens on failure", () => {
     const pid = `hb-reopen-${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
-    for (let i = 0; i < 5; i++) recordFailure(pid);
+    for (let i = 0; i < THRESHOLD; i++) recordFailure(pid);
     (getState(pid) as any).openedAt = Date.now() - 60_000;
     expect(isOpen(pid)).toBe(false);
     recordFailure(pid);

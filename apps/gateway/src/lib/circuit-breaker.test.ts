@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { isOpen, recordSuccess, recordFailure, recordFailureIfRetryable, getState } from "./circuit-breaker.js";
+import { config } from "../config.js";
+
+// Threshold is config-driven (CIRCUIT_BREAKER_THRESHOLD, default 8) — count failures
+// against the configured value instead of a hardcoded number so tests don't drift.
+const THRESHOLD = config.circuitBreakerThreshold ?? 8;
 
 describe("circuit-breaker", () => {
   const pid = `test-provider-${Date.now()}`;
@@ -11,9 +16,15 @@ describe("circuit-breaker", () => {
 
   it("opens after threshold failures", async () => {
     const p2 = `${pid}-open`;
-    for (let i = 0; i < 5; i++) recordFailure(p2);
+    for (let i = 0; i < THRESHOLD; i++) recordFailure(p2);
     expect(isOpen(p2)).toBe(true);
     expect(getState(p2).state).toBe("open");
+  });
+
+  it("stays closed below threshold", () => {
+    const p2b = `${pid}-below`;
+    for (let i = 0; i < THRESHOLD - 1; i++) recordFailure(p2b);
+    expect(isOpen(p2b)).toBe(false);
   });
 
   it("success resets failures", () => {
