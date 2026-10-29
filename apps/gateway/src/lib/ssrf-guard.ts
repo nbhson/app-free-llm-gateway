@@ -11,6 +11,13 @@ const BLOCKED_HOSTNAMES = new Set(["localhost", "metadata.google.internal"]);
 // chỉ rải vài prefix (10., 192.168., 172.16-31, 169.254., fc/fd/fe80/ff) và
 // bỏ sót: 100.64/10 (CGNAT), 192.0.0/24, 198.18/15 (benchmark), 224/4+240/4,
 // ::ffff:0:0/96 (IPv4-mapped), 2001:db8::/32, ::/128 ... → SSRF qua các dải đó.
+//
+// net.BlockList is used for IPv4 ONLY. Two Node quirks (seen on v22.23.3) make
+// it unsafe for v6: (a) addSubnet/addRange/SocketAddress for IPv6 silently
+// fail to match (fc00::1 check ⇒ false), and (b) adding "::ffff:0:0/96" makes
+// EVERY plain IPv4 address match (Node normalizes v4 lookups into the
+// mapped-v6 range → 8.8.8.8 reported "private"). So: IPv4 via BlockList,
+// IPv6 via explicit BigInt ranges below.
 const blocked = new net.BlockList();
 for (const cidr of [
   "0.0.0.0/8", "10.0.0.0/8", "100.64.0.0/10", "127.0.0.0/8",
@@ -18,18 +25,72 @@ for (const cidr of [
   "192.168.0.0/16", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24",
   "224.0.0.0/4", "240.0.0.0/4",
 ]) blocked.addSubnet(cidr.split("/")[0] as string, Number(cidr.split("/")[1]), "ipv4");
-for (const cidr of [
-  "::/128", "::1/128", "fc00::/7", "fe80::/10", "ff00::/8",
-  "::ffff:0:0/96", "2001:db8::/32",
-]) blocked.addSubnet(cidr.split("/")[0] as string, Number(cidr.split("/")[1]), "ipv6");
 
-function isPrivateIp(ip: string): boolean {
+// Expand an IPv6 string ("::" shorthand allowed) into its 8 hex groups, or null.
+function expandIpv6Groups(ip: string): string[] | null {
+  const t = ip.trim().toLowerCase();
+  const dbl = t.split("::");
+  if (dbl.length > 2) return null;
+  const head = dbl[0] === "" ? [] : dbl[0].split(":");
+  const tail = dbl.length === 2 ? (dbl[1] === "" ? [] : dbl[1].split(":")) : [];
+  const total = head.length + tail.length;
+  if (dbl.length === 2) {
+    if (total > 6) return null;
+    return [...head, ...Array(8 - total).fill("0"), ...tail];
+  }
+  return total === 8 ? head : null;
+}
+
+function ipv6ToBigInt(ip: string): bigint | null {
+  const groups = expandIpv6Groups(ip);
+  if (!groups) return null;
+  let n = 0n;
+  for (const g of groups) {
+    const v = parseInt(g, 16);
+    if (Number.isNaN(v)) return null;
+    n = (n << 16n) | BigInt(v);
+  }
+  return n;
+}
+
+// Reserved IPv6 ranges as [lo, hi] BigInt (inclusive): ::/128 (unspecified),
+// ::1/128 (loopback), fc00::/7 (ULA), fe80::/10 (link-local), ff00::/8
+// (multicast), 2001:db8::/32 (docs). "::ffff:0:0/96" (IPv4-mapped) is handled
+// by normalizing the embedded IPv4 and checking it against the v4 BlockList.
+const IPV6_BLOCKED_RANGES: Array<[bigint, bigint]> = (() => {
+  const ranges: Array<[bigint, bigint]> = [];
+  for (const cidr of ["::/128", "::1/128", "fc00::/7", "fe80::/10", "ff00::/8", "2001:db8::/32"]) {
+    const [addr, bitsRaw] = cidr.split("/");
+    const groups = expandIpv6Groups(addr);
+    if (!groups) throw new Error(`Bad IPv6 CIDR in SSRF blocklist: ${cidr}`);
+    let base = 0n;
+    for (const g of groups) base = (base << 16n) | BigInt(parseInt(g, 16));
+    const shift = BigInt(128 - Number(bitsRaw));
+    const lo = base & ~((1n << shift) - 1n);
+    ranges.push([lo, lo | ((1n << shift) - 1n)]);
+  }
+  return ranges;
+})();
+
+/** True if `ip` is private/reserved per the full blocklist (used by DNS pinning too). */
+export function isPrivateIp(ip: string): boolean {
   const t = ip.trim();
-  // IPv4-mapped IPv6 (::ffff:127.0.0.1) — normalize về IPv4 để BlockList bắt.
+  // IPv4-mapped IPv6 dotted form (::ffff:127.0.0.1) — normalize to IPv4.
   const mapped = t.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
-  const candidate = mapped ? mapped[1] : t;
-  if (!isIP(candidate)) return false;
-  return blocked.check(candidate);
+  if (mapped) return isIP(mapped[1]) === 4 && blocked.check(mapped[1]);
+  const kind = isIP(t);
+  if (kind === 4) return blocked.check(t);
+  if (kind === 6) {
+    const n = ipv6ToBigInt(t);
+    if (n === null) return false;
+    // ::ffff:x.x.x.x hex form → check the embedded IPv4 against the v4 list
+    if (n >= 0xffff00000000n && n <= 0xffffffffffffffffn) {
+      const v4 = [Number((n >> 24n) & 0xffn), Number((n >> 16n) & 0xffn), Number((n >> 8n) & 0xffn), Number(n & 0xffn)].join(".");
+      return isIP(v4) === 4 && blocked.check(v4);
+    }
+    return IPV6_BLOCKED_RANGES.some(([lo, hi]) => n >= lo && n <= hi);
+  }
+  return false;
 }
 
 export function isBlockedHostname(hostname: string): boolean {
@@ -104,6 +165,8 @@ export async function isSafeUrl(raw: string): Promise<{ ok: true; url: URL } | {
 
 // Fetch wrapper with SSRF guard, redirect re-validation, timeout, size limit.
 // Must not use followRedirect: we manually validate each hop (TOCTOU mitigation).
+// DNS pinning (no re-resolution window) is provided by pinned-fetch.ts for
+// gateway→provider traffic; this wrapper remains for ad-hoc web_fetch calls.
 export async function fetchWithSsrfGuard(
   rawUrl: string,
   opts: { timeoutMs?: number; maxBytes?: number; maxRedirects?: number; headers?: Record<string, string> } = {},
@@ -138,11 +201,6 @@ export async function fetchWithSsrfGuard(
       throw e;
     }
     clearTimeout(t);
-
-    // NOTE (TOCTOU residual risk): fetch() tự resolve DNS lần nữa — kẻ tấn
-    // công kiểm soát DNS có thể rebind trong cửa sổ giữa check và fetch. Mitigation
-    // hiện có: validate lại MỌI redirect hop + BlockList đầy đủ. Pin-by-IP cần
-    // custom dispatcher (undici) — follow-up khi thêm dependency.
 
     // Handle redirect manually with re-validation
     if (res.status >= 300 && res.status < 400) {

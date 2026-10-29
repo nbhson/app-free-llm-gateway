@@ -1,3 +1,4 @@
+import { pinnedFetch } from "../lib/pinned-fetch.js";
 import type { Provider, ChatRequest, ModelInfo } from "./base.js";
 import { translateOpenAIToGemini, translateGeminiToOpenAI } from "../lib/format-translator.js";
 import { geminiToOpenAIStream } from "../lib/gemini-stream.js";
@@ -67,7 +68,7 @@ export const geminiProvider: Provider = {
       : undefined;
 
     if (!isStream) {
-      const res = await fetch(url, {
+      const res = await pinnedFetch(url, {
         method: "POST",
         headers: authHeaders,
         body: JSON.stringify(geminiBody),
@@ -85,7 +86,7 @@ export const geminiProvider: Provider = {
       });
     }
 
-    const res = await fetch(url, {
+    const res = await pinnedFetch(url, {
       method: "POST",
       headers: authHeaders,
       body: JSON.stringify(geminiBody),
@@ -109,7 +110,7 @@ export const geminiProvider: Provider = {
     if (!apiKey) return [{ id: "gemini/gemini-3.6-flash", provider: "gemini", contextLength: 1_000_000 }];
     try {
       // Key ở header — không vào URL (query strings bị log rộng rãi hơn).
-      const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+      const res = await pinnedFetch("https://generativelanguage.googleapis.com/v1beta/models", {
         headers: { "x-goog-api-key": apiKey },
       });
       if (!res.ok) return [{ id: "gemini/gemini-3.6-flash", provider: "gemini" }];
@@ -125,7 +126,7 @@ export const geminiProvider: Provider = {
   },
   async health(apiKey: string): Promise<boolean> {
     try {
-      const res = await fetch("https://generativelanguage.googleapis.com/v1beta/models", {
+      const res = await pinnedFetch("https://generativelanguage.googleapis.com/v1beta/models", {
         headers: { "x-goog-api-key": apiKey },
       });
       return res.ok;

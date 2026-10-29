@@ -3,6 +3,13 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { pollinationsProvider } from "./pollinations.js";
 import { geminiProvider } from "./gemini.js";
 
+// Provider tests stub the global fetch; route pinnedFetch through it so the
+// DNS-pinning dispatcher (real network + DNS) doesn't kick in during tests.
+vi.mock("../lib/pinned-fetch.js", () => ({
+  pinnedFetch: (input: unknown, init?: unknown) =>
+    (globalThis.fetch as unknown as (u: unknown, i?: unknown) => Promise<Response>)(input as string, init as RequestInit),
+}));
+
 describe("pollinations provider", () => {
   afterEach(() => vi.unstubAllGlobals());
 

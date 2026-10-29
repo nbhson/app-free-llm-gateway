@@ -1,3 +1,4 @@
+import { pinnedFetch } from "../lib/pinned-fetch.js";
 import crypto from "node:crypto";
 import type { Provider, ChatRequest, ModelInfo, AudioTranscriptionRequest, AudioSpeechRequest, ResponsesRequest } from "./base.js";
 import { translateResponsesToChat } from "../lib/responses-translator.js";
@@ -146,7 +147,7 @@ export function createOpenAICompatibleProvider(opts: {
         ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
         : undefined;
       // Initial fetch with auto session header if needed
-      let res = await fetch(url, {
+      let res = await pinnedFetch(url, {
         method: "POST",
         headers,
         body: JSON.stringify(body),
@@ -170,7 +171,7 @@ export function createOpenAICompatibleProvider(opts: {
             retryHeaders["X-Parent-Session-ID"] = parentSid;
             retryHeaders["x-parent-session-id"] = parentSid;
           }
-          res = await fetch(url, {
+          res = await pinnedFetch(url, {
             method: "POST",
             headers: retryHeaders,
             body: JSON.stringify(body),
@@ -191,7 +192,7 @@ export function createOpenAICompatibleProvider(opts: {
       if (req.encoding_format) body.encoding_format = req.encoding_format;
       if (req.dimensions) body.dimensions = req.dimensions;
       if (req.user) body.user = req.user;
-      return fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+      return pinnedFetch(url, { method: "POST", headers, body: JSON.stringify(body) });
     },
     async images(req, apiKey: string): Promise<Response> {
       const base = resolveBase();
@@ -215,7 +216,7 @@ export function createOpenAICompatibleProvider(opts: {
         const merged: unknown[] = [];
         let created = Math.floor(Date.now() / 1000);
         for (let i = 0; i < want; i++) {
-          const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(single) });
+          const res = await pinnedFetch(url, { method: "POST", headers, body: JSON.stringify(single) });
           if (!res.ok) return res;
           const data = (await res.json().catch(() => ({}))) as { data?: unknown[]; created?: number };
           if (typeof data.created === "number") created = data.created;
@@ -231,14 +232,14 @@ export function createOpenAICompatibleProvider(opts: {
       if (req.size) body.size = req.size;
       if (req.response_format) body.response_format = req.response_format;
       if (req.user) body.user = req.user;
-      return fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+      return pinnedFetch(url, { method: "POST", headers, body: JSON.stringify(body) });
     },
     async models(apiKey?: string): Promise<ModelInfo[]> {
       const base = resolveBase();
       const url = `${base}${modelsPath}`;
       const headers: Record<string, string> = { "User-Agent": opts.id === "cline" ? "Cline/3.24.1" : "opencode-gateway/1.0" };
       if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
-      const res = await fetch(url, { headers });
+      const res = await pinnedFetch(url, { headers });
       if (!res.ok) return [];
       const data = (await res.json().catch(() => ({}))) as { data?: unknown };
       const rawList: unknown = Array.isArray(data.data) ? data.data : [];
@@ -263,7 +264,7 @@ export function createOpenAICompatibleProvider(opts: {
       if (req.prompt) form.append("prompt", req.prompt);
       if (req.response_format) form.append("response_format", req.response_format);
       if (req.temperature !== undefined) form.append("temperature", String(req.temperature));
-      return fetch(url, { method: "POST", headers, body: form });
+      return pinnedFetch(url, { method: "POST", headers, body: form });
     },
     async speech(req: AudioSpeechRequest, apiKey: string): Promise<Response> {
       const base = resolveBase();
@@ -272,7 +273,7 @@ export function createOpenAICompatibleProvider(opts: {
       if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
       let model = req.model;
       if (model.includes("/")) model = model.split("/").slice(1).join("/");
-      return fetch(url, { method: "POST", headers, body: JSON.stringify({ model, input: req.input, voice: req.voice, response_format: req.response_format, speed: req.speed }) });
+      return pinnedFetch(url, { method: "POST", headers, body: JSON.stringify({ model, input: req.input, voice: req.voice, response_format: req.response_format, speed: req.speed }) });
     },
     async responses(req: ResponsesRequest, apiKey: string): Promise<Response> {
       // Prefer native /responses if provider supports, else fallback to /chat/completions via translation
@@ -283,14 +284,14 @@ export function createOpenAICompatibleProvider(opts: {
       const chat = translateResponsesToChat(req);
       // try native responses endpoint first
       try {
-        const native = await fetch(url, { method: "POST", headers, body: JSON.stringify(req) });
+        const native = await pinnedFetch(url, { method: "POST", headers, body: JSON.stringify(req) });
         if (native.ok || native.status < 500) return native;
       } catch { /* ignore: native responses failed, fallback to chat */ }
       // fallback to chat completions
       const chatUrl = `${base}/chat/completions`;
       let model = chat.model;
       if (model.includes("/")) model = model.split("/").slice(1).join("/");
-      return fetch(chatUrl, { method: "POST", headers, body: JSON.stringify({ model, messages: chat.messages, temperature: chat.temperature, max_tokens: chat.max_tokens, stream: chat.stream, tools: chat.tools }) });
+      return pinnedFetch(chatUrl, { method: "POST", headers, body: JSON.stringify({ model, messages: chat.messages, temperature: chat.temperature, max_tokens: chat.max_tokens, stream: chat.stream, tools: chat.tools }) });
     },
     async health(apiKey: string): Promise<boolean> {
       try {
@@ -298,7 +299,7 @@ export function createOpenAICompatibleProvider(opts: {
         const url = `${base}${modelsPath}`;
         const headers: Record<string, string> = { "User-Agent": opts.id === "cline" ? "Cline/3.24.1" : "opencode-gateway/1.0" };
         if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
-        const res = await fetch(url, { headers });
+        const res = await pinnedFetch(url, { headers });
         return res.ok;
       } catch {
         return false;

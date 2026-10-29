@@ -1,3 +1,4 @@
+import { pinnedFetch } from "../lib/pinned-fetch.js";
 import type { Provider, AnthropicRequest, ChatRequest, ModelInfo } from "./base.js";
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
@@ -70,7 +71,7 @@ export const anthropicProvider: Provider = {
     // Streaming: forward SSE directly
     if (req.stream) {
       body.stream = true;
-      const res = await fetch(url, {
+      const res = await pinnedFetch(url, {
         method: "POST",
         headers,
         body: JSON.stringify(body),
@@ -88,7 +89,7 @@ export const anthropicProvider: Provider = {
       });
     }
 
-    const res = await fetch(url, {
+    const res = await pinnedFetch(url, {
       method: "POST",
       headers,
       body: JSON.stringify(body),
@@ -100,7 +101,7 @@ export const anthropicProvider: Provider = {
   async models(apiKey?: string): Promise<ModelInfo[]> {
     if (!apiKey) return CLAUDE_MODELS;
     try {
-      const res = await fetch(ANTHROPIC_MODELS_URL, {
+      const res = await pinnedFetch(ANTHROPIC_MODELS_URL, {
         headers: {
           "x-api-key": apiKey,
           "anthropic-version": ANTHROPIC_VERSION,
@@ -127,7 +128,7 @@ export const anthropicProvider: Provider = {
 
   async health(apiKey: string): Promise<boolean> {
     try {
-      const res = await fetch(ANTHROPIC_MODELS_URL, {
+      const res = await pinnedFetch(ANTHROPIC_MODELS_URL, {
         headers: {
           "x-api-key": apiKey,
           "anthropic-version": ANTHROPIC_VERSION,

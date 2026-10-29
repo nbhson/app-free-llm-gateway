@@ -1,3 +1,4 @@
+import { pinnedFetch } from "../lib/pinned-fetch.js";
 import type { Provider, ChatRequest, ModelInfo } from "./base.js";
 
 // Pollinations is OpenAI-compatible at https://text.pollinations.ai/openai
@@ -17,7 +18,7 @@ export const pollinationsProvider: Provider = {
     const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
       ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
       : undefined;
-    return fetch(url, {
+    return pinnedFetch(url, {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -38,7 +39,7 @@ export const pollinationsProvider: Provider = {
   },
   async health(): Promise<boolean> {
     try {
-      const res = await fetch("https://text.pollinations.ai/openai", {
+      const res = await pinnedFetch("https://text.pollinations.ai/openai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model: "openai", messages: [{ role: "user", content: "hi" }], max_tokens: 5 }),

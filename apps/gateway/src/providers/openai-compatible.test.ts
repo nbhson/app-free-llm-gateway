@@ -1,6 +1,13 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { createOpenAICompatibleProvider } from "./openai-compatible.js";
 
+// Provider tests stub the global fetch; route pinnedFetch through it so the
+// DNS-pinning dispatcher (real network + DNS) doesn't kick in during tests.
+vi.mock("../lib/pinned-fetch.js", () => ({
+  pinnedFetch: (input: unknown, init?: unknown) =>
+    (globalThis.fetch as unknown as (u: unknown, i?: unknown) => Promise<Response>)(input as string, init as RequestInit),
+}));
+
 const chatReq: any = (model: string, extra: Record<string, unknown> = {}) => ({
   model,
   messages: [{ role: "user", content: "hi" }],
