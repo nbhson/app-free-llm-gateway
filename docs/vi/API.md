@@ -6,7 +6,7 @@ OpenAI-compatible API của gateway (41 provider ids — 30 freellms + 11 alias;
 
 Base URL: `http://localhost:7373/v1` (kèm dashboard tại `http://localhost:3000` — header 2 hàng, i18n VI/EN)
 
-Endpoints: `POST /v1/chat/completions` · `GET /v1/models` · `POST /v1/embeddings` · `POST /v1/images/generations` · `GET /v1/health` · `POST /v1/audio/transcriptions` · `POST /v1/audio/translations` · `POST /v1/audio/speech` · `POST /v1/responses` · `GET /v1/responses/:id` · `POST /v1/conversations` · `POST /v1/messages` · `POST /v1/messages/count_tokens` + Admin `/api/*`
+Endpoints: `POST /v1/chat/completions` · `POST /v1/completions` (legacy text) · `GET /v1/models` · `POST /v1/embeddings` · `POST /v1/images/generations` · `GET /v1/health` · `POST /v1/audio/transcriptions` · `POST /v1/audio/translations` · `POST /v1/audio/speech` · `POST /v1/responses` · `GET /v1/responses/:id` · `POST /v1/conversations` · `POST /v1/messages` · `POST /v1/messages/count_tokens` + Admin `/api/*`
 
 Auth: `Authorization: Bearer fgk-master-...` (MASTER_KEY tự sinh — 1 key duy nhất cho `/v1/*` + `/api/*`) hoặc `fgk-...` scoped tạo trong Dashboard. Health không cần auth.
 

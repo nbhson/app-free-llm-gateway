@@ -6,7 +6,7 @@ OpenAI-compatible gateway API (41 provider IDs — 30 freellms + 11 aliases; fre
 
 Base URL: `http://localhost:7373/v1` (with dashboard at `http://localhost:3000` — 2-row header, i18n VI/EN)
 
-Endpoints: `POST /v1/chat/completions` · `GET /v1/models` · `POST /v1/embeddings` · `POST /v1/images/generations` · `GET /v1/health` · `POST /v1/audio/transcriptions` · `POST /v1/audio/translations` · `POST /v1/audio/speech` · `POST /v1/responses` · `GET /v1/responses/:id` · `POST /v1/conversations` · `POST /v1/messages` · `POST /v1/messages/count_tokens` + Admin `/api/*`
+Endpoints: `POST /v1/chat/completions` · `POST /v1/completions` (legacy text) · `GET /v1/models` · `POST /v1/embeddings` · `POST /v1/images/generations` · `GET /v1/health` · `POST /v1/audio/transcriptions` · `POST /v1/audio/translations` · `POST /v1/audio/speech` · `POST /v1/responses` · `GET /v1/responses/:id` · `POST /v1/conversations` · `POST /v1/messages` · `POST /v1/messages/count_tokens` + Admin `/api/*`
 
 Auth: `Authorization: Bearer fgk-master-...` (auto-generated MASTER_KEY — single key for `/v1/*` + `/api/*`) or scoped `fgk-...` created in Dashboard. Health check requires no auth.
 

@@ -7,8 +7,6 @@ import { startScheduler } from "./jobs/scheduler.js";
 
 const app = createApp();
 
-let server: ServerType | undefined;
-
 // Graceful shutdown — SIGTERM (Docker/K8s) and SIGINT (Ctrl-C) stop accepting
 // new connections, give in-flight requests a grace period, then exit. Circuit
 // breaker state is flushed by its own process exit handler.
@@ -18,8 +16,12 @@ function shutdown(signal: NodeJS.Signals) {
   if (shuttingDown) return;
   shuttingDown = true;
   logger.info({ signal: signal }, "shutting down — closing server");
+  if (!server) {
+    process.exit(0);
+    return;
+  }
   try {
-    server?.close(() => {
+    server.close(() => {
       logger.info("server closed");
       process.exit(0);
     });
@@ -36,7 +38,7 @@ function shutdown(signal: NodeJS.Signals) {
 try { process.on("SIGTERM", (s) => shutdown(s)); } catch { /* ignore */ }
 try { process.on("SIGINT", shutdown); } catch { /* ignore */ }
 
-server = serve(
+const server: ServerType = serve(
   {
     fetch: app.fetch,
     port: config.port,

@@ -57,7 +57,7 @@
 
 | Danh mục | Tính năng |
 |----------|----------|
-| **API Thống nhất (OpenAI-Compatible)** | `POST /v1/chat/completions` (stream + non-stream), `/v1/models`, `/v1/embeddings`, `/v1/images/generations`, `/v1/audio/*`, `/v1/responses`, `/v1/conversations`, `/v1/messages` (Anthropic) — dùng ngay với OpenAI SDK, Vercel AI, LangChain |
+| **API Thống nhất (OpenAI-Compatible)** | `POST /v1/chat/completions` (stream + non-stream), `/v1/completions` (legacy text), `/v1/models`, `/v1/embeddings`, `/v1/images/generations`, `/v1/audio/*`, `/v1/responses`, `/v1/conversations`, `/v1/messages` (Anthropic) — dùng ngay với OpenAI SDK, Vercel AI, LangChain |
 | **51 Provider Miễn Phí (338 Model)** | **Permanent Free (28)**: NVIDIA NIM (81+), ModelScope (43), Cloudflare (35), Gemini (15), OVH (10), Cohere (10), OpenRouter (17), SambaNova, SiliconFlow, Groq, Cerebras, Z AI, Agnes, Aion, LLM7, Chutes, Glhf, **B.AI (4, 0 Credits)**, **TokenHarbor (3 :free + 1 reserved)**…<br>**Quota Free (4)**: GitHub Models (13), Mistral (9), Kilo Code (8), HuggingFace (4)<br>**Scraped/Unlimited (3)**: Pollinations, LLM7.io, Ollama Cloud<br>**Custom Free (3)**: OrcaRouter, FreeAI, Cline |
 | **Routing Thông Minh & Fallback** | Fallback theo tier (key thật → public free), alias model (`auto`, `gpt-4`, `glm`, `qwen`, `code` → free tốt nhất), header `x-router` pin, bỏ qua `deprecated`/`quota`/`breaker`, filter `hasKey` |
 | **Resilience v2 (0.9.0)** | Executor `tryProviders` chung (6 routes), Redis Lua sliding-window quota/rate-limit (không spike biên), circuit breaker 5/30s half-open (chỉ 5xx/429/exception), quota TPM/RPM (NVIDIA 40, Groq 30), mid-stream SSE, token pre-flight, persisted 404 strikethrough |
