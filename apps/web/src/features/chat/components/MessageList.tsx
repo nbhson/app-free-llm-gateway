@@ -29,7 +29,7 @@ export const MessageList = React.memo(function MessageList({ messages, isStreami
             {m.attachments && m.attachments.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {m.attachments.map((a) => (
-                  <div key={a.id} className={`${m.role === "user" ? "bg-surface/10 border-white/20 text-white" : "bg-raised border-line"} border rounded-lg overflow-hidden`}>
+                  <div key={a.id} className={`${m.role === "user" ? "bg-white/10 border-white/20 text-white" : "bg-raised border-line"} border rounded-lg overflow-hidden`}>
                     {a.type === "image" && a.preview ? (
                       <div className="p-1">
                         <img src={a.preview} alt={a.name} className="max-h-40 rounded-lg border border-line" />

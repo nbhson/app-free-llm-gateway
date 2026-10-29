@@ -1088,10 +1088,10 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             <div className="text-xs text-slate-300 flex flex-wrap gap-2 mt-0.5">
               {cacheLoading ? <span className="text-slate-400">loading...</span> : cacheStats ? (
                 <>
-                  <span className="font-mono bg-surface/10 px-1.5 py-0.5 rounded" title={t("settings.cacheHits") || "hits"}>{cacheStats.hits ?? 0} {t("settings.cacheHits") || "hits"}</span>
-                  <span className="font-mono bg-surface/10 px-1.5 py-0.5 rounded" title={t("settings.cacheMisses") || "misses"}>{cacheStats.misses ?? 0} {t("settings.cacheMisses") || "misses"}</span>
+                  <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded" title={t("settings.cacheHits") || "hits"}>{cacheStats.hits ?? 0} {t("settings.cacheHits") || "hits"}</span>
+                  <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded" title={t("settings.cacheMisses") || "misses"}>{cacheStats.misses ?? 0} {t("settings.cacheMisses") || "misses"}</span>
                   <span className="font-mono bg-emerald-500/20 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-500/30" title={t("settings.cacheHitRate") || "hit rate"}>{typeof cacheStats.hitRate === "number" ? `${(cacheStats.hitRate * 100).toFixed(1)}%` : "—"} {t("settings.cacheHitRate") || "hit rate"}</span>
-                  <span className="font-mono bg-surface/10 px-1.5 py-0.5 rounded" title={t("settings.cacheSize") || "entries"}>{cacheStats.size ?? 0} {t("settings.cacheSize") || "entries"}</span>
+                  <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded" title={t("settings.cacheSize") || "entries"}>{cacheStats.size ?? 0} {t("settings.cacheSize") || "entries"}</span>
                   <span className={`px-1.5 py-0.5 rounded text-xs ${cacheStats.enabled ? "bg-emerald-500 text-white" : "bg-slate-600 text-slate-200"}`}>{cacheStats.enabled ? "enabled" : "disabled"}</span>
                 </>
               ) : <span className="text-slate-400">No stats yet — call /api/cache/stats</span>}
@@ -1512,7 +1512,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
           {validationErrors.length > 0 && <span className="text-rose-300 text-xs">• {validationErrors.length} invalid</span>}
           <button type="button" onClick={handleSave} disabled={validationErrors.length > 0} className="ml-2 px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold disabled:opacity-50">Save</button>
           <button type="button" onClick={handleApplyToServer} disabled={applying || validationErrors.length > 0} className="px-3 py-1 rounded-full bg-surface text-heading hover:bg-muted text-xs font-bold disabled:opacity-50">Apply</button>
-          <button type="button" onClick={() => setIsDirty(false)} className="p-1 hover:bg-surface/10 rounded-full" aria-label="Dismiss">
+          <button type="button" onClick={() => setIsDirty(false)} className="p-1 hover:bg-white/10 rounded-full" aria-label="Dismiss">
             <X className="w-4 h-4 text-slate-400" />
           </button>
         </div>

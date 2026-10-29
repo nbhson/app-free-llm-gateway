@@ -130,23 +130,23 @@ export default function Dashboard() {
       <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-5 border border-slate-800 shadow-2xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-surface/10 flex items-center justify-center text-white"><Zap className="w-4 h-4" /></div>
+            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white"><Zap className="w-4 h-4" /></div>
             <div><h2 className="text-sm font-bold text-white">{t("dashboard.quick_guideline_title")}</h2><p className="text-xs text-slate-400">{t("dashboard.quick_guideline_desc")} — <NavLink to="/keys" className="underline text-amber-300 hover:text-amber-200">Keys</NavLink></p></div>
           </div>
           <NavLink to="/keys" className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface text-heading hover:bg-muted">{t("dashboard.go_to_keys")} <ArrowRight className="w-3.5 h-3.5" /></NavLink>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-          <div className="bg-surface/10 rounded-xl p-4 border border-white/10 hover:bg-surface/15 transition-colors">
+          <div className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-colors">
             <div className="flex items-center gap-2 mb-2"><span className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold">1</span><Key className="w-4 h-4 text-amber-300" /><span className="text-xs font-bold text-white">{t("dashboard.step1_title")}</span></div>
             <p className="text-xs text-slate-300 leading-relaxed">{t("dashboard.step1_desc")}</p>
             <p className="text-[11px] text-slate-400 mt-2">{t("dashboard.step1_check")}</p>
           </div>
-          <div className="bg-surface/10 rounded-xl p-4 border border-white/10 hover:bg-surface/15 transition-colors">
+          <div className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-colors">
             <div className="flex items-center gap-2 mb-2"><span className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">2</span><Key className="w-4 h-4 text-blue-300" /><span className="text-xs font-bold text-white">{t("dashboard.step2_title")}</span></div>
             <p className="text-xs text-slate-300 leading-relaxed">{t("dashboard.step2_desc")}</p>
             <p className="text-[11px] text-slate-400 mt-2">{t("dashboard.step2_need")}</p>
           </div>
-          <div className="bg-surface/10 rounded-xl p-4 border border-white/10 hover:bg-surface/15 transition-colors">
+          <div className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-colors">
             <div className="flex items-center gap-2 mb-2"><span className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">3-4</span><Terminal className="w-4 h-4 text-emerald-300" /><span className="text-xs font-bold text-white">{t("dashboard.step3_title")}</span></div>
             <p className="text-xs text-slate-300 leading-relaxed">{t("dashboard.step3_desc")}</p>
             <p className="text-[11px] text-slate-400 mt-2">{t("dashboard.step3_table")}</p>
