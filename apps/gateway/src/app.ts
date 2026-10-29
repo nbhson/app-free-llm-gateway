@@ -14,6 +14,7 @@ import { audioRoute } from "./routes/v1/audio.js";
 import { responsesRoute } from "./routes/v1/responses.js";
 import { anthropicRoute } from "./routes/v1/anthropic.js";
 import { compareRoute } from "./routes/v1/compare.js";
+import { completionsRoute } from "./routes/v1/completions.js";
 import { apiRoute } from "./routes/api.js";
 import { extractBearer } from "./lib/auth.js";
 import { setRequestVk } from "./lib/types.js";
@@ -89,7 +90,7 @@ export function createApp() {
     if (!config.mcpEnabled) return c.json({ error: "MCP disabled" }, 404);
     return c.json({
       name: "app-auto-llm-free",
-      version: "1.11.3",
+      version: config.appVersion,
       tools: [
         { name: "gateway_chat", endpoint: "/v1/chat/completions", method: "POST", description: "Chat completions via gateway" },
         { name: "gateway_compare", endpoint: "/v1/chat/compare", method: "POST", description: "Compare 2-5 models side-by-side" },
@@ -101,12 +102,12 @@ export function createApp() {
   });
 
   // Public
-  app.get("/", (c) => c.json({ name: "app-auto-llm-free", version: "1.11.3", docs: "/docs", health: "/v1/health", models: "/v1/models" }));
+  app.get("/", (c) => c.json({ name: "app-auto-llm-free", version: config.appVersion, docs: "/docs", health: "/v1/health", models: "/v1/models" }));
   app.route("/v1/health", healthRoute);
   // LB-friendly liveness/readiness probes — no auth, no version payload
   app.get("/health", (c) => c.json({ status: "ok" }));
   app.get("/health/ready", (c) => c.json({ ready: true }));
-  app.get("/docs", (c) => c.html(`<!doctype html><html><head><title>Gateway Docs</title></head><body><h1>Gateway Docs</h1><p>See <a href="/README.md">README</a> and docs/API.md</p><pre>GET /v1/models\nPOST /v1/chat/completions\nPOST /v1/embeddings\nPOST /v1/images/generations\nPOST /v1/audio/transcriptions\nPOST /v1/audio/speech\nPOST /v1/responses\nPOST /v1/messages (Anthropic)\nGET /v1/health</pre></body></html>`));
+  app.get("/docs", (c) => c.html(`<!doctype html><html><head><title>Gateway Docs</title></head><body><h1>Gateway Docs</h1><p>See <a href="/README.md">README</a> and docs/API.md</p><pre>GET /v1/models\nGET /v1/models/{id}\nPOST /v1/chat/completions\nPOST /v1/completions (legacy text)\nPOST /v1/embeddings\nPOST /v1/images/generations\nPOST /v1/audio/transcriptions\nPOST /v1/audio/speech\nPOST /v1/responses\nPOST /v1/messages (Anthropic)\nGET /v1/health</pre></body></html>`));
 
   // Auth middleware for /v1/* (except health) — uses virtual-keys + master
   app.use("/v1/*", async (c, next) => {
@@ -145,14 +146,10 @@ export function createApp() {
   app.route("/v1/audio", audioRoute);
   app.route("/v1/responses", responsesRoute);
   app.route("/v1/messages", anthropicRoute);
-  // Alias: /v1/conversations -> responses
   app.route("/v1/conversations", responsesRoute);
 
-  // Legacy compat: /v1/chat/completions is at /v1/chat/completions via chatRoute
-  // Also support /v1/completions stub
-  app.post("/v1/completions", async (c) => {
-    return c.json({ error: { message: "Use /v1/chat/completions", type: "invalid_request" } }, 400);
-  });
+  // Legacy OpenAI text completions — real translation to chat, non-streaming.
+  app.route("/v1/completions", completionsRoute);
 
   // Admin /api/* — require master or admin virtual key
   app.use("/api/*", async (c, next) => {
