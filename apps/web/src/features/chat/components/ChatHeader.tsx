@@ -49,14 +49,14 @@ export const ChatHeader = React.memo(function ChatHeader({
   const nonFavoritesInView = useMemo(() => filteredModels.filter((m) => !favoriteSet?.has(m.id)), [filteredModels, favoriteSet]);
 
   return (
-    <div className="flex items-center gap-2 px-3 py-2.5 border-b border-slate-200 bg-slate-50/80 shrink-0">
+    <div className="flex items-center gap-2 px-3 py-2.5 border-b border-line bg-raised/80 shrink-0">
       <div className="flex items-center gap-2">
         <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center">
           <MessageSquare className="w-4 h-4" />
         </div>
         <div className="hidden sm:block">
-          <div className="text-sm font-bold text-slate-900 leading-none">{t("chat.title")}</div>
-          <div className="text-xs text-slate-500">{models.length} {t("chat.model").toLowerCase()}s • gateway proxy</div>
+          <div className="text-sm font-bold text-heading leading-none">{t("chat.title")}</div>
+          <div className="text-xs text-mutedtxt">{models.length} {t("chat.model").toLowerCase()}s • gateway proxy</div>
         </div>
       </div>
 
@@ -66,19 +66,19 @@ export const ChatHeader = React.memo(function ChatHeader({
           aria-expanded={open}
           aria-haspopup="listbox"
           onClick={() => setOpen(!open)}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-white border border-slate-200 text-sm font-medium hover:bg-slate-50 text-left"
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-lg bg-surface border border-line text-sm font-medium hover:bg-raised text-left"
         >
-          <Cpu className="w-4 h-4 text-slate-500 shrink-0" />
+          <Cpu className="w-4 h-4 text-mutedtxt shrink-0" />
           <span className="truncate font-mono text-xs flex-1">{selectedModel}</span>
           {favoriteSet?.has(selectedModel) && <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500 shrink-0" />}
-          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 font-mono">
+          <span className="hidden sm:inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full bg-muted border border-line font-mono">
             {effectiveContext >= 1000000 ? `${Math.round(effectiveContext / 1000000)}M` : `${Math.round(effectiveContext / 1000)}K`}
           </span>
           <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
         {open && (
-          <div className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 z-30 overflow-hidden">
-            <div className="p-2 border-b border-slate-100">
+          <div className="absolute left-0 right-0 mt-2 bg-surface rounded-xl shadow-lg border border-line z-30 overflow-hidden">
+            <div className="p-2 border-b border-linesoft">
               <input
                 autoFocus
                 aria-label="Filter models"
@@ -86,13 +86,13 @@ export const ChatHeader = React.memo(function ChatHeader({
                 value={filter}
                 onChange={(e) => setFilter(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Escape") setOpen(false); }}
-                className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-slate-900"
+                className="w-full px-3 py-2 rounded-lg border border-line text-sm focus:outline-none focus:ring-1 focus:ring-heading"
               />
             </div>
             <div className="max-h-[380px] overflow-y-auto" role="listbox" aria-label="Models">
               {favoritesInView.length > 0 && (
                 <>
-                  <div className="px-3 py-1.5 bg-amber-50/80 border-b border-amber-100 flex items-center gap-1.5 text-[11px] font-bold text-amber-700 uppercase tracking-wider">
+                  <div className="px-3 py-1.5 bg-amber-soft/80 border-b border-amber-line flex items-center gap-1.5 text-[11px] font-bold text-amber-ink uppercase tracking-wider">
                     <Star className="w-3 h-3 fill-amber-500 text-amber-500" /> {t("chat.favorites")} ({favoritesInView.length})
                   </div>
                   {favoritesInView.map((m) => (
@@ -105,17 +105,17 @@ export const ChatHeader = React.memo(function ChatHeader({
                         setOpen(false);
                         setFilter("");
                       }}
-                      className={`w-full text-left px-3 py-2 hover:bg-amber-50 flex items-center gap-2 border-b border-slate-50 last:border-0 ${m.id === selectedModel ? "bg-slate-900 text-white hover:bg-slate-800" : ""}`}
+                      className={`w-full text-left px-3 py-2 hover:bg-amber-soft flex items-center gap-2 border-b border-slate-50 last:border-0 ${m.id === selectedModel ? "bg-slate-900 text-white hover:bg-slate-800" : ""}`}
                     >
                       <Star className={`w-3.5 h-3.5 shrink-0 ${m.id === selectedModel ? "fill-amber-400 text-amber-400" : "fill-amber-400 text-amber-500"}`} />
                       <span className="font-mono text-xs flex-1 truncate">{m.id}</span>
-                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full border ${m.id === selectedModel ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-amber-50 border-amber-200 text-amber-700"}`}>
+                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full border ${m.id === selectedModel ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-amber-soft border-amber-line text-amber-ink"}`}>
                         {m.context_length ? (m.context_length >= 1000000 ? `${m.context_length / 1000000}M` : `${Math.round(m.context_length / 1000)}K`) : "—"}
                       </span>
                     </button>
                   ))}
                   {filteredModels.length > favoritesInView.length && (
-                    <div className="px-3 py-1.5 bg-slate-50 border-y border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                    <div className="px-3 py-1.5 bg-raised border-y border-linesoft flex items-center gap-1.5 text-[11px] font-bold text-secondary uppercase tracking-wider">
                       <Cpu className="w-3 h-3" /> {t("chat.default_models")} ({nonFavoritesInView.length})
                     </div>
                   )}
@@ -131,17 +131,17 @@ export const ChatHeader = React.memo(function ChatHeader({
                     setOpen(false);
                     setFilter("");
                   }}
-                  className={`w-full text-left px-3 py-2 hover:bg-slate-50 flex items-center gap-2 border-b border-slate-50 last:border-0 ${m.id === selectedModel ? "bg-slate-900 text-white hover:bg-slate-800" : ""}`}
+                  className={`w-full text-left px-3 py-2 hover:bg-raised flex items-center gap-2 border-b border-slate-50 last:border-0 ${m.id === selectedModel ? "bg-slate-900 text-white hover:bg-slate-800" : ""}`}
                 >
                   <span className="font-mono text-xs flex-1 truncate">{m.id}</span>
-                  <span className={`text-[11px] px-1.5 py-0.5 rounded-full border ${m.id === selectedModel ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-slate-100 border-slate-200 text-slate-600"}`}>
+                  <span className={`text-[11px] px-1.5 py-0.5 rounded-full border ${m.id === selectedModel ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-muted border-line text-secondary"}`}>
                     {m.context_length ? (m.context_length >= 1000000 ? `${m.context_length / 1000000}M` : `${Math.round(m.context_length / 1000)}K`) : "—"}
                   </span>
                 </button>
               ))}
               {filteredModels.length === 0 && <div className="p-4 text-center text-sm text-slate-400">{favoriteSet && favoriteSet.size === 0 && !filter ? t("chat.no_favorites") : t("chat.noMatch")}</div>}
               {filteredModels.length > 0 && favoriteSet && favoriteSet.size === 0 && !filter && favoritesInView.length === 0 && (
-                <div className="px-3 py-2 bg-amber-50/50 border-t border-amber-100 text-[11px] text-amber-700 text-center">{t("chat.favorites_hint")}</div>
+                <div className="px-3 py-2 bg-amber-soft/50 border-t border-amber-line text-[11px] text-amber-ink text-center">{t("chat.favorites_hint")}</div>
               )}
             </div>
           </div>
@@ -153,16 +153,16 @@ export const ChatHeader = React.memo(function ChatHeader({
           aria-label="Toggle context panel"
           aria-expanded={drawerOpen}
           onClick={onToggleDrawer}
-          className="lg:hidden p-2 rounded-lg bg-white border border-slate-200 hover:bg-slate-50"
+          className="lg:hidden p-2 rounded-lg bg-surface border border-line hover:bg-raised"
           title="Context window"
         >
-          <BarChart3 className="w-4 h-4 text-slate-600" />
+          <BarChart3 className="w-4 h-4 text-secondary" />
         </button>
         <button
           aria-label="Toggle settings"
           aria-expanded={showSettings}
           onClick={onToggleSettings}
-          className={`p-2 rounded-lg border ${showSettings ? "bg-slate-900 text-white border-slate-900" : "bg-white border-slate-200 hover:bg-slate-50 text-slate-600"}`}
+          className={`p-2 rounded-lg border ${showSettings ? "bg-slate-900 text-white border-heading" : "bg-surface border-line hover:bg-raised text-secondary"}`}
           title="Settings"
         >
           <Settings2 className="w-4 h-4" />
@@ -170,7 +170,7 @@ export const ChatHeader = React.memo(function ChatHeader({
         <button
           aria-label="Refresh conversation"
           onClick={onConfirmRefresh}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-white border border-slate-200 hover:bg-slate-50 text-slate-700"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold bg-surface border border-line hover:bg-raised text-body"
           title="Refresh conversation"
         >
           <RotateCcw className="w-4 h-4" /> <span className="hidden sm:inline">{t("chat.refresh")}</span>

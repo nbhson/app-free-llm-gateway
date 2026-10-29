@@ -5,8 +5,114 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-/* Global focus-visible ring — consistent, visible keyboard focus everywhere
-   (buttons, links, inputs) without cluttering mouse users. */
+/* Design tokens (dark mode retrofit, Round 3). Semantic CSS custom properties;
+   utilities (bg-canvas, text-heading, border-line, bg-amber-soft, ...) are
+   generated from them via @theme inline. Light values on :root; dark values on
+   [data-theme="dark"], plus a prefers-color-scheme fallback when no explicit
+   choice is persisted (bootstrap script in index.html always sets one). */
+:root {
+  --app-canvas: #f8fafc; --app-surface: #ffffff; --app-raised: #f8fafc;
+  --app-muted: #f1f5f9; --app-strong: #e2e8f0;
+  --app-heading: #0f172a; --app-title: #1e293b; --app-body: #334155;
+  --app-secondary: #475569; --app-mutedtxt: #64748b;
+  --app-line: #e2e8f0; --app-line-soft: #f1f5f9; --app-line-strong: #cbd5e1;
+  --app-divider: #f1f5f9;
+  --chart-grid: #f1f5f9;
+  --scrollbar-thumb: rgba(148, 163, 184, 0.4);
+  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.6);
+}
+
+[data-theme="dark"] {
+  --app-canvas: #0b1424; --app-surface: #131c31; --app-raised: #18233c;
+  --app-muted: #1e2a45; --app-strong: #2b3c5c;
+  --app-heading: #f1f5f9; --app-title: #e2e8f0; --app-body: #cbd5e1;
+  --app-secondary: #a3b2c7; --app-mutedtxt: #8ca0b8;
+  --app-line: #263551; --app-line-soft: #1e2c47; --app-line-strong: #3a4d6e;
+  --app-divider: #1e2c47;
+  --chart-grid: #263551;
+  --scrollbar-thumb: rgba(71, 85, 105, 0.5);
+  --scrollbar-thumb-hover: rgba(100, 116, 139, 0.7);
+}
+
+@theme inline {
+  --color-canvas: var(--app-canvas);
+  --color-surface: var(--app-surface);
+  --color-raised: var(--app-raised);
+  --color-muted: var(--app-muted);
+  --color-strong: var(--app-strong);
+  --color-heading: var(--app-heading);
+  --color-title: var(--app-title);
+  --color-body: var(--app-body);
+  --color-secondary: var(--app-secondary);
+  --color-mutedtxt: var(--app-mutedtxt);
+  --color-line: var(--app-line);
+  --color-linesoft: var(--app-line-soft);
+  --color-linestrong: var(--app-line-strong);
+  --color-divsoft: var(--app-divider);
+  --color-chartgrid: var(--chart-grid);
+}
+
+/* Per-hue pastel chip tokens: soft (bg), wash (stronger bg), ink (text),
+   edge->line (border). Light = existing tailwind shades; dark = tinted
+   surfaces with light ink. */
+:root {
+  --amber-soft: #fffbeb;   --amber-wash: #fef3c7;   --amber-ink: #b45309;   --amber-line: #fde68a;
+  --emerald-soft: #ecfdf5; --emerald-wash: #d1fae5; --emerald-ink: #047857; --emerald-line: #a7f3d0;
+  --rose-soft: #fff1f2;    --rose-wash: #ffe4e6;    --rose-ink: #be123c;    --rose-line: #fecdd3;
+  --blue-soft: #eff6ff;    --blue-wash: #dbeafe;    --blue-ink: #1d4ed8;    --blue-line: #bfdbfe;
+  --violet-soft: #f5f3ff;  --violet-wash: #ede9fe;  --violet-ink: #6d28d9;  --violet-line: #ddd6fe;
+  --sky-soft: #f0f9ff;     --sky-wash: #e0f2fe;     --sky-ink: #0369a1;     --sky-line: #bae6fd;
+  --red-soft: #fef2f2;     --red-wash: #fee2e2;     --red-ink: #b91c1c;     --red-line: #fecaca;
+  --green-soft: #f0fdf4;   --green-wash: #dcfce7;   --green-ink: #15803d;   --green-line: #bbf7d0;
+  --indigo-soft: #eef2ff;  --indigo-wash: #e0e7ff;  --indigo-ink: #4338ca;  --indigo-line: #c7d2fe;
+  --purple-soft: #faf5ff;  --purple-wash: #f3e8ff;  --purple-ink: #7e22ce;  --purple-line: #e9d5ff;
+  --orange-soft: #fff7ed;  --orange-wash: #ffedd5;  --orange-ink: #c2410c;  --orange-line: #fed7aa;
+  --teal-soft: #f0fdfa;    --teal-wash: #ccfbf1;    --teal-ink: #0f766e;    --teal-line: #99f6e4;
+}
+
+[data-theme="dark"] {
+  --amber-soft: rgba(245, 158, 11, 0.12);   --amber-wash: rgba(245, 158, 11, 0.2);   --amber-ink: #fcd34d;   --amber-line: rgba(245, 158, 11, 0.4);
+  --emerald-soft: rgba(16, 185, 129, 0.12); --emerald-wash: rgba(16, 185, 129, 0.2); --emerald-ink: #6ee7b7; --emerald-line: rgba(16, 185, 129, 0.4);
+  --rose-soft: rgba(244, 63, 94, 0.12);     --rose-wash: rgba(244, 63, 94, 0.2);     --rose-ink: #fda4af;    --rose-line: rgba(244, 63, 94, 0.4);
+  --blue-soft: rgba(59, 130, 246, 0.14);    --blue-wash: rgba(59, 130, 246, 0.22);   --blue-ink: #93c5fd;    --blue-line: rgba(59, 130, 246, 0.4);
+  --violet-soft: rgba(139, 92, 246, 0.12);  --violet-wash: rgba(139, 92, 246, 0.2);  --violet-ink: #c4b5fd;  --violet-line: rgba(139, 92, 246, 0.4);
+  --sky-soft: rgba(14, 165, 233, 0.12);     --sky-wash: rgba(14, 165, 233, 0.2);     --sky-ink: #7dd3fc;     --sky-line: rgba(14, 165, 233, 0.4);
+  --red-soft: rgba(239, 68, 68, 0.12);      --red-wash: rgba(239, 68, 68, 0.2);      --red-ink: #fca5a5;     --red-line: rgba(239, 68, 68, 0.4);
+  --green-soft: rgba(34, 197, 94, 0.12);    --green-wash: rgba(34, 197, 94, 0.2);    --green-ink: #86efac;   --green-line: rgba(34, 197, 94, 0.4);
+  --indigo-soft: rgba(99, 102, 241, 0.12);  --indigo-wash: rgba(99, 102, 241, 0.2);  --indigo-ink: #a5b4fc;  --indigo-line: rgba(99, 102, 241, 0.4);
+  --purple-soft: rgba(168, 85, 247, 0.12);  --purple-wash: rgba(168, 85, 247, 0.2);  --purple-ink: #d8b4fe;  --purple-line: rgba(168, 85, 247, 0.4);
+  --orange-soft: rgba(249, 115, 22, 0.12);  --orange-wash: rgba(249, 115, 22, 0.2);  --orange-ink: #fdba74;  --orange-line: rgba(249, 115, 22, 0.4);
+  --teal-soft: rgba(20, 184, 166, 0.12);    --teal-wash: rgba(20, 184, 166, 0.2);    --teal-ink: #5eead4;    --teal-line: rgba(20, 184, 166, 0.4);
+}
+
+@theme inline {
+  --color-amber-soft: var(--amber-soft);     --color-amber-wash: var(--amber-wash);
+  --color-amber-ink: var(--amber-ink);       --color-amber-line: var(--amber-line);
+  --color-emerald-soft: var(--emerald-soft); --color-emerald-wash: var(--emerald-wash);
+  --color-emerald-ink: var(--emerald-ink);   --color-emerald-line: var(--emerald-line);
+  --color-rose-soft: var(--rose-soft);       --color-rose-wash: var(--rose-wash);
+  --color-rose-ink: var(--rose-ink);         --color-rose-line: var(--rose-line);
+  --color-blue-soft: var(--blue-soft);       --color-blue-wash: var(--blue-wash);
+  --color-blue-ink: var(--blue-ink);         --color-blue-line: var(--blue-line);
+  --color-violet-soft: var(--violet-soft);   --color-violet-wash: var(--violet-wash);
+  --color-violet-ink: var(--violet-ink);     --color-violet-line: var(--violet-line);
+  --color-sky-soft: var(--sky-soft);         --color-sky-wash: var(--sky-wash);
+  --color-sky-ink: var(--sky-ink);           --color-sky-line: var(--sky-line);
+  --color-red-soft: var(--red-soft);         --color-red-wash: var(--red-wash);
+  --color-red-ink: var(--red-ink);           --color-red-line: var(--red-line);
+  --color-green-soft: var(--green-soft);     --color-green-wash: var(--green-wash);
+  --color-green-ink: var(--green-ink);       --color-green-line: var(--green-line);
+  --color-indigo-soft: var(--indigo-soft);   --color-indigo-wash: var(--indigo-wash);
+  --color-indigo-ink: var(--indigo-ink);     --color-indigo-line: var(--indigo-line);
+  --color-purple-soft: var(--purple-soft);   --color-purple-wash: var(--purple-wash);
+  --color-purple-ink: var(--purple-ink);     --color-purple-line: var(--purple-line);
+  --color-orange-soft: var(--orange-soft);   --color-orange-wash: var(--orange-wash);
+  --color-orange-ink: var(--orange-ink);     --color-orange-line: var(--orange-line);
+  --color-teal-soft: var(--teal-soft);       --color-teal-wash: var(--teal-wash);
+  --color-teal-ink: var(--teal-ink);         --color-teal-line: var(--teal-line);
+}
+
+/* Global focus-visible ring — consistent, visible keyboard focus everywhere. */
 @layer base {
   :focus-visible {
     outline: 2px solid var(--color-amber-500);
@@ -16,10 +122,13 @@
   ::selection {
     background: rgba(245, 158, 11, 0.25);
   }
+  body {
+    transition: background-color 0.15s ease, color 0.15s ease;
+  }
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 9999px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(100, 116, 139, 0.6); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }

@@ -118,26 +118,26 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
   const utilityNav = [chatNav, compareNav, settingsNav];
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50/60">
+    <div className="min-h-screen flex flex-col bg-canvas">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-slate-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
       >
                 {t("a11y.skipToContent")}
       </a>
-      <header className="sticky top-0 z-40 w-full bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
+      <header className="sticky top-0 z-40 w-full bg-surface/90 backdrop-blur-md border-b border-line/80 shadow-[0_1px_2px_rgba(15,23,42,0.03)]">
         <div className="max-w-[1440px] mx-auto px-3 sm:px-4 lg:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-slate-100/80">
+          <div className="flex flex-wrap items-center justify-between gap-3 py-3 border-b border-linesoft/80">
             <div className="flex items-center gap-3">
               <NavLink to="/" className="group flex items-center gap-2.5 text-left focus:outline-none transition-transform active:scale-[0.98]">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 text-white flex items-center justify-center shadow-xs ring-1 ring-black/5 group-hover:shadow-sm group-hover:scale-105 transition-all duration-200">
                   <Zap className="w-4 h-4 fill-white stroke-white" />
                 </div>
-                <span className="font-extrabold text-base sm:text-lg tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors">Free LLM Gateway</span>
-                <span className="font-mono text-[10px] font-semibold text-slate-500 px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200/60 hidden sm:inline-flex">v{APP_VERSION}</span>
+                <span className="font-extrabold text-base sm:text-lg tracking-tight text-heading group-hover:text-amber-ink transition-colors">Free LLM Gateway</span>
+                <span className="font-mono text-[10px] font-semibold text-mutedtxt px-1.5 py-0.5 rounded bg-muted border border-line/60 hidden sm:inline-flex">v{APP_VERSION}</span>
               </NavLink>
 
-              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border shadow-2xs ${health === "ok" ? "bg-emerald-50 text-emerald-700 border-emerald-200/80" : health === "down" ? "bg-rose-50 text-rose-700 border-rose-200/80" : "bg-slate-100 text-slate-600 border-slate-200/80"}`}>
+              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border shadow-2xs ${health === "ok" ? "bg-emerald-soft text-emerald-ink border-emerald-line/80" : health === "down" ? "bg-rose-soft text-rose-ink border-rose-line/80" : "bg-muted text-secondary border-line/80"}`}>
                 <span className="relative flex h-2 w-2">
                   {health === "ok" && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
                   <span className={`relative inline-flex rounded-full h-2 w-2 ${health === "ok" ? "bg-emerald-500" : health === "down" ? "bg-rose-500" : "bg-slate-400"}`}></span>
@@ -145,11 +145,11 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                 <span className="tracking-wide">{health === "ok" ? t("header.online") : health === "down" ? t("header.offline") : t("header.loading")}</span>
               </div>
 
-              <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200/80 shadow-2xs">
-                <span className="font-semibold text-slate-800">{headerStats?.providers ?? headerStats?.count ?? "—"}</span>
+              <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-muted text-secondary border border-line/80 shadow-2xs">
+                <span className="font-semibold text-title">{headerStats?.providers ?? headerStats?.count ?? "—"}</span>
                 <span>providers</span>
                 <span className="text-slate-300">•</span>
-                <span className="font-semibold text-amber-700">{headerStats?.free_models ?? "—"}</span>
+                <span className="font-semibold text-amber-ink">{headerStats?.free_models ?? "—"}</span>
                 <span>free</span>
               </div>
             </div>
@@ -162,7 +162,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   aria-haspopup="listbox"
                   aria-expanded={langMenuOpen}
                   aria-label={t("nav.settings") === "Settings" ? "Change language" : "Thay đổi ngôn ngữ"}
-                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 border border-slate-200 transition-colors shadow-2xs"
+                  className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-body bg-surface hover:bg-raised active:bg-muted border border-line transition-colors shadow-2xs"
                 >
                   <span>{lang === "en" ? "🇬🇧 EN" : "🇻🇳 VI"}</span>
                   <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${langMenuOpen ? "rotate-180" : ""}`} />
@@ -171,36 +171,36 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   <div
                     role="listbox"
                     aria-label="Language"
-                    className="absolute right-0 mt-1.5 w-32 bg-white rounded-xl shadow-lg border border-slate-200 py-1 z-50"
+                    className="absolute right-0 mt-1.5 w-32 bg-surface rounded-xl shadow-lg border border-line py-1 z-50"
                   >
                     <button
                       type="button"
                       role="option"
                       aria-selected={lang === "en"}
                       onClick={() => { setLang("en"); setLangMenuOpen(false); }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-body hover:bg-raised flex items-center justify-between"
                     >
                       <span>🇬🇧 English</span>
-                      {lang === "en" && <Check className="w-3.5 h-3.5 text-amber-600" />}
+                      {lang === "en" && <Check className="w-3.5 h-3.5 text-amber-ink" />}
                     </button>
                     <button
                       type="button"
                       role="option"
                       aria-selected={lang === "vi"}
                       onClick={() => { setLang("vi"); setLangMenuOpen(false); }}
-                      className="w-full text-left px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-between"
+                      className="w-full text-left px-3 py-2 text-xs font-medium text-body hover:bg-raised flex items-center justify-between"
                     >
                       <span>🇻🇳 Tiếng Việt</span>
-                      {lang === "vi" && <Check className="w-3.5 h-3.5 text-amber-600" />}
+                      {lang === "vi" && <Check className="w-3.5 h-3.5 text-amber-ink" />}
                     </button>
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center gap-1.5 bg-slate-50/90 border border-slate-200/90 rounded-lg px-2.5 py-1 shadow-2xs focus-within:ring-1 focus-within:ring-amber-500/20 focus-within:border-amber-200">
-                <div className="flex items-center gap-1 text-slate-500 select-none" title="Master key — auto-filled from server on first start, editable">
+              <div className="flex items-center gap-1.5 bg-raised/90 border border-line/90 rounded-lg px-2.5 py-1 shadow-2xs focus-within:ring-1 focus-within:ring-amber-500/20 focus-within:border-amber-line">
+                <div className="flex items-center gap-1 text-mutedtxt select-none" title="Master key — auto-filled from server on first start, editable">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 hidden sm:inline">{t("header.master")}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-mutedtxt hidden sm:inline">{t("header.master")}</span>
                 </div>
                 <input
                   type={showKey ? "text" : "password"}
@@ -208,7 +208,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   onChange={(e) => setMasterKey(e.target.value)}
                   onBlur={() => { const v = masterKey.trim(); if (v) { localStorage.setItem("masterKey", v); setMasterKey(v); } }}
                   onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
-                  className="font-mono text-xs text-slate-700 bg-transparent max-w-[160px] sm:max-w-[220px] truncate focus:outline-none px-1"
+                  className="font-mono text-xs text-body bg-transparent max-w-[160px] sm:max-w-[220px] truncate focus:outline-none px-1"
                   title={masterKey}
                   placeholder="fgk-master-..."
                   spellCheck={false}
@@ -216,11 +216,11 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   readOnly={false}
                   disabled={false}
                 />
-                <button type="button" onClick={() => setShowKey(!showKey)} className="p-1 text-slate-400 hover:text-slate-600 rounded transition-colors" title={showKey ? "Hide" : "Show"}>
+                <button type="button" onClick={() => setShowKey(!showKey)} className="p-1 text-slate-400 hover:text-secondary rounded transition-colors" title={showKey ? "Hide" : "Show"}>
                   {showKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
-                <button type="button" onClick={handleCopyMasterKey} className="p-1 text-slate-400 hover:text-slate-700 rounded transition-colors" title="Copy">
-                  {copiedKey ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                <button type="button" onClick={handleCopyMasterKey} className="p-1 text-slate-400 hover:text-body rounded transition-colors" title="Copy">
+                  {copiedKey ? <Check className="w-3.5 h-3.5 text-emerald-ink" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
             </div>
@@ -233,14 +233,14 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   key={item.to}
                   to={item.to}
                   end={item.end}
-                  className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}
+                  className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-secondary hover:text-heading hover:bg-muted/80"}`}
                 >
                   {({ isActive }) => (
                     <>
-                      <span className={isActive ? "text-amber-400" : "text-slate-500"}>{item.icon}</span>
+                      <span className={isActive ? "text-amber-400" : "text-mutedtxt"}>{item.icon}</span>
                       <span>{item.label}</span>
                       {item.badge && (
-                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-slate-800 text-slate-200 border border-slate-700" : "bg-slate-200/80 text-slate-700"}`}>
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-slate-800 text-slate-200 border border-slate-700" : "bg-strong/80 text-body"}`}>
                           {item.badge}
                         </span>
                       )}
@@ -251,16 +251,16 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   )}
                 </NavLink>
               ))}
-              <div className="ml-auto pl-4 border-l border-slate-200 ml-4 flex items-center gap-1.5 sm:gap-2">
+              <div className="ml-auto pl-4 border-l border-line ml-4 flex items-center gap-1.5 sm:gap-2">
                 {utilityNav.map((item) => (
                   <NavLink
                     key={item.to}
                     to={item.to}
-                    className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900 hover:bg-slate-100/80"}`}
+                    className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-secondary hover:text-heading hover:bg-muted/80"}`}
                   >
                     {({ isActive }) => (
                       <>
-                        <span className={isActive ? "text-amber-400" : "text-slate-500"}>{item.icon}</span>
+                        <span className={isActive ? "text-amber-400" : "text-mutedtxt"}>{item.icon}</span>
                         <span>{item.label}</span>
                         {isActive && <div className="absolute inset-0 rounded-lg -z-10 bg-slate-900" />}
                       </>

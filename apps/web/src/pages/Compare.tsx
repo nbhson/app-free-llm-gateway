@@ -292,58 +292,58 @@ export default function Benchmark() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2"><Trophy className="w-6 h-6 text-amber-500" /> {t("benchmark.title")}</h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-mutedtxt mt-1">
             {t("benchmark.subtitle")} • {runs} runs, avg/median/p95/stdDev, auto-rank.
-            <code className="ml-1 px-1 py-0.5 bg-slate-100 rounded text-xs">POST /v1/chat/compare</code> (isolated, no cross-fallback).
+            <code className="ml-1 px-1 py-0.5 bg-muted rounded text-xs">POST /v1/chat/compare</code> (isolated, no cross-fallback).
           </p>
           <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1"><Info className="w-3 h-3" /> Latency đo server-side per-model (ms), TPS = completion_tokens / latency, cost ước tính minh bạch (free=0).</p>
         </div>
         <div className="flex items-center gap-2">
-          <a href="/metrics" target="_blank" className="text-xs px-3 py-1.5 rounded-lg border bg-white hover:bg-slate-50 inline-flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" /> /metrics</a>
-          <a href="/api/stats" target="_blank" className="text-xs px-3 py-1.5 rounded-lg border bg-white hover:bg-slate-50">/api/stats</a>
+          <a href="/metrics" target="_blank" className="text-xs px-3 py-1.5 rounded-lg border bg-surface hover:bg-raised inline-flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" /> /metrics</a>
+          <a href="/api/stats" target="_blank" className="text-xs px-3 py-1.5 rounded-lg border bg-surface hover:bg-raised">/api/stats</a>
         </div>
       </div>
 
       {error && (
-        <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl px-4 py-3 text-sm flex items-start gap-2">
+        <div className="bg-rose-soft border border-rose-line text-rose-ink rounded-xl px-4 py-3 text-sm flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
           <span className="flex-1 whitespace-pre-wrap break-words">{error}</span>
-          <button onClick={() => setError(null)} className="text-rose-600 hover:text-rose-800"><X className="w-4 h-4" /></button>
+          <button onClick={() => setError(null)} className="text-rose-ink hover:text-rose-ink"><X className="w-4 h-4" /></button>
         </div>
       )}
 
       {/* Config */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-4">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800"><Gauge className="w-4 h-4 text-violet-600" /> {t("benchmark.config")}</div>
+      <div className="bg-surface rounded-xl border border-line shadow-sm p-5 space-y-4">
+        <div className="flex items-center gap-2 text-sm font-semibold text-title"><Gauge className="w-4 h-4 text-violet-ink" /> {t("benchmark.config")}</div>
 
         {/* Model picker */}
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-slate-600">{t("benchmark.models")} ({models.length}/5):</span>
+            <span className="text-xs font-semibold text-secondary">{t("benchmark.models")} ({models.length}/5):</span>
             {models.map((m) => (
-              <span key={m} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${m === winner ? "bg-amber-50 border-amber-300 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-700"}`}>
+              <span key={m} className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${m === winner ? "bg-amber-soft border-amber-line text-amber-ink" : "bg-raised border-line text-body"}`}>
                 {favorites.includes(m) && <Star className="w-3 h-3 fill-amber-400 text-amber-400" />} {m}
-                <button onClick={() => setModels(models.filter((x) => x !== m))} className="ml-1 hover:text-rose-600"><X className="w-3 h-3" /></button>
+                <button onClick={() => setModels(models.filter((x) => x !== m))} className="ml-1 hover:text-rose-ink"><X className="w-3 h-3" /></button>
               </span>
             ))}
             <button onClick={() => setShowAvail(!showAvail)} className="text-xs px-2.5 py-1 rounded-lg bg-slate-900 text-white inline-flex items-center gap-1">{showAvail ? <X className="w-3 h-3" /> : <Search className="w-3 h-3" />} {showAvail ? t("benchmark.close") : t("benchmark.add_model")}</button>
-            <button onClick={() => setModels(["free-llm-gateway/auto", "groq/llama-3.3-70b-versatile", "kilo-code/kilo-auto"])} className="text-xs px-2 py-1 border rounded-lg bg-white">{t("benchmark.reset")}</button>
+            <button onClick={() => setModels(["free-llm-gateway/auto", "groq/llama-3.3-70b-versatile", "kilo-code/kilo-auto"])} className="text-xs px-2 py-1 border rounded-lg bg-surface">{t("benchmark.reset")}</button>
           </div>
           {showAvail && (
-            <div className="border rounded-xl p-3 bg-slate-50/50 space-y-2">
+            <div className="border rounded-xl p-3 bg-raised/50 space-y-2">
               <div className="flex gap-2">
                 <div className="relative flex-1">
                   <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
-                  <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("benchmark.filter_placeholder")} className="w-full pl-8 pr-3 py-2 text-sm border rounded-lg bg-white" />
+                  <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("benchmark.filter_placeholder")} className="w-full pl-8 pr-3 py-2 text-sm border rounded-lg bg-surface" />
                 </div>
-                <span className="text-xs text-slate-500 py-2">{filteredAvail.length}/{available.length} models</span>
+                <span className="text-xs text-mutedtxt py-2">{filteredAvail.length}/{available.length} models</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1.5 max-h-[220px] overflow-auto pr-1">
                 {filteredAvail.map((m) => {
                   const sel = models.includes(m.id);
                   const fav = favorites.includes(m.id);
                   return (
-                    <button key={m.id} disabled={sel || models.length >= 5} onClick={() => setModels([...models, m.id].slice(0, 5))} className={`text-left px-2.5 py-2 rounded-lg border text-xs flex items-center justify-between ${sel ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-white hover:bg-slate-50 border-slate-200"}`}>
+                    <button key={m.id} disabled={sel || models.length >= 5} onClick={() => setModels([...models, m.id].slice(0, 5))} className={`text-left px-2.5 py-2 rounded-lg border text-xs flex items-center justify-between ${sel ? "bg-emerald-soft border-emerald-line text-emerald-ink" : "bg-surface hover:bg-raised border-line"}`}>
                       <span className="truncate flex items-center gap-1.5">{fav && <Star className="w-3 h-3 fill-amber-400 text-amber-400" />}{m.id}</span>
                       <span className="text-[11px] text-slate-400 ml-2">{m.provider}</span>
                     </button>
@@ -352,17 +352,17 @@ export default function Benchmark() {
               </div>
             </div>
           )}
-          <div className="text-[11px] text-slate-500">{t("benchmark.tip")}</div>
+          <div className="text-[11px] text-mutedtxt">{t("benchmark.tip")}</div>
         </div>
 
         {/* Prompt */}
         <div className="space-y-2">
           <div className="flex flex-wrap gap-1.5">
             {PRESETS.map((p) => (
-              <button key={p.key} onClick={() => setPrompt(p.prompt)} className={`text-xs px-2.5 py-1 rounded-full border ${prompt === p.prompt ? "bg-violet-600 text-white border-violet-600" : "bg-white hover:bg-slate-50 border-slate-200"}`}>{t(`benchmark.${p.key}`)}</button>
+              <button key={p.key} onClick={() => setPrompt(p.prompt)} className={`text-xs px-2.5 py-1 rounded-full border ${prompt === p.prompt ? "bg-violet-600 text-white border-violet-600" : "bg-surface hover:bg-raised border-line"}`}>{t(`benchmark.${p.key}`)}</button>
             ))}
           </div>
-          <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={t("benchmark.prompt_placeholder")} className="w-full border rounded-xl p-3 text-sm min-h-[96px] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-300" />
+          <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={t("benchmark.prompt_placeholder")} className="w-full border rounded-xl p-3 text-sm min-h-[96px] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-line" />
           <div className="flex flex-wrap items-center gap-3 text-xs">
             <label className="inline-flex items-center gap-1.5">{t("benchmark.runs")}: <input type="range" min={1} max={5} value={runs} onChange={(e) => setRuns(parseInt(e.target.value))} className="w-24" /> <span className="font-mono font-bold w-6">{runs}</span><span className="text-slate-400"> (avg/median/p95)</span></label>
             <label className="inline-flex items-center gap-1.5">{t("benchmark.temp")}: <input type="range" min={0} max={1} step={0.1} value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-24" /> <span className="font-mono w-8">{temperature}</span></label>
@@ -381,29 +381,29 @@ export default function Benchmark() {
               <Square className="w-4 h-4 fill-white" /> Cancel ({progress})
             </button>
           )}
-          {loading && <span className="inline-flex items-center gap-1.5 text-xs text-slate-500"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> {t("benchmark.running")} {progress}...</span>}
+          {loading && <span className="inline-flex items-center gap-1.5 text-xs text-mutedtxt"><RefreshCw className="w-3.5 h-3.5 animate-spin" /> {t("benchmark.running")} {progress}...</span>}
           {aggs.length > 0 && !loading && (
             <>
-              <button onClick={exportCsv} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border bg-white text-xs font-medium hover:bg-slate-50"><Download className="w-3.5 h-3.5" /> {t("benchmark.export_csv")}</button>
-              <button onClick={copyJson} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border bg-white text-xs font-medium hover:bg-slate-50"><Copy className="w-3.5 h-3.5" /> {t("benchmark.copy_json")}</button>
-              <button onClick={() => setRawByRun([])} className="text-xs px-3 py-2 rounded-lg border bg-white hover:bg-slate-50">{t("benchmark.clear")}</button>
+              <button onClick={exportCsv} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border bg-surface text-xs font-medium hover:bg-raised"><Download className="w-3.5 h-3.5" /> {t("benchmark.export_csv")}</button>
+              <button onClick={copyJson} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border bg-surface text-xs font-medium hover:bg-raised"><Copy className="w-3.5 h-3.5" /> {t("benchmark.copy_json")}</button>
+              <button onClick={() => setRawByRun([])} className="text-xs px-3 py-2 rounded-lg border bg-surface hover:bg-raised">{t("benchmark.clear")}</button>
             </>
           )}
-          <span className="text-xs text-slate-500">{t("benchmark.isolated_note")}</span>
+          <span className="text-xs text-mutedtxt">{t("benchmark.isolated_note")}</span>
         </div>
       </div>
 
       {/* Leaderboard */}
       {aggs.length > 0 && (
         <>
-          <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="px-5 py-3 border-b bg-gradient-to-r from-amber-50 to-orange-50 flex items-center justify-between">
+          <div className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden">
+            <div className="px-5 py-3 border-b bg-gradient-to-r from-amber-soft to-orange-soft flex items-center justify-between">
               <div className="flex items-center gap-2 font-bold text-sm"><Trophy className="w-4 h-4 text-amber-500" /> {t("benchmark.leaderboard")} — {runs} runs × {models.length} models • prompt {prompt.slice(0, 48)}…</div>
-              <div className="text-xs text-slate-500">{t("benchmark.winner")}: <span className="font-mono font-bold text-amber-700">{winner}</span></div>
+              <div className="text-xs text-mutedtxt">{t("benchmark.winner")}: <span className="font-mono font-bold text-amber-ink">{winner}</span></div>
             </div>
             <div className="overflow-auto">
               <table className="w-full text-sm">
-                <thead className="text-xs font-semibold text-slate-500 bg-slate-50/70">
+                <thead className="text-xs font-semibold text-mutedtxt bg-raised/70">
                   <tr>
                     <th className="px-3 py-2 text-left">#</th>
                     <th className="px-3 py-2 text-left">Model</th>
@@ -419,34 +419,34 @@ export default function Benchmark() {
                     <th className="px-3 py-2 text-left">{t("benchmark.last_output")}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-divsoft">
                   {aggs.map((a, i) => (
-                    <tr key={a.model} className={`${i === 0 ? "bg-amber-50/60" : ""} hover:bg-slate-50/60`}>
+                    <tr key={a.model} className={`${i === 0 ? "bg-amber-soft/60" : ""} hover:bg-raised/60`}>
                       <td className="px-3 py-2.5 font-bold">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</td>
                       <td className="px-3 py-2 font-mono text-xs max-w-[220px] truncate" title={a.model}>{a.model} {i === 0 && <span className="ml-1 px-1.5 py-0.5 rounded bg-amber-500 text-white text-[10px]">{t("benchmark.winner")}</span>}</td>
-                      <td className="px-3 py-2 text-xs"><span className="px-2 py-0.5 rounded-full bg-slate-100 border text-[11px]">{a.provider}</span></td>
-                      <td className="px-3 py-2 text-right font-mono font-bold text-slate-800">{a.avgLatency || "—"} <span className="text-slate-400 font-normal">{a.avgLatency ? "ms" : ""}</span></td>
-                      <td className="px-3 py-2 text-right font-mono text-slate-600">{a.medianLatency ? `${a.medianLatency}ms` : "—"}</td>
-                      <td className="px-3 py-2 text-right font-mono text-slate-600">{a.p95 ? `${a.p95}ms` : "—"}</td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-slate-500">{a.minLatency || "—"}/{a.maxLatency || "—"}</td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-slate-500">{a.stdDev || "—"}</td>
-                      <td className="px-3 py-2 text-right font-mono font-semibold text-emerald-700">{a.avgTps}<span className="text-slate-400 font-normal">/s</span></td>
-                      <td className="px-3 py-2 text-right font-mono text-xs">{a.avgCost === 0 ? <span className="text-emerald-600 font-bold">free</span> : `$${a.avgCost.toFixed(4)}`}</td>
+                      <td className="px-3 py-2 text-xs"><span className="px-2 py-0.5 rounded-full bg-muted border text-[11px]">{a.provider}</span></td>
+                      <td className="px-3 py-2 text-right font-mono font-bold text-title">{a.avgLatency || "—"} <span className="text-slate-400 font-normal">{a.avgLatency ? "ms" : ""}</span></td>
+                      <td className="px-3 py-2 text-right font-mono text-secondary">{a.medianLatency ? `${a.medianLatency}ms` : "—"}</td>
+                      <td className="px-3 py-2 text-right font-mono text-secondary">{a.p95 ? `${a.p95}ms` : "—"}</td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-mutedtxt">{a.minLatency || "—"}/{a.maxLatency || "—"}</td>
+                      <td className="px-3 py-2 text-right font-mono text-xs text-mutedtxt">{a.stdDev || "—"}</td>
+                      <td className="px-3 py-2 text-right font-mono font-semibold text-emerald-ink">{a.avgTps}<span className="text-slate-400 font-normal">/s</span></td>
+                      <td className="px-3 py-2 text-right font-mono text-xs">{a.avgCost === 0 ? <span className="text-emerald-ink font-bold">free</span> : `$${a.avgCost.toFixed(4)}`}</td>
                       <td className="px-3 py-2 text-center">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${a.successRate === 1 ? "bg-emerald-50 border-emerald-200 text-emerald-700" : a.successRate >= 0.5 ? "bg-amber-50 border-amber-200 text-amber-700" : "bg-rose-50 border-rose-200 text-rose-700"}`}>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${a.successRate === 1 ? "bg-emerald-soft border-emerald-line text-emerald-ink" : a.successRate >= 0.5 ? "bg-amber-soft border-amber-line text-amber-ink" : "bg-rose-soft border-rose-line text-rose-ink"}`}>
                           {a.okCount}/{a.runs.length} • {Math.round(a.successRate * 100)}%
                         </span>
                       </td>
                       <td className="px-3 py-2 max-w-[260px]">
-                        <div className="text-xs text-slate-600 line-clamp-2">{a.lastContent ? a.lastContent.slice(0, 160) : <span className="text-rose-500">{a.runs.find((r) => !r.ok)?.error?.slice(0, 120) || "—"}</span>}</div>
-                        <button onClick={() => setExpanded(expanded === a.model ? null : a.model)} className="text-[11px] text-violet-600 hover:underline inline-flex items-center gap-1 mt-1">{t("benchmark.detail")} <ChevronDown className={`w-3 h-3 transition ${expanded === a.model ? "rotate-180" : ""}`} /></button>
+                        <div className="text-xs text-secondary line-clamp-2">{a.lastContent ? a.lastContent.slice(0, 160) : <span className="text-rose-500">{a.runs.find((r) => !r.ok)?.error?.slice(0, 120) || "—"}</span>}</div>
+                        <button onClick={() => setExpanded(expanded === a.model ? null : a.model)} className="text-[11px] text-violet-ink hover:underline inline-flex items-center gap-1 mt-1">{t("benchmark.detail")} <ChevronDown className={`w-3 h-3 transition ${expanded === a.model ? "rotate-180" : ""}`} /></button>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <div className="px-4 py-2 bg-slate-50 border-t text-[11px] text-slate-500 flex flex-wrap gap-3">
+            <div className="px-4 py-2 bg-raised border-t text-[11px] text-mutedtxt flex flex-wrap gap-3">
               <span>• Avg = mean latency (ok runs only)</span>
               <span>• Median/P95 = percentile with linear interpolation</span>
               <span>• σ = stdDev</span>
@@ -457,10 +457,10 @@ export default function Benchmark() {
 
           {/* Expand detail */}
           {expanded && (
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5 space-y-3">
+            <div className="bg-surface rounded-xl border border-line shadow-sm p-5 space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-sm">{t("benchmark.detail")} — {expanded}</h3>
-                <button onClick={() => setExpanded(null)} className="text-xs px-2 py-1 border rounded-lg bg-white">{t("benchmark.close_detail")}</button>
+                <button onClick={() => setExpanded(null)} className="text-xs px-2 py-1 border rounded-lg bg-surface">{t("benchmark.close_detail")}</button>
               </div>
               {(() => {
                 const a = aggs.find((x) => x.model === expanded);
@@ -468,21 +468,21 @@ export default function Benchmark() {
                 return (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                      <div className="p-3 rounded-lg bg-slate-50 border"><div className="text-slate-500">{t("benchmark.avg_latency")}</div><div className="font-mono font-bold text-lg">{a.avgLatency || "—"}ms</div><div className="text-slate-400">median {a.medianLatency} / p95 {a.p95} / σ {a.stdDev}</div><div className="text-slate-400">min {a.minLatency} / max {a.maxLatency}</div></div>
-                      <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200"><div className="text-slate-500">{t("benchmark.throughput")}</div><div className="font-mono font-bold text-lg text-emerald-700">{a.avgTps} tok/s</div><div className="text-slate-400">{a.avgTokens} avg tokens • per-run TPS mean</div></div>
-                      <div className="p-3 rounded-lg bg-violet-50 border border-violet-200"><div className="text-slate-500">{t("benchmark.cost_est")}</div><div className="font-mono font-bold text-lg">{a.avgCost === 0 ? <span className="text-emerald-600">free</span> : `$${a.avgCost.toFixed(4)}`}</div><div className="text-slate-400">per run • provider {a.provider} • est. only</div></div>
-                      <div className="p-3 rounded-lg bg-amber-50 border border-amber-200"><div className="text-slate-500">{t("benchmark.reliability")}</div><div className="font-mono font-bold text-lg">{Math.round(a.successRate * 100)}%</div><div className="text-slate-400">{a.okCount} ok / {a.failCount} fail • {a.runs.length} runs</div></div>
+                      <div className="p-3 rounded-lg bg-raised border"><div className="text-mutedtxt">{t("benchmark.avg_latency")}</div><div className="font-mono font-bold text-lg">{a.avgLatency || "—"}ms</div><div className="text-slate-400">median {a.medianLatency} / p95 {a.p95} / σ {a.stdDev}</div><div className="text-slate-400">min {a.minLatency} / max {a.maxLatency}</div></div>
+                      <div className="p-3 rounded-lg bg-emerald-soft border border-emerald-line"><div className="text-mutedtxt">{t("benchmark.throughput")}</div><div className="font-mono font-bold text-lg text-emerald-ink">{a.avgTps} tok/s</div><div className="text-slate-400">{a.avgTokens} avg tokens • per-run TPS mean</div></div>
+                      <div className="p-3 rounded-lg bg-violet-soft border border-violet-line"><div className="text-mutedtxt">{t("benchmark.cost_est")}</div><div className="font-mono font-bold text-lg">{a.avgCost === 0 ? <span className="text-emerald-ink">free</span> : `$${a.avgCost.toFixed(4)}`}</div><div className="text-slate-400">per run • provider {a.provider} • est. only</div></div>
+                      <div className="p-3 rounded-lg bg-amber-soft border border-amber-line"><div className="text-mutedtxt">{t("benchmark.reliability")}</div><div className="font-mono font-bold text-lg">{Math.round(a.successRate * 100)}%</div><div className="text-slate-400">{a.okCount} ok / {a.failCount} fail • {a.runs.length} runs</div></div>
                     </div>
                     {a.runs.map((r, idx) => (
-                      <div key={idx} className={`rounded-xl border p-3 ${r.ok ? "bg-white border-slate-200" : "bg-rose-50 border-rose-200"}`}>
-                        <div className="flex items-center justify-between text-xs font-mono text-slate-500 mb-2">
+                      <div key={idx} className={`rounded-xl border p-3 ${r.ok ? "bg-surface border-line" : "bg-rose-soft border-rose-line"}`}>
+                        <div className="flex items-center justify-between text-xs font-mono text-mutedtxt mb-2">
                           <span>{t("benchmark.run_label")} #{idx + 1} • {r.provider} • {r.latencyMs ? `${r.latencyMs}ms` : "no timing"} • {r.usage?.completion_tokens ?? Math.ceil((r.content?.length || 0) / 4)} {t("benchmark.tokens_label")} • {r.ok ? t("benchmark.ok") : t("benchmark.fail")}</span>
                           <span className="text-slate-400">{r.usage ? `${r.usage.prompt_tokens ?? "?"}/${r.usage.completion_tokens ?? "?"}/${r.usage.total_tokens ?? "?"}` : "estimated"}</span>
                         </div>
                         {r.ok ? (
                           <div className="prose prose-sm max-w-none text-sm"><ReactMarkdown remarkPlugins={[remarkGfm]}>{r.content.slice(0, 4000)}</ReactMarkdown>{r.content.length > 4000 && <span className="text-xs text-slate-400">… truncated {r.content.length - 4000} chars</span>}</div>
                         ) : (
-                          <div className="text-xs text-rose-700 whitespace-pre-wrap bg-white rounded-lg p-2 border border-rose-100">{r.error}</div>
+                          <div className="text-xs text-rose-ink whitespace-pre-wrap bg-surface rounded-lg p-2 border border-rose-line">{r.error}</div>
                         )}
                       </div>
                     ))}
@@ -494,11 +494,11 @@ export default function Benchmark() {
 
           {/* Charts */}
           <div className="grid lg:grid-cols-2 gap-5">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-              <div className="flex items-center gap-2 mb-3"><Clock className="w-4 h-4 text-blue-600" /><h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("benchmark.latency_chart")}</h3></div>
+            <div className="bg-surface rounded-xl border border-line shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-3"><Clock className="w-4 h-4 text-blue-ink" /><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("benchmark.latency_chart")}</h3></div>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={aggs.map((a) => ({ name: a.model.split("/").pop() || a.model, latency: a.avgLatency, median: a.medianLatency, p95: a.p95 }))} layout="vertical">
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                   <XAxis type="number" tick={{ fontSize: 11 }} />
                   <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={110} />
                   <Tooltip />
@@ -509,11 +509,11 @@ export default function Benchmark() {
               </ResponsiveContainer>
               <div className="text-[11px] text-slate-400 mt-1">P95 via linear interpolation — cần ≥3 runs để có ý nghĩa, 5 runs khuyến nghị.</div>
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-              <div className="flex items-center gap-2 mb-3"><Gauge className="w-4 h-4 text-emerald-600" /><h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("benchmark.throughput_chart")}</h3></div>
+            <div className="bg-surface rounded-xl border border-line shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-3"><Gauge className="w-4 h-4 text-emerald-ink" /><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("benchmark.throughput_chart")}</h3></div>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={aggs.map((a) => ({ name: a.model.split("/").pop() || a.model, tps: a.avgTps, tokens: a.avgTokens }))}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                   <YAxis yAxisId="tps" tick={{ fontSize: 11 }} />
                   <YAxis yAxisId="tok" orientation="right" tick={{ fontSize: 11 }} />
@@ -527,8 +527,8 @@ export default function Benchmark() {
           </div>
 
           <div className="grid lg:grid-cols-2 gap-5">
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-              <div className="flex items-center gap-2 mb-3"><Activity className="w-4 h-4 text-violet-600" /><h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("benchmark.radar_title")}</h3></div>
+            <div className="bg-surface rounded-xl border border-line shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-3"><Activity className="w-4 h-4 text-violet-ink" /><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("benchmark.radar_title")}</h3></div>
               <ResponsiveContainer width="100%" height={260}>
                 <RadarChart data={aggs.map((a) => {
                   const maxLat = Math.max(...aggs.map((x) => x.avgLatency), 1);
@@ -545,13 +545,13 @@ export default function Benchmark() {
                   <Tooltip />
                 </RadarChart>
               </ResponsiveContainer>
-              <div className="text-xs text-slate-500">{t("benchmark.radar_desc")}</div>
+              <div className="text-xs text-mutedtxt">{t("benchmark.radar_desc")}</div>
             </div>
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-              <div className="flex items-center gap-2 mb-3"><DollarSign className="w-4 h-4 text-amber-600" /><h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("benchmark.cost_chart")}</h3></div>
+            <div className="bg-surface rounded-xl border border-line shadow-sm p-5">
+              <div className="flex items-center gap-2 mb-3"><DollarSign className="w-4 h-4 text-amber-ink" /><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("benchmark.cost_chart")}</h3></div>
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={aggs.map((a) => ({ name: (a.model.split("/").pop() || a.model).slice(0, 12), cost: Math.round(a.avgCost * 100000) / 100000, tokens: a.avgTokens }))}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
                   <XAxis dataKey="name" tick={{ fontSize: 11 }} />
                   <YAxis yAxisId="cost" tick={{ fontSize: 11 }} tickFormatter={(v) => `$${v}`} />
                   <YAxis yAxisId="tok" orientation="right" tick={{ fontSize: 11 }} />
@@ -560,7 +560,7 @@ export default function Benchmark() {
                   <Bar yAxisId="cost" dataKey="cost" fill="#9333ea" radius={[4, 4, 0, 0]} name="cost ($)" />
                 </BarChart>
               </ResponsiveContainer>
-              <div className="text-xs text-slate-500">{t("benchmark.cost_desc")} • free providers hiển thị 0.</div>
+              <div className="text-xs text-mutedtxt">{t("benchmark.cost_desc")} • free providers hiển thị 0.</div>
             </div>
           </div>
 
@@ -573,10 +573,10 @@ export default function Benchmark() {
       )}
 
       {!aggs.length && !loading && (
-        <div className="bg-white rounded-xl border border-dashed border-slate-300 p-10 text-center">
-          <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center mx-auto mb-3"><Trophy className="w-6 h-6 text-amber-600" /></div>
-          <h3 className="font-bold text-slate-800">{t("benchmark.empty_title")}</h3>
-          <p className="text-sm text-slate-500 mt-1">{t("benchmark.empty_desc").replace("{runs}", String(runs))}</p>
+        <div className="bg-surface rounded-xl border border-dashed border-linestrong p-10 text-center">
+          <div className="w-12 h-12 rounded-xl bg-amber-wash flex items-center justify-center mx-auto mb-3"><Trophy className="w-6 h-6 text-amber-ink" /></div>
+          <h3 className="font-bold text-title">{t("benchmark.empty_title")}</h3>
+          <p className="text-sm text-mutedtxt mt-1">{t("benchmark.empty_desc").replace("{runs}", String(runs))}</p>
           <p className="text-xs text-slate-400 mt-2">{t("benchmark.empty_hint")}</p>
           <p className="text-[11px] text-slate-400 mt-3 flex items-center justify-center gap-1"><Info className="w-3 h-3" /> Server đo latency per-model, rank success → avgLatency → p95. Dùng ≥3 runs để median/p95 có ý nghĩa.</p>
         </div>

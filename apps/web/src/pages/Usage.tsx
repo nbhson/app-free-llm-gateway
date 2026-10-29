@@ -233,12 +233,12 @@ export default function Usage() {
     <div className="space-y-6 pb-12">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t("usage.title") || "Usage"}</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{t("usage.subtitle") || "Token analytics, request distribution and live provider topology."}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-heading">{t("usage.title") || "Usage"}</h1>
+          <p className="text-sm text-mutedtxt mt-0.5">{t("usage.subtitle") || "Token analytics, request distribution and live provider topology."}</p>
         </div>
         <div className="flex items-center gap-2.5">
-          <button onClick={handleRefresh} disabled={refreshing} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50 shadow-2xs disabled:opacity-60">{refreshing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}{refreshing ? t("providers.syncing") : t("logs.refresh")}</button>
-          <button onClick={() => setLive(!live)} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold shadow-xs border ${live ? "bg-emerald-600 text-white border-emerald-600" : "bg-white text-slate-700 border-slate-200"}`}>{live ? <Radio className="w-3.5 h-3.5 animate-pulse" /> : null}{live ? t("logs.live_on") : t("logs.live_off")}</button>
+          <button onClick={handleRefresh} disabled={refreshing} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-surface border border-line hover:bg-raised shadow-2xs disabled:opacity-60">{refreshing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />}{refreshing ? t("providers.syncing") : t("logs.refresh")}</button>
+          <button onClick={() => setLive(!live)} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold shadow-xs border ${live ? "bg-emerald-600 text-white border-emerald-600" : "bg-surface text-body border-line"}`}>{live ? <Radio className="w-3.5 h-3.5 animate-pulse" /> : null}{live ? t("logs.live_on") : t("logs.live_off")}</button>
         </div>
       </div>
 
@@ -246,43 +246,43 @@ export default function Usage() {
       <div className="px-5 py-3.5 bg-slate-900 text-slate-100 rounded-xl shadow-xs border border-slate-800 flex flex-wrap justify-between gap-3 text-xs font-medium">
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse inline-block" />{stats?.logs?.total ?? 0} requests</span>
-          <span className="text-slate-700">•</span><span className="text-slate-300">{stats?.logs?.allTimeTokens?.toLocaleString() ?? 0} tokens all-time</span>
-          <span className="text-slate-700">•</span><span className="font-mono font-bold text-emerald-400">{stats?.logs?.avgLatencyMs ?? 0}ms avg</span>
-          <span className="text-slate-700">•</span><span>{Math.round((stats?.logs?.errorRate || 0) * 100)}% err</span>
-          {activeProvider && <><span className="text-slate-700">•</span><span className="inline-flex items-center gap-1.5 font-mono text-emerald-300"><Activity className="w-3 h-3" />{activeProvider}</span></>}
+          <span className="text-body">•</span><span className="text-slate-300">{stats?.logs?.allTimeTokens?.toLocaleString() ?? 0} tokens all-time</span>
+          <span className="text-body">•</span><span className="font-mono font-bold text-emerald-400">{stats?.logs?.avgLatencyMs ?? 0}ms avg</span>
+          <span className="text-body">•</span><span>{Math.round((stats?.logs?.errorRate || 0) * 100)}% err</span>
+          {activeProvider && <><span className="text-body">•</span><span className="inline-flex items-center gap-1.5 font-mono text-emerald-300"><Activity className="w-3 h-3" />{activeProvider}</span></>}
         </div>
         <span className="text-sky-300 font-mono">{Object.keys(stats?.logs?.byProvider || {}).length} providers</span>
       </div>
 
       {/* Topology Chart */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/70 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-surface rounded-xl border border-line/90 shadow-2xs overflow-hidden">
+        <div className="px-5 py-3.5 border-b border-linesoft bg-raised/70 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white shadow-xs"><Network className="w-4 h-4" /></div>
             <div>
-              <h2 className="text-sm font-bold text-slate-900">{t("usage.topology_title") || "Provider Topology"}</h2>
-              <p className="text-[11px] text-slate-500 font-medium">{t("usage.topology_desc") || "App in center • green line = active provider • animation on active"}</p>
+              <h2 className="text-sm font-bold text-heading">{t("usage.topology_title") || "Provider Topology"}</h2>
+              <p className="text-[11px] text-mutedtxt font-medium">{t("usage.topology_desc") || "App in center • green line = active provider • animation on active"}</p>
             </div>
           </div>
           <div className="flex items-center gap-3 text-[11px] font-semibold">
             <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-emerald-500 inline-block" /> {t("usage.has_key") || "Has key"}</span>
             <span className="inline-flex items-center gap-1.5"><span className="w-3 h-3 rounded-full bg-sky-500 inline-block" /> {t("usage.public") || "No key needed"}</span>
             <span className="inline-flex items-center gap-1.5"><span className="w-3 h-0.5 bg-emerald-500 inline-block" style={{ width: 16 }} /> active</span>
-            <span className="inline-flex items-center gap-1.5"><span className="w-3 h-0.5 bg-slate-300 inline-block" style={{ width: 16 }} /> idle</span>
+            <span className="inline-flex items-center gap-1.5"><span className="w-3 h-0.5 bg-strong inline-block" style={{ width: 16 }} /> idle</span>
           </div>
         </div>
 
         <div className="p-4 sm:p-6">
-          {syncInfo?.lastAdded?.length ? <div className="mb-3 inline-flex items-center gap-2 text-xs font-bold text-violet-700 bg-violet-50 border border-violet-200 px-3 py-1.5 rounded-full"><Sparkles className="w-3.5 h-3.5" /> NEW provider: {syncInfo.lastAdded.join(", ")} {syncInfo.lastAddedAt ? `• ${new Date(syncInfo.lastAddedAt).toLocaleString()}` : ""} {syncInfo.bootSync?.status ? `• bootSync: ${syncInfo.bootSync.status}` : ""}</div> : null}
+          {syncInfo?.lastAdded?.length ? <div className="mb-3 inline-flex items-center gap-2 text-xs font-bold text-violet-ink bg-violet-soft border border-violet-line px-3 py-1.5 rounded-full"><Sparkles className="w-3.5 h-3.5" /> NEW provider: {syncInfo.lastAdded.join(", ")} {syncInfo.lastAddedAt ? `• ${new Date(syncInfo.lastAddedAt).toLocaleString()}` : ""} {syncInfo.bootSync?.status ? `• bootSync: ${syncInfo.bootSync.status}` : ""}</div> : null}
           {topologyProviders.length === 0 ? (
             <p className="text-xs text-slate-400 text-center py-12">{t("dashboard.no_data")}</p>
           ) : (
             <ProviderTopology providers={topologyProviders} activeProvider={activeProvider} newestProviders={newestProviders} logs={logs} />
           )}
           <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-medium">
-            <span className="text-slate-500">Showing {topologyProviders.length} providers ({usableProviders.length} usable) • total {providers.length}</span>
-            {topologyProviders.length < sortedProviders.length && <span className="text-amber-600">• showing top 16</span>}
-            {newestProviders.length > 0 && <span className="text-violet-600">• newest: {newestProviders.join(", ")}</span>}
+            <span className="text-mutedtxt">Showing {topologyProviders.length} providers ({usableProviders.length} usable) • total {providers.length}</span>
+            {topologyProviders.length < sortedProviders.length && <span className="text-amber-ink">• showing top 16</span>}
+            {newestProviders.length > 0 && <span className="text-violet-ink">• newest: {newestProviders.join(", ")}</span>}
           </div>
         </div>
       </div>
@@ -291,26 +291,26 @@ export default function Usage() {
       {stats?.logs && (
         <>
           <div className="grid md:grid-cols-3 gap-5">
-            <div className="bg-white rounded-xl p-5 border border-slate-200/90 shadow-2xs">
-              <div className="flex items-center gap-2 mb-3"><div className="p-1.5 bg-blue-50 rounded-lg"><BarChart3 className="w-3.5 h-3.5 text-blue-600" /></div><h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("dashboard.requests_by_provider")}</h3></div>
+            <div className="bg-surface rounded-xl p-5 border border-line/90 shadow-2xs">
+              <div className="flex items-center gap-2 mb-3"><div className="p-1.5 bg-blue-soft rounded-lg"><BarChart3 className="w-3.5 h-3.5 text-blue-ink" /></div><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("dashboard.requests_by_provider")}</h3></div>
               {stats?.logs?.byProvider && Object.keys(stats.logs.byProvider).length > 0 ? (
-                <ResponsiveContainer width="100%" height={180}><BarChart data={Object.entries(stats.logs.byProvider).map(([name, v]) => ({ name, count: v as number }))}><CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={50} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
+                <ResponsiveContainer width="100%" height={180}><BarChart data={Object.entries(stats.logs.byProvider).map(([name, v]) => ({ name, count: v as number }))}><CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" /><XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={50} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
               ) : <p className="text-xs text-slate-400">{t("dashboard.no_data")}</p>}
             </div>
-            <div className="bg-white rounded-xl p-5 border border-slate-200/90 shadow-2xs">
-              <div className="flex items-center gap-2 mb-3"><div className="p-1.5 bg-purple-50 rounded-lg"><Sparkles className="w-3.5 h-3.5 text-purple-600" /></div><h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("dashboard.tokens_by_provider")}</h3></div>
+            <div className="bg-surface rounded-xl p-5 border border-line/90 shadow-2xs">
+              <div className="flex items-center gap-2 mb-3"><div className="p-1.5 bg-purple-soft rounded-lg"><Sparkles className="w-3.5 h-3.5 text-purple-ink" /></div><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("dashboard.tokens_by_provider")}</h3></div>
               {stats?.logs?.tokensByProvider && Object.keys(stats.logs.tokensByProvider).length > 0 ? (
-                <ResponsiveContainer width="100%" height={180}><BarChart data={Object.entries(stats.logs.tokensByProvider).map(([name, v]) => ({ name, tokens: v as number }))}><CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" /><XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="tokens" fill="#9333ea" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
+                <ResponsiveContainer width="100%" height={180}><BarChart data={Object.entries(stats.logs.tokensByProvider).map(([name, v]) => ({ name, tokens: v as number }))}><CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" /><XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="tokens" fill="#9333ea" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
               ) : <p className="text-xs text-slate-400">{t("dashboard.no_data")}</p>}
             </div>
-            <div className="bg-white rounded-xl p-5 border border-slate-200/90 shadow-2xs">
-              <div className="flex items-center gap-2 mb-3"><div className="p-1.5 bg-emerald-50 rounded-lg"><Activity className="w-3.5 h-3.5 text-emerald-600" /></div><h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">{t("logs.status_distribution")}</h3></div>
+            <div className="bg-surface rounded-xl p-5 border border-line/90 shadow-2xs">
+              <div className="flex items-center gap-2 mb-3"><div className="p-1.5 bg-emerald-soft rounded-lg"><Activity className="w-3.5 h-3.5 text-emerald-ink" /></div><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("logs.status_distribution")}</h3></div>
               {(stats?.logs?.total || 0) > 0 ? (
                 <ResponsiveContainer width="100%" height={180}><PieChart><Pie data={[{ name: "success", value: 100 - Math.round((stats.logs.errorRate || 0) * 100) }, { name: "error", value: Math.round((stats.logs.errorRate || 0) * 100) }]} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label><Cell fill="#10b981" /><Cell fill="#ef4444" /></Pie><Tooltip /><Legend /></PieChart></ResponsiveContainer>
               ) : <p className="text-xs text-slate-400">{t("dashboard.no_data")}</p>}
             </div>
           </div>
-          <div className="bg-white rounded-xl p-4 border border-slate-200/90 shadow-2xs text-xs leading-relaxed">
+          <div className="bg-surface rounded-xl p-4 border border-line/90 shadow-2xs text-xs leading-relaxed">
             <b>{t("logs.tokens")}</b> {(stats?.logs?.totalTokens ?? 0).toLocaleString()} last 100 ({(stats?.logs?.promptTokens ?? 0).toLocaleString()} prompt + {(stats?.logs?.completionTokens ?? 0).toLocaleString()} completion, avg {stats?.logs?.avgTokens ?? 0}/req) • <b>{t("logs.all_time")}</b> {(stats?.logs?.allTimeTokens ?? 0).toLocaleString()} • <b>{t("logs.by_provider")}</b> {Object.entries(stats?.logs?.tokensByProvider || {}).map(([k, v]) => `${k}:${(v as number).toLocaleString()}`).join(" • ") || "—"}
           </div>
         </>
@@ -353,7 +353,7 @@ function ProviderTopology({ providers, activeProvider, newestProviders, logs }: 
         </defs>
 
         {/* background subtle grid */}
-        <rect x="0" y="0" width={width} height={height} rx="16" fill="#f8fafc" stroke="#e2e8f0" strokeWidth="1" />
+        <rect x="0" y="0" width={width} height={height} rx="16" fill="var(--app-surface)" stroke="var(--app-line)" strokeWidth="1" />
 
         {/* center app node shadow */}
         {/* lines */}
@@ -363,7 +363,7 @@ function ProviderTopology({ providers, activeProvider, newestProviders, logs }: 
           const hasKey = !!p.hasRealKey;
           const isNewest = newestProviders?.includes(p.id);
           // determine line color: active green, newest violet, else based on availability
-          const idleColor = isActive ? "#22c55e" : isNewest ? "#c4b5fd" : hasKey ? "#cbd5e1" : isPublic ? "#bae6fd" : "#e2e8f0";
+          const idleColor = isActive ? "#22c55e" : isNewest ? "#c4b5fd" : hasKey ? "var(--app-line-strong)" : isPublic ? "#bae6fd" : "var(--app-line)";
           return (
             <g key={`line-${p.id}`}>
               {/* idle line */}
@@ -422,9 +422,9 @@ function ProviderTopology({ providers, activeProvider, newestProviders, logs }: 
           const hasKey = !!p.hasRealKey;
           const isNewest = newestProviders?.includes(p.id);
           const count = requestCountByProvider[p.id] || 0;
-          const bg = isNewest ? "#f5f3ff" : hasKey ? "#ecfdf5" : isPublic ? "#f0f9ff" : "#ffffff";
-          const border = isActive ? "#22c55e" : isNewest ? "#8b5cf6" : hasKey ? "#6ee7b7" : isPublic ? "#7dd3fc" : "#e2e8f0";
-          const textColor = isNewest ? "#5b21b6" : hasKey ? "#065f46" : isPublic ? "#0c4a6e" : "#334155";
+          const bg = isNewest ? "var(--violet-soft)" : hasKey ? "var(--emerald-soft)" : isPublic ? "var(--sky-soft)" : "var(--app-surface)";
+          const border = isActive ? "#22c55e" : isNewest ? "#8b5cf6" : hasKey ? "#6ee7b7" : isPublic ? "#7dd3fc" : "var(--app-line)";
+          const textColor = isNewest ? "var(--violet-ink)" : hasKey ? "var(--emerald-ink)" : isPublic ? "var(--sky-ink)" : "var(--app-body)";
           return (
             <g key={`node-${p.id}`} className="cursor-pointer">
               {/* node rect centered at x,y */}
@@ -461,7 +461,7 @@ function ProviderTopology({ providers, activeProvider, newestProviders, logs }: 
                 >
                   {p.id.length > 13 ? p.id.slice(0, 13) + "…" : p.id}
                 </text>
-                <text x={-18} y={10} textAnchor="start" fontSize="8.5" fontWeight="600" fill={isActive ? "#15803d" : isNewest ? "#7c3aed" : "#64748b"}>
+                <text x={-18} y={10} textAnchor="start" fontSize="8.5" fontWeight="600" fill={isActive ? "#15803d" : isNewest ? "#7c3aed" : "var(--app-mutedtxt)"}>
                   {isNewest ? "★ NEW" : hasKey ? "● has key" : isPublic ? "no key needed" : "no key"} {count > 0 ? `• ${count}` : ""}
                 </text>
                 {(isActive || isNewest) && (

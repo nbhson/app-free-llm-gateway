@@ -205,7 +205,7 @@ export default function Chat() {
   return (
     <div className="flex flex-col lg:flex-row gap-4 h-[calc(100vh-140px)] lg:h-[calc(100vh-132px)]">
       <div
-        className={`flex-1 flex flex-col min-w-0 bg-white rounded-xl border shadow-sm overflow-hidden ${isDragging ? "border-amber-400 ring-2 ring-amber-200 bg-amber-50/20" : "border-slate-200"}`}
+        className={`flex-1 flex flex-col min-w-0 bg-surface rounded-xl border shadow-sm overflow-hidden ${isDragging ? "border-amber-400 ring-2 ring-amber-line bg-amber-soft/20" : "border-line"}`}
         onDragOver={(e) => {
           e.preventDefault();
           setIsDragging(true);
@@ -231,25 +231,25 @@ export default function Chat() {
         />
 
         {showSettings && (
-          <div className="px-3 py-3 border-b border-slate-200 bg-amber-50/50 space-y-3">
+          <div className="px-3 py-3 border-b border-line bg-amber-soft/50 space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <label className="space-y-1">
-                <span className="text-xs font-semibold text-slate-700">{t("chat.temperature")} {temperature}</span>
-                <input type="range" min={0} max={2} step={0.1} value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full accent-slate-900" />
+                <span className="text-xs font-semibold text-body">{t("chat.temperature")} {temperature}</span>
+                <input type="range" min={0} max={2} step={0.1} value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-full accent-heading" />
               </label>
               <label className="space-y-1">
-                <span className="text-xs font-semibold text-slate-700">{t("chat.maxTokens")}</span>
-                <input type="number" min={64} max={16384} value={maxTokens} onChange={(e) => setMaxTokens(Math.min(16384, parseInt(e.target.value) || 1024))} className="w-full px-2 py-1.5 rounded-lg border border-slate-200 text-sm" />
+                <span className="text-xs font-semibold text-body">{t("chat.maxTokens")}</span>
+                <input type="number" min={64} max={16384} value={maxTokens} onChange={(e) => setMaxTokens(Math.min(16384, parseInt(e.target.value) || 1024))} className="w-full px-2 py-1.5 rounded-lg border border-line text-sm" />
               </label>
               <label className="flex items-center gap-2 pt-5">
-                <input type="checkbox" checked={streamEnabled} onChange={(e) => setStreamEnabled(e.target.checked)} className="w-4 h-4 accent-slate-900" />
-                <span className="text-xs font-semibold text-slate-700">{t("chat.streaming")}</span>
-                <span className="text-xs text-slate-500">(SSE)</span>
+                <input type="checkbox" checked={streamEnabled} onChange={(e) => setStreamEnabled(e.target.checked)} className="w-4 h-4 accent-heading" />
+                <span className="text-xs font-semibold text-body">{t("chat.streaming")}</span>
+                <span className="text-xs text-mutedtxt">(SSE)</span>
               </label>
             </div>
             <label className="block space-y-1">
-              <span className="text-xs font-semibold text-slate-700">{t("chat.systemPrompt")}</span>
-              <textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} placeholder={t("chat.systemPromptPlaceholder")} rows={2} className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-slate-900 resize-none" />
+              <span className="text-xs font-semibold text-body">{t("chat.systemPrompt")}</span>
+              <textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} placeholder={t("chat.systemPromptPlaceholder")} rows={2} className="w-full px-3 py-2 rounded-lg border border-line text-sm focus:outline-none focus:ring-1 focus:ring-heading resize-none" />
             </label>
           </div>
         )}
@@ -265,17 +265,17 @@ export default function Chat() {
         />
 
         {error && (
-          <div role="alert" className="mx-3 mb-2 px-3 py-2.5 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700 space-y-2">
+          <div role="alert" className="mx-3 mb-2 px-3 py-2.5 rounded-lg bg-rose-soft border border-rose-line text-xs text-rose-ink space-y-2">
             <div className="flex items-start gap-2">
               <span className="font-bold shrink-0">Error:</span>
               <span className="flex-1 break-words whitespace-pre-wrap">{error}</span>
-              <button aria-label="Dismiss error" onClick={() => setError(null)} className="p-1 hover:bg-rose-100 rounded shrink-0">
+              <button aria-label="Dismiss error" onClick={() => setError(null)} className="p-1 hover:bg-rose-wash rounded shrink-0">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {error.includes("timeout") || error.includes("All providers failed") ? (
-                <button onClick={() => setError(null)} className="px-2.5 py-1 rounded-full bg-white border border-rose-200 hover:bg-rose-100 font-semibold text-[11px]">Đã hiểu</button>
+                <button onClick={() => setError(null)} className="px-2.5 py-1 rounded-full bg-surface border border-rose-line hover:bg-rose-wash font-semibold text-[11px]">Đã hiểu</button>
               ) : null}
             </div>
           </div>

@@ -5,11 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Free LLM Gateway — Dashboard</title>
     <meta name="description" content="Modern gateway dashboard for managing free LLM providers, models, virtual keys, and real-time logs." />
+    <script>
+      // No-FOUC theme bootstrap: apply theme before first paint.
+      // "light" | "dark" persisted; absent = follow prefers-color-scheme.
+      (function () {
+        try {
+          var t = localStorage.getItem("fgk-theme");
+          var dark = t === "dark" || (!t && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+          document.documentElement.style.colorScheme = dark ? "dark" : "light";
+        } catch (e) { /* private mode etc. — fall back to system */ }
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
   </head>
-  <body class="font-sans antialiased bg-slate-50/60 text-slate-800 selection:bg-amber-100 selection:text-amber-900">
+  <body class="font-sans antialiased bg-canvas text-body selection:bg-amber-100 selection:text-amber-900">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

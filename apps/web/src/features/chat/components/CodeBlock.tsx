@@ -18,21 +18,21 @@ export const CodeBlock = React.memo(function CodeBlock({ children, className }: 
 
   if (isInline) {
     return (
-      <code className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[13px] font-mono text-slate-800">
+      <code className="px-1.5 py-0.5 rounded bg-muted border border-line text-[13px] font-mono text-title">
         {children}
       </code>
     );
   }
   return (
-    <div className="my-3 rounded-xl border border-slate-200 overflow-hidden bg-slate-50">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-slate-100 border-b border-slate-200">
-        <span className="text-xs font-mono font-semibold text-slate-600">{lang || t("chat.code")}</span>
+    <div className="my-3 rounded-xl border border-slate-700 overflow-hidden bg-slate-950">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900 border-b border-slate-700">
+        <span className="text-xs font-mono font-semibold text-slate-300">{lang || t("chat.code")}</span>
         <button
           aria-label={copied ? "Copied" : "Copy code"}
           onClick={handleCopy}
-          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50 text-slate-700"
+          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-semibold bg-slate-800 border border-slate-700 hover:bg-slate-800/80 text-slate-200"
         >
-          {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+          {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
           {copied ? t("chat.copied") : t("chat.copy")}
         </button>
       </div>

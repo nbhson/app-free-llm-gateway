@@ -14,7 +14,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return this.props.fallback || (
-        <div className="p-3 rounded-lg bg-rose-50 border border-rose-200 text-xs text-rose-700" role="alert">
+        <div className="p-3 rounded-lg bg-rose-soft border border-rose-line text-xs text-rose-ink" role="alert">
           Failed to render message. Try refresh.
         </div>
       );

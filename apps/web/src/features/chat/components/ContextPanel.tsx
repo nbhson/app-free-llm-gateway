@@ -37,83 +37,83 @@ export const ContextPanel = React.memo(function ContextPanel({
   const usage = lastMeta?.usage as Record<string, unknown> | undefined;
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-        <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-          <BarChart3 className="w-4 h-4 text-slate-700" /> {t("chat.contextWindow")}
+    <div className="bg-surface rounded-xl border border-line shadow-sm overflow-hidden">
+      <div className="px-4 py-3 border-b border-line flex items-center justify-between">
+        <h2 className="text-sm font-bold text-heading flex items-center gap-2">
+          <BarChart3 className="w-4 h-4 text-body" /> {t("chat.contextWindow")}
         </h2>
-        <button aria-label="Refresh conversation" onClick={onRefresh} className="p-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-200" title="Refresh (clear chat)">
-          <RotateCcw className="w-4 h-4 text-slate-600" />
+        <button aria-label="Refresh conversation" onClick={onRefresh} className="p-1.5 rounded-lg bg-muted hover:bg-strong border border-line" title="Refresh (clear chat)">
+          <RotateCcw className="w-4 h-4 text-secondary" />
         </button>
       </div>
       <div className="p-4 space-y-4">
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+            <span className="font-semibold text-body flex items-center gap-1.5">
               <Cpu className="w-3.5 h-3.5" /> {t("chat.model")}
             </span>
-            <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200">{selectedModelInfo?.live_status || "—"}</span>
+            <span className="font-mono text-[11px] px-1.5 py-0.5 rounded bg-muted border border-line">{selectedModelInfo?.live_status || "—"}</span>
           </div>
-          <div className="px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 font-mono text-xs truncate">{selectedModel}</div>
-          <div className="flex items-center gap-2 text-xs text-slate-600">
+          <div className="px-3 py-2 rounded-lg bg-raised border border-line font-mono text-xs truncate">{selectedModel}</div>
+          <div className="flex items-center gap-2 text-xs text-secondary">
             <span>{t("chat.provider")}:</span>
-            <span className="font-semibold text-slate-800">{lastMeta?.provider || selectedModel.split("/")[0] || "auto"}</span>
+            <span className="font-semibold text-title">{lastMeta?.provider || selectedModel.split("/")[0] || "auto"}</span>
             {lastMeta?.latencyMs && <span className="ml-auto inline-flex items-center gap-1"><Clock className="w-3 h-3" />{lastMeta.latencyMs}ms</span>}
           </div>
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-slate-700">{t("chat.tokens")}</span>
-            <span className="font-mono text-slate-600">
+            <span className="font-semibold text-body">{t("chat.tokens")}</span>
+            <span className="font-mono text-secondary">
               {totalPromptTokens.toLocaleString()} / {effectiveContext.toLocaleString()}
             </span>
           </div>
-          <div className="h-2.5 rounded-full bg-slate-100 border border-slate-200 overflow-hidden p-0.5" role="progressbar" aria-valuenow={ctxPercent} aria-valuemin={0} aria-valuemax={100} aria-label="Context usage">
+          <div className="h-2.5 rounded-full bg-muted border border-line overflow-hidden p-0.5" role="progressbar" aria-valuenow={ctxPercent} aria-valuemin={0} aria-valuemax={100} aria-label="Context usage">
             <div className={`h-full rounded-full transition-all duration-500 ${ctxColor}`} style={{ width: `${ctxPercent}%` }} />
           </div>
           <div className="flex items-center justify-between text-[11px]">
-            <span className={`font-bold ${ctxPercent > 90 ? "text-rose-600" : ctxPercent > 70 ? "text-amber-600" : "text-emerald-600"}`}>{ctxPercent}% {t("chat.used")}</span>
-            <span className="text-slate-500">{effectiveContext - totalPromptTokens > 0 ? `${(effectiveContext - totalPromptTokens).toLocaleString()} ${t("chat.left")}` : t("chat.full")}</span>
+            <span className={`font-bold ${ctxPercent > 90 ? "text-rose-ink" : ctxPercent > 70 ? "text-amber-ink" : "text-emerald-ink"}`}>{ctxPercent}% {t("chat.used")}</span>
+            <span className="text-mutedtxt">{effectiveContext - totalPromptTokens > 0 ? `${(effectiveContext - totalPromptTokens).toLocaleString()} ${t("chat.left")}` : t("chat.full")}</span>
           </div>
-          {ctxPercent > 85 && <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5" role="warning">{t("chat.contextFullWarning")}</div>}
+          {ctxPercent > 85 && <div className="text-xs text-amber-ink bg-amber-soft border border-amber-line rounded-lg px-2.5 py-1.5" role="warning">{t("chat.contextFullWarning")}</div>}
         </div>
 
         <div className="grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{t("chat.messages")}</div>
-            <div className="text-lg font-bold text-slate-900">{messages.length}</div>
-            <div className="text-xs text-slate-500">{messages.filter((m) => m.role === "user").length} user • {messages.filter((m) => m.role === "assistant").length} assistant</div>
+          <div className="rounded-xl bg-raised border border-line p-3">
+            <div className="text-[11px] font-semibold text-mutedtxt uppercase tracking-wider">{t("chat.messages")}</div>
+            <div className="text-lg font-bold text-heading">{messages.length}</div>
+            <div className="text-xs text-mutedtxt">{messages.filter((m) => m.role === "user").length} user • {messages.filter((m) => m.role === "assistant").length} assistant</div>
           </div>
-          <div className="rounded-xl bg-slate-50 border border-slate-200 p-3">
-            <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{t("chat.estTokens")}</div>
-            <div className="text-lg font-bold text-slate-900">{totalPromptTokens.toLocaleString()}</div>
-            <div className="text-xs text-slate-500">prompt + history</div>
+          <div className="rounded-xl bg-raised border border-line p-3">
+            <div className="text-[11px] font-semibold text-mutedtxt uppercase tracking-wider">{t("chat.estTokens")}</div>
+            <div className="text-lg font-bold text-heading">{totalPromptTokens.toLocaleString()}</div>
+            <div className="text-xs text-mutedtxt">prompt + history</div>
           </div>
         </div>
 
         <div className="space-y-2">
-          <div className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+          <div className="text-xs font-bold text-body flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5" /> {t("chat.breakdown")}
           </div>
-          <div className="max-h-[160px] overflow-y-auto rounded-lg border border-slate-200 divide-y divide-slate-100">
+          <div className="max-h-[160px] overflow-y-auto rounded-lg border border-line divide-y divide-divsoft">
             {messages.slice(-10).map((m) => (
               <div
                 key={m.id}
                 onClick={() => onScrollToMessage(m.id)}
                 title={t("chat.breakdownHint")}
-                className={`flex items-center gap-2 px-3 py-2 text-xs cursor-pointer hover:bg-amber-50 transition-colors ${highlightedId === m.id ? "bg-amber-100" : ""}`}
+                className={`flex items-center gap-2 px-3 py-2 text-xs cursor-pointer hover:bg-amber-soft transition-colors ${highlightedId === m.id ? "bg-amber-wash" : ""}`}
               >
-                <span className={`w-16 shrink-0 font-semibold ${m.role === "user" ? "text-amber-700" : m.role === "system" ? "text-blue-700" : "text-slate-700"}`}>{m.role}</span>
-                <span className="flex-1 truncate text-slate-600">{m.content.slice(0, 60) || "(empty)"}</span>
-                <span className="font-mono text-slate-500">{estimateMessageTokens(m)}</span>
+                <span className={`w-16 shrink-0 font-semibold ${m.role === "user" ? "text-amber-ink" : m.role === "system" ? "text-blue-ink" : "text-body"}`}>{m.role}</span>
+                <span className="flex-1 truncate text-secondary">{m.content.slice(0, 60) || "(empty)"}</span>
+                <span className="font-mono text-mutedtxt">{estimateMessageTokens(m)}</span>
               </div>
             ))}
             {systemPrompt && (
-              <div className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-50/50">
-                <span className="w-16 shrink-0 font-semibold text-blue-700">system</span>
-                <span className="flex-1 truncate text-slate-600">{systemPrompt.slice(0, 60)}</span>
-                <span className="font-mono text-slate-500">{estimateTokens(systemPrompt)}</span>
+              <div className="flex items-center gap-2 px-3 py-2 text-xs bg-blue-soft/50">
+                <span className="w-16 shrink-0 font-semibold text-blue-ink">system</span>
+                <span className="flex-1 truncate text-secondary">{systemPrompt.slice(0, 60)}</span>
+                <span className="font-mono text-mutedtxt">{estimateTokens(systemPrompt)}</span>
               </div>
             )}
           </div>
@@ -149,9 +149,9 @@ export const ContextPanel = React.memo(function ContextPanel({
           </div>
         )}
 
-        <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2">
-          <div className="text-xs font-bold text-slate-700">{t("chat.openCodeWindow")}</div>
-          <ul className="text-xs text-slate-600 space-y-1 list-disc pl-4">
+        <div className="rounded-xl border border-line bg-raised p-3 space-y-2">
+          <div className="text-xs font-bold text-body">{t("chat.openCodeWindow")}</div>
+          <ul className="text-xs text-secondary space-y-1 list-disc pl-4">
             <li>{t("chat.openCodeDesc1")}</li>
             <li>{t("chat.openCodeDesc2")}</li>
             <li>{t("chat.openCodeDesc3")}</li>
@@ -174,12 +174,12 @@ export const ContextPanel = React.memo(function ContextPanel({
 export const TipsCard = React.memo(function TipsCard() {
   const { t } = useLang();
   return (
-    <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-4">
+    <div className="bg-gradient-to-br from-amber-soft to-orange-soft rounded-xl border border-amber-line p-4">
       <div className="flex items-start gap-2">
-        <Sparkles className="w-4 h-4 text-amber-600 mt-0.5" />
+        <Sparkles className="w-4 h-4 text-amber-ink mt-0.5" />
         <div className="space-y-1">
-          <div className="text-sm font-bold text-amber-900">{t("chat.tipsTitle")}</div>
-          <ul className="text-xs text-amber-800 space-y-1 list-disc pl-4">
+          <div className="text-sm font-bold text-amber-ink">{t("chat.tipsTitle")}</div>
+          <ul className="text-xs text-amber-ink space-y-1 list-disc pl-4">
             <li>{t("chat.tipsPaste")}</li>
             <li>{t("chat.tipsDrag")}</li>
             <li>{t("chat.tipsVision")}</li>

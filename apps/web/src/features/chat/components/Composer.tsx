@@ -41,21 +41,21 @@ export const Composer = React.memo(function Composer({
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
-    <div className="p-3 border-t border-slate-200 bg-white shrink-0">
+    <div className="p-3 border-t border-line bg-surface shrink-0">
       {pendingAttachments.length > 0 && (
-        <div className="pb-2 mb-2 border-b border-slate-100 flex flex-wrap gap-2">
+        <div className="pb-2 mb-2 border-b border-linesoft flex flex-wrap gap-2">
           {pendingAttachments.map((a) => (
-            <div key={a.id} className="relative group flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-xs font-medium">
-              {a.type === "image" ? <ImageIcon className="w-3.5 h-3.5 text-blue-600" /> : <FileText className="w-3.5 h-3.5 text-amber-600" />}
+            <div key={a.id} className="relative group flex items-center gap-2 px-2.5 py-1.5 rounded-full bg-muted border border-line text-xs font-medium">
+              {a.type === "image" ? <ImageIcon className="w-3.5 h-3.5 text-blue-ink" /> : <FileText className="w-3.5 h-3.5 text-amber-ink" />}
               <span className="truncate max-w-[120px]">{a.name}</span>
-              <span className="text-[11px] text-slate-500">{(a.size / 1024).toFixed(0)}KB</span>
-              {a.type === "image" && a.preview && <img src={a.preview} alt={a.name} className="w-6 h-6 rounded object-cover border border-slate-200" />}
-              <button aria-label={`Remove ${a.name}`} onClick={() => onRemoveAttachment(a.id)} className="p-1 rounded-full hover:bg-slate-200">
+              <span className="text-[11px] text-mutedtxt">{(a.size / 1024).toFixed(0)}KB</span>
+              {a.type === "image" && a.preview && <img src={a.preview} alt={a.name} className="w-6 h-6 rounded object-cover border border-line" />}
+              <button aria-label={`Remove ${a.name}`} onClick={() => onRemoveAttachment(a.id)} className="p-1 rounded-full hover:bg-strong">
                 <X className="w-3 h-3" />
               </button>
             </div>
           ))}
-          <button onClick={onClearAttachments} className="ml-auto text-xs text-slate-500 hover:text-slate-700 inline-flex items-center gap-1">
+          <button onClick={onClearAttachments} className="ml-auto text-xs text-mutedtxt hover:text-body inline-flex items-center gap-1">
             <Trash2 className="w-3 h-3" /> {t("chat.clear")}
           </button>
         </div>
@@ -65,7 +65,7 @@ export const Composer = React.memo(function Composer({
           <button
             aria-label="Upload image"
             onClick={() => imageInputRef.current?.click()}
-            className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700"
+            className="p-2.5 rounded-xl bg-muted hover:bg-strong border border-line text-body"
             title="Upload image"
           >
             <ImageIcon className="w-4 h-4" />
@@ -73,7 +73,7 @@ export const Composer = React.memo(function Composer({
           <button
             aria-label="Upload document"
             onClick={() => fileInputRef.current?.click()}
-            className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700"
+            className="p-2.5 rounded-xl bg-muted hover:bg-strong border border-line text-body"
             title="Upload md/txt"
           >
             <Paperclip className="w-4 h-4" />
@@ -91,7 +91,7 @@ export const Composer = React.memo(function Composer({
             onPaste={onPaste}
             placeholder={t("chat.placeholder")}
             rows={1}
-            className="w-full min-h-[44px] max-h-[120px] px-3 py-3 pr-10 rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 resize-none text-sm leading-6 placeholder:text-slate-400"
+            className="w-full min-h-[44px] max-h-[120px] px-3 py-3 pr-10 rounded-xl border border-line bg-raised focus:bg-surface focus:outline-none focus:ring-2 focus:ring-heading/10 resize-none text-sm leading-6 placeholder:text-slate-400"
             style={{ height: "44px" }}
             onInput={(e) => {
               const ta = e.target as HTMLTextAreaElement;
@@ -110,13 +110,13 @@ export const Composer = React.memo(function Composer({
             aria-label="Send message"
             onClick={onSend}
             disabled={!input.trim() && pendingAttachments.length === 0}
-            className="p-3 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed text-white shadow-sm transition-colors"
+            className="p-3 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-strong disabled:cursor-not-allowed text-white shadow-sm transition-colors"
           >
             <Send className="w-5 h-5" />
           </button>
         )}
       </div>
-      <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500">
+      <div className="mt-2 flex items-center gap-2 text-[11px] text-mutedtxt">
         <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
         <span className="truncate">{t("chat.gatewayFallback")}</span>
         <span className="ml-auto hidden sm:inline shrink-0">Context {totalPromptTokens.toLocaleString()} / {effectiveContext.toLocaleString()} tokens</span>

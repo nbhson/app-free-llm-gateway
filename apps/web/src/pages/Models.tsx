@@ -7,11 +7,11 @@ import { FAVORITES_EVENT, FAVORITES_KEY } from "../lib/favorites.ts";
 function mk() { return localStorage.getItem("masterKey") || "fgk-master-dev-key"; }
 
 function badge(status?: string) {
-  if (status === "verified_free") return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">verified</span>;
-  if (status === "deprecated") return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">deprecated</span>;
-  if (status === "unverified_no_key") return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">no-key</span>;
-  if (status === "public" || status === "alias") return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">{status}</span>;
-  return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-600 border border-slate-200">{status || "unverified"}</span>;
+  if (status === "verified_free") return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-soft text-emerald-ink border border-emerald-line">verified</span>;
+  if (status === "deprecated") return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-soft text-rose-ink border border-rose-line">deprecated</span>;
+  if (status === "unverified_no_key") return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-soft text-amber-ink border border-amber-line">no-key</span>;
+  if (status === "public" || status === "alias") return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-soft text-blue-ink border border-blue-line">{status}</span>;
+  return <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-muted text-secondary border border-line">{status || "unverified"}</span>;
 }
 
 function parseLimit(limit?: unknown): string { return typeof limit === "string" && limit ? limit : "-"; }
@@ -351,23 +351,23 @@ export default function Models() {
   return (
     <div className="space-y-4 pb-12">
       <div className="flex items-baseline gap-3 flex-wrap">
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">{t("models.title")} <span className="text-sm font-mono font-semibold bg-white border border-slate-200 px-2.5 py-0.5 rounded-full">{visible.length}</span></h1>
-        <span className="text-xs text-slate-500 font-mono">{visible.length} models</span>
-        {syncStatus?.lastAdded?.length ? <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">NEW provider: {syncStatus.lastAdded.join(", ")}</span> : null}
-        {syncStatus?.bootSync?.status === "running" && <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-1 rounded-full"><RefreshCw className="w-3 h-3 animate-spin" /> auto syncing…</span>}
+        <h1 className="text-2xl font-bold tracking-tight text-heading">{t("models.title")} <span className="text-sm font-mono font-semibold bg-surface border border-line px-2.5 py-0.5 rounded-full">{visible.length}</span></h1>
+        <span className="text-xs text-mutedtxt font-mono">{visible.length} models</span>
+        {syncStatus?.lastAdded?.length ? <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-ink bg-emerald-soft border border-emerald-line px-2 py-0.5 rounded-full">NEW provider: {syncStatus.lastAdded.join(", ")}</span> : null}
+        {syncStatus?.bootSync?.status === "running" && <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-ink bg-blue-soft border border-blue-line px-2 py-1 rounded-full"><RefreshCw className="w-3 h-3 animate-spin" /> auto syncing…</span>}
         {syncStatus?.liveModels && <span className="text-[11px] font-mono text-slate-400">live: {syncStatus.liveModels.total ?? 0} • {syncStatus.liveModels.generated_at ? new Date(syncStatus.liveModels.generated_at).toLocaleTimeString() : ""}</span>}
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs p-4 space-y-3">
+      <div className="bg-surface rounded-xl border border-line/90 shadow-2xs p-4 space-y-3">
         <div className="flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[180px] max-w-[260px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input placeholder="Filter by ID..." value={q} onChange={(e) => setQ(e.target.value)} className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 placeholder:text-slate-400" />
-            {q && <button onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 rounded-full"><X className="w-3 h-3 text-slate-400" /></button>}
+            <input placeholder="Filter by ID..." value={q} onChange={(e) => setQ(e.target.value)} className="w-full pl-9 pr-8 py-2 bg-raised border border-line rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-heading/10 placeholder:text-slate-400" />
+            {q && <button onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-strong rounded-full"><X className="w-3 h-3 text-slate-400" /></button>}
           </div>
           <div className="relative flex-1 min-w-[160px] max-w-[220px]">
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-            <select value={provider} onChange={(e) => setProvider(e.target.value)} className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-slate-900/10 appearance-none">
+            <select value={provider} onChange={(e) => setProvider(e.target.value)} className="w-full pl-9 pr-8 py-2 bg-raised border border-line rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-heading/10 appearance-none">
               <option value="">All providers</option>
               {allProviders.map((p) => (
                 <option key={p.id} value={p.id} disabled={!p.hasRealKey} title={!p.hasRealKey ? "no key" : "has key"}>
@@ -375,100 +375,100 @@ export default function Models() {
                 </option>
               ))}
             </select>
-            {provider && <button onClick={() => setProvider("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-200 rounded-full"><X className="w-3 h-3 text-slate-400" /></button>}
+            {provider && <button onClick={() => setProvider("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-strong rounded-full"><X className="w-3 h-3 text-slate-400" /></button>}
           </div>
-          <select value={verified} onChange={(e) => setVerified(e.target.value)} className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold">
+          <select value={verified} onChange={(e) => setVerified(e.target.value)} className="px-3 py-2 bg-surface border border-line rounded-lg text-xs font-semibold">
             <option value="all">{t("models.verified_all")} ({total})</option>
             <option value="free">{t("models.verified_free")}</option>
             <option value="deprecated">{t("models.verified_deprecated")}</option>
             <option value="unverified">{t("models.verified_unverified")}</option>
           </select>
           <div className="relative">
-            <button type="button" onClick={() => setFilterOpen(!filterOpen)} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50 shadow-2xs">
-              <Filter className="w-3.5 h-3.5 text-slate-500" /> Filters {(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0) > 0 && <span className="bg-slate-900 text-white text-[10px] px-1.5 py-0.5 rounded-full">{(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0)}</span>} <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${filterOpen ? "rotate-180" : ""}`} />
+            <button type="button" onClick={() => setFilterOpen(!filterOpen)} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-surface border border-line hover:bg-raised shadow-2xs">
+              <Filter className="w-3.5 h-3.5 text-mutedtxt" /> Filters {(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0) > 0 && <span className="bg-slate-900 text-white text-[10px] px-1.5 py-0.5 rounded-full">{(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0)}</span>} <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${filterOpen ? "rotate-180" : ""}`} />
             </button>
             {filterOpen && (
-              <div className="absolute left-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-slate-200 py-2 z-20">
-                <label className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer">
-                  <input type="checkbox" checked={hasKeyOnly} onChange={(e) => setHasKeyOnly(e.target.checked)} className="w-4 h-4 rounded border-slate-300 accent-emerald-600" />
-                  <span className="text-xs font-semibold text-slate-700 flex-1">{t("models.hasKey")}</span>
-                  {hasKeyOnly && <Check className="w-3.5 h-3.5 text-emerald-600" />}
+              <div className="absolute left-0 mt-2 w-64 bg-surface rounded-xl shadow-lg border border-line py-2 z-20">
+                <label className="flex items-center gap-3 px-3 py-2 hover:bg-raised cursor-pointer">
+                  <input type="checkbox" checked={hasKeyOnly} onChange={(e) => setHasKeyOnly(e.target.checked)} className="w-4 h-4 rounded border-linestrong accent-emerald-600" />
+                  <span className="text-xs font-semibold text-body flex-1">{t("models.hasKey")}</span>
+                  {hasKeyOnly && <Check className="w-3.5 h-3.5 text-emerald-ink" />}
                 </label>
-                <label className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer">
-                  <input type="checkbox" checked={hide404} onChange={(e) => setHide404(e.target.checked)} className="w-4 h-4 rounded border-slate-300 accent-rose-600" />
-                  <span className="text-xs font-semibold text-slate-700 flex-1">{t("models.hide404")}</span>
-                  {hide404 && <Check className="w-3.5 h-3.5 text-rose-600" />}
+                <label className="flex items-center gap-3 px-3 py-2 hover:bg-raised cursor-pointer">
+                  <input type="checkbox" checked={hide404} onChange={(e) => setHide404(e.target.checked)} className="w-4 h-4 rounded border-linestrong accent-rose-600" />
+                  <span className="text-xs font-semibold text-body flex-1">{t("models.hide404")}</span>
+                  {hide404 && <Check className="w-3.5 h-3.5 text-rose-ink" />}
                 </label>
-                <label className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer">
-                  <input type="checkbox" checked={hidePayment} onChange={(e) => setHidePayment(e.target.checked)} className="w-4 h-4 rounded border-slate-300 accent-amber-600" />
-                  <span className="text-xs font-semibold text-slate-700 flex-1">{t("models.hide_payment")}</span>
-                  {hidePayment && <Check className="w-3.5 h-3.5 text-amber-600" />}
+                <label className="flex items-center gap-3 px-3 py-2 hover:bg-raised cursor-pointer">
+                  <input type="checkbox" checked={hidePayment} onChange={(e) => setHidePayment(e.target.checked)} className="w-4 h-4 rounded border-linestrong accent-amber-600" />
+                  <span className="text-xs font-semibold text-body flex-1">{t("models.hide_payment")}</span>
+                  {hidePayment && <Check className="w-3.5 h-3.5 text-amber-ink" />}
                 </label>
-                <label className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer">
-                  <input type="checkbox" checked={hideInvalid} onChange={(e) => setHideInvalid(e.target.checked)} className="w-4 h-4 rounded border-slate-300 accent-slate-600" />
-                  <span className="text-xs font-semibold text-slate-700 flex-1">{t("models.hide_invalid")}</span>
-                  {hideInvalid && <Check className="w-3.5 h-3.5 text-slate-600" />}
+                <label className="flex items-center gap-3 px-3 py-2 hover:bg-raised cursor-pointer">
+                  <input type="checkbox" checked={hideInvalid} onChange={(e) => setHideInvalid(e.target.checked)} className="w-4 h-4 rounded border-linestrong accent-slate-600" />
+                  <span className="text-xs font-semibold text-body flex-1">{t("models.hide_invalid")}</span>
+                  {hideInvalid && <Check className="w-3.5 h-3.5 text-secondary" />}
                 </label>
-                <label className="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer">
-                  <input type="checkbox" checked={favOnly} onChange={(e) => setFavOnly(e.target.checked)} className="w-4 h-4 rounded border-slate-300 accent-amber-500" />
-                  <span className="text-xs font-semibold text-slate-700 flex-1 flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-500" />{t("models.favorites_only")}</span>
-                  {favOnly && <Check className="w-3.5 h-3.5 text-amber-600" />}
+                <label className="flex items-center gap-3 px-3 py-2 hover:bg-raised cursor-pointer">
+                  <input type="checkbox" checked={favOnly} onChange={(e) => setFavOnly(e.target.checked)} className="w-4 h-4 rounded border-linestrong accent-amber-500" />
+                  <span className="text-xs font-semibold text-body flex-1 flex items-center gap-1"><Star className="w-3 h-3 fill-amber-400 text-amber-500" />{t("models.favorites_only")}</span>
+                  {favOnly && <Check className="w-3.5 h-3.5 text-amber-ink" />}
                 </label>
-                <div className="border-t border-slate-100 mt-2 pt-2 px-3 flex justify-between items-center">
+                <div className="border-t border-linesoft mt-2 pt-2 px-3 flex justify-between items-center">
                   <span className="text-[11px] text-slate-400">{(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0)} active</span>
-                  <button onClick={handleResetFilters} className="text-[11px] font-semibold text-slate-600 hover:text-slate-900">Reset default</button>
+                  <button onClick={handleResetFilters} className="text-[11px] font-semibold text-secondary hover:text-heading">Reset default</button>
                 </div>
               </div>
             )}
           </div>
           <div className="ml-auto flex flex-wrap gap-2 items-center">
             <div className="relative group" title={!hasFilter ? t("models.check_live_tooltip") : ""}>
-              <button onClick={checkSelected} disabled={checking || selected.size === 0 || !hasFilter} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold shadow-xs ${!hasFilter ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed" : selected.size > 0 ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-white text-slate-400 border border-slate-200"}`}>{checking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}{checking ? t("models.checking") : `${t("models.check_live")} (${selected.size})`}</button>
+              <button onClick={checkSelected} disabled={checking || selected.size === 0 || !hasFilter} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold shadow-xs ${!hasFilter ? "bg-muted text-slate-400 border border-line cursor-not-allowed" : selected.size > 0 ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-surface text-slate-400 border border-line"}`}>{checking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}{checking ? t("models.checking") : `${t("models.check_live")} (${selected.size})`}</button>
               {!hasFilter && <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover:block bg-slate-900 text-white text-[11px] px-2 py-1 rounded whitespace-nowrap z-10">{t("models.check_live_tooltip")}</span>}
             </div>
             <div className="relative group">
-              <button onClick={syncLive} disabled={syncing} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold ${syncing ? "bg-slate-100 text-slate-500 border border-slate-200" : "bg-emerald-600 text-white hover:bg-emerald-700"}`}>{syncing ? t("models.syncing") : t("models.sync")}</button>
+              <button onClick={syncLive} disabled={syncing} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold ${syncing ? "bg-muted text-mutedtxt border border-line" : "bg-emerald-600 text-white hover:bg-emerald-700"}`}>{syncing ? t("models.syncing") : t("models.sync")}</button>
               <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover:block bg-slate-900 text-white text-[11px] px-2 py-1 rounded whitespace-nowrap z-10 max-w-[220px] text-center">{t("models.sync_hint")}</span>
             </div>
-            <button onClick={handleRefresh} disabled={refreshing} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-white border border-slate-200 hover:bg-slate-50 disabled:opacity-60">{refreshing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} {refreshing ? t("models.syncing") : t("models.refresh")}</button>
+            <button onClick={handleRefresh} disabled={refreshing} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-surface border border-line hover:bg-raised disabled:opacity-60">{refreshing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} {refreshing ? t("models.syncing") : t("models.refresh")}</button>
           </div>
         </div>
         {(qDebounced || providerDebounced || verified !== "all" || hasKeyOnly || hide404 || hidePayment || hideInvalid || favOnly) && (
-          <div className="flex flex-wrap gap-2 items-center text-xs text-slate-600 border-t border-slate-100 pt-3">
+          <div className="flex flex-wrap gap-2 items-center text-xs text-secondary border-t border-linesoft pt-3">
             <span className="font-semibold">Filters:</span>
-            {qDebounced && <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full">id: {qDebounced}<button onClick={() => setQ("")} className="p-0.5 hover:bg-slate-200 rounded-full"><X className="w-3 h-3" /></button></span>}
-            {providerDebounced && <span className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 text-blue-700 px-2.5 py-1 rounded-full font-semibold">provider: {providerDebounced}<button onClick={() => setProvider("")} className="p-0.5 hover:bg-blue-100 rounded-full"><X className="w-3 h-3" /></button></span>}
-            {verified !== "all" && <span className="inline-flex items-center gap-1 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-full">{verified}<button onClick={() => setVerified("all")} className="p-0.5 hover:bg-slate-200 rounded-full"><X className="w-3 h-3" /></button></span>}
-            {hasKeyOnly && <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-2.5 py-1 rounded-full font-semibold">{t("models.hasKey")}</span>}
-            {hide404 && <span className="bg-rose-50 border border-rose-200 text-rose-700 px-2.5 py-1 rounded-full font-semibold">{t("models.hide404")}</span>}
-            {hidePayment && <span className="bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1 rounded-full font-semibold">{t("models.hide_payment")}</span>}
-            {hideInvalid && <span className="bg-slate-100 border border-slate-300 text-slate-700 px-2.5 py-1 rounded-full font-semibold">{t("models.hide_invalid")}</span>}
-            {favOnly && <span className="bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-1 rounded-full font-semibold flex items-center gap-1"><Star className="w-3 h-3 fill-amber-500 text-amber-500" />{t("models.favorites_only")} ({favorites.size})</span>}
+            {qDebounced && <span className="inline-flex items-center gap-1 bg-muted border border-line px-2.5 py-1 rounded-full">id: {qDebounced}<button onClick={() => setQ("")} className="p-0.5 hover:bg-strong rounded-full"><X className="w-3 h-3" /></button></span>}
+            {providerDebounced && <span className="inline-flex items-center gap-1 bg-blue-soft border border-blue-line text-blue-ink px-2.5 py-1 rounded-full font-semibold">provider: {providerDebounced}<button onClick={() => setProvider("")} className="p-0.5 hover:bg-blue-wash rounded-full"><X className="w-3 h-3" /></button></span>}
+            {verified !== "all" && <span className="inline-flex items-center gap-1 bg-muted border border-line px-2.5 py-1 rounded-full">{verified}<button onClick={() => setVerified("all")} className="p-0.5 hover:bg-strong rounded-full"><X className="w-3 h-3" /></button></span>}
+            {hasKeyOnly && <span className="bg-emerald-soft border border-emerald-line text-emerald-ink px-2.5 py-1 rounded-full font-semibold">{t("models.hasKey")}</span>}
+            {hide404 && <span className="bg-rose-soft border border-rose-line text-rose-ink px-2.5 py-1 rounded-full font-semibold">{t("models.hide404")}</span>}
+            {hidePayment && <span className="bg-amber-soft border border-amber-line text-amber-ink px-2.5 py-1 rounded-full font-semibold">{t("models.hide_payment")}</span>}
+            {hideInvalid && <span className="bg-muted border border-linestrong text-body px-2.5 py-1 rounded-full font-semibold">{t("models.hide_invalid")}</span>}
+            {favOnly && <span className="bg-amber-soft border border-amber-line text-amber-ink px-2.5 py-1 rounded-full font-semibold flex items-center gap-1"><Star className="w-3 h-3 fill-amber-500 text-amber-500" />{t("models.favorites_only")} ({favorites.size})</span>}
             <span className="ml-auto text-slate-400 font-mono">{selected.size} selected • {visible.length} visible</span>
           </div>
         )}
       </div>
 
-      <div className="flex items-center gap-2 text-xs text-slate-500"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />{t("models.verified_desc")}</div>
+      <div className="flex items-center gap-2 text-xs text-mutedtxt"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse inline-block" />{t("models.verified_desc")}</div>
 
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-2xs overflow-hidden">
+      <div className="bg-surface rounded-xl border border-line/90 shadow-2xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200/80 uppercase tracking-wider text-[11px]">
+            <thead className="bg-raised text-secondary font-bold border-b border-line/80 uppercase tracking-wider text-[11px]">
               <tr>
-                <th className="px-3 py-3 text-center"><input type="checkbox" checked={allVisibleSelected} onChange={toggleAll} disabled={visibleEnabled.length === 0} className="w-4 h-4 accent-slate-900" /></th>
+                <th className="px-3 py-3 text-center"><input type="checkbox" checked={allVisibleSelected} onChange={toggleAll} disabled={visibleEnabled.length === 0} className="w-4 h-4 accent-heading" /></th>
                 <th className="px-2 py-3 text-center" title={t("models.favorite")}>{t("models.th_fav")}</th>
-                <th className="px-3 py-3 cursor-pointer select-none hover:text-slate-900" onClick={() => toggleSort("id")}>{t("models.th_id")} {arrow("id")}</th>
-                <th className="px-3 py-3 cursor-pointer select-none hover:text-slate-900" onClick={() => toggleSort("provider")}>{t("models.th_provider")} {arrow("provider")}</th>
-                <th className="px-3 py-3 cursor-pointer select-none hover:text-slate-900" onClick={() => toggleSort("context")}>{t("models.th_context")} {arrow("context")}</th>
-                <th className="px-3 py-3 cursor-pointer select-none hover:text-slate-900" onClick={() => toggleSort("score")}>{t("models.th_score")} {arrow("score")}</th>
-                <th className="px-3 py-3 cursor-pointer select-none hover:text-slate-900" onClick={() => toggleSort("status")}>{t("models.th_status")} {arrow("status")}</th>
+                <th className="px-3 py-3 cursor-pointer select-none hover:text-heading" onClick={() => toggleSort("id")}>{t("models.th_id")} {arrow("id")}</th>
+                <th className="px-3 py-3 cursor-pointer select-none hover:text-heading" onClick={() => toggleSort("provider")}>{t("models.th_provider")} {arrow("provider")}</th>
+                <th className="px-3 py-3 cursor-pointer select-none hover:text-heading" onClick={() => toggleSort("context")}>{t("models.th_context")} {arrow("context")}</th>
+                <th className="px-3 py-3 cursor-pointer select-none hover:text-heading" onClick={() => toggleSort("score")}>{t("models.th_score")} {arrow("score")}</th>
+                <th className="px-3 py-3 cursor-pointer select-none hover:text-heading" onClick={() => toggleSort("status")}>{t("models.th_status")} {arrow("status")}</th>
                 <th className="px-3 py-3">{t("models.th_live")}</th>
-                <th className="px-3 py-3 cursor-pointer select-none hover:text-slate-900" onClick={() => toggleSort("used")}>{t("models.th_used")} {arrow("used")}</th>
+                <th className="px-3 py-3 cursor-pointer select-none hover:text-heading" onClick={() => toggleSort("used")}>{t("models.th_used")} {arrow("used")}</th>
                 <th className="px-3 py-3 text-center">{t("models.check")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-divsoft">
               {visible.map((m, idx) => {
                 const h = live[m.id] || m.health || (m.persisted_404 ? { http_status: 404, error: "model_not_found" } : null);
                 const used = usage[m.id] || 0;
@@ -480,18 +480,18 @@ export default function Models() {
                 const isInvalid = isInvalidId(m);
                 const fav = favorites.has(m.id);
                 return (
-                  <tr key={`${m.id}::${idx}`} className={`${disabled ? `${isPayment ? "bg-amber-50/60 opacity-60 line-through decoration-amber-400" : isInvalid ? "bg-slate-100/60 opacity-60 line-through decoration-slate-400" : "bg-rose-50/60 opacity-60 line-through decoration-rose-400"}` : fav ? "bg-amber-50/30" : selected.has(m.id) ? "bg-blue-50/40" : "hover:bg-slate-50/80"} transition-colors`} title={isInvalid ? "Invalid model ID" : isPayment ? "Out of credits / payment required" : is404 || isGone ? "404/410" : fav ? t("models.favorite") : ""}>
-                    <td className="px-3 py-3 text-center"><input type="checkbox" checked={selected.has(m.id)} onChange={() => toggle(m.id)} disabled={isInvalid} className="w-4 h-4 accent-slate-900 disabled:opacity-30 disabled:cursor-not-allowed" /></td>
-                    <td className="px-2 py-3 text-center"><button onClick={() => toggleFav(m.id)} title={fav ? t("models.remove_fav") : t("models.add_fav")} className={`p-1 rounded-md transition-colors ${fav ? "text-amber-500 hover:bg-amber-100" : "text-slate-300 hover:text-amber-400 hover:bg-amber-50"}`}><Star className={`w-4 h-4 ${fav ? "fill-amber-400 text-amber-500" : ""}`} /></button></td>
-                    <td className="px-3 py-3"><div className="inline-flex items-center gap-1.5 group/id"><code className={`text-xs font-mono px-2 py-0.5 rounded border font-semibold ${disabled ? (isInvalid ? "bg-slate-200 text-slate-600 border-slate-300 line-through" : isPayment ? "bg-amber-100 text-amber-700 border-amber-200 line-through" : "bg-rose-100 text-rose-700 border-rose-200 line-through") : fav ? "bg-amber-50 text-amber-800 border-amber-200" : "bg-slate-100 text-slate-800 border-slate-200"}`}>{m.id}</code><button onClick={() => { navigator.clipboard.writeText(m.id).catch(()=>{}); setCopiedId(m.id); setTimeout(()=> setCopiedId(null), 1500); }} className="p-1 rounded-md hover:bg-slate-200 opacity-70 hover:opacity-100 transition-colors" title="Copy ID">{copiedId === m.id ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-slate-400 group-hover/id:text-slate-600" />}</button></div></td>
-                    <td className="px-3 py-3 font-medium text-slate-700">{m.owned_by || m.provider}</td>
-                    <td className="px-3 py-3 font-mono text-slate-600">{m.context_length ? (m.context_length >= 1000000 ? (m.context_length/1000000)+"M" : m.context_length >= 1000 ? Math.round(m.context_length/1000)+"K" : m.context_length) : "-"}</td>
+                  <tr key={`${m.id}::${idx}`} className={`${disabled ? `${isPayment ? "bg-amber-soft/60 opacity-60 line-through decoration-amber-400" : isInvalid ? "bg-muted/60 opacity-60 line-through decoration-slate-400" : "bg-rose-soft/60 opacity-60 line-through decoration-rose-400"}` : fav ? "bg-amber-soft/30" : selected.has(m.id) ? "bg-blue-soft/40" : "hover:bg-raised/80"} transition-colors`} title={isInvalid ? "Invalid model ID" : isPayment ? "Out of credits / payment required" : is404 || isGone ? "404/410" : fav ? t("models.favorite") : ""}>
+                    <td className="px-3 py-3 text-center"><input type="checkbox" checked={selected.has(m.id)} onChange={() => toggle(m.id)} disabled={isInvalid} className="w-4 h-4 accent-heading disabled:opacity-30 disabled:cursor-not-allowed" /></td>
+                    <td className="px-2 py-3 text-center"><button onClick={() => toggleFav(m.id)} title={fav ? t("models.remove_fav") : t("models.add_fav")} className={`p-1 rounded-md transition-colors ${fav ? "text-amber-500 hover:bg-amber-wash" : "text-slate-300 hover:text-amber-400 hover:bg-amber-soft"}`}><Star className={`w-4 h-4 ${fav ? "fill-amber-400 text-amber-500" : ""}`} /></button></td>
+                    <td className="px-3 py-3"><div className="inline-flex items-center gap-1.5 group/id"><code className={`text-xs font-mono px-2 py-0.5 rounded border font-semibold ${disabled ? (isInvalid ? "bg-strong text-secondary border-linestrong line-through" : isPayment ? "bg-amber-wash text-amber-ink border-amber-line line-through" : "bg-rose-wash text-rose-ink border-rose-line line-through") : fav ? "bg-amber-soft text-amber-ink border-amber-line" : "bg-muted text-title border-line"}`}>{m.id}</code><button onClick={() => { navigator.clipboard.writeText(m.id).catch(()=>{}); setCopiedId(m.id); setTimeout(()=> setCopiedId(null), 1500); }} className="p-1 rounded-md hover:bg-strong opacity-70 hover:opacity-100 transition-colors" title="Copy ID">{copiedId === m.id ? <Check className="w-3.5 h-3.5 text-emerald-ink" /> : <Copy className="w-3.5 h-3.5 text-slate-400 group-hover/id:text-secondary" />}</button></div></td>
+                    <td className="px-3 py-3 font-medium text-body">{m.owned_by || m.provider}</td>
+                    <td className="px-3 py-3 font-mono text-secondary">{m.context_length ? (m.context_length >= 1000000 ? (m.context_length/1000000)+"M" : m.context_length >= 1000 ? Math.round(m.context_length/1000)+"K" : m.context_length) : "-"}</td>
                     <td className="px-3 py-3 font-mono font-bold">{m.score ?? "-"}</td>
                     <td className="px-3 py-3">{badge(m.live_status)}</td>
-                    <td className="px-3 py-3 text-xs">{h ? (isPayment ? <span className="inline-flex items-center gap-1 text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full font-semibold text-[11px]">out of credits {h.http_status ? ` ${h.http_status}` : ""}</span> : h.status === "usable" ? <span className="inline-flex items-center gap-1 text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-semibold text-[11px]"><Check className="w-3 h-3" /> usable {h.latency_ms}ms</span> : h.status === "no-key" ? <span className="text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full text-[11px] font-semibold">no-key</span> : <span className="text-rose-700 font-semibold">{h.status}{h.http_status ? ` ${h.http_status}` : ""}</span>) : <span className="text-slate-400">—</span>}</td>
-                    <td className="px-3 py-3 font-mono text-slate-600"><span className={used>0 ? "font-bold text-slate-800" : ""}>{used}</span> / {parseLimit(m.limit)}</td>
+                    <td className="px-3 py-3 text-xs">{h ? (isPayment ? <span className="inline-flex items-center gap-1 text-amber-ink bg-amber-soft border border-amber-line px-2 py-0.5 rounded-full font-semibold text-[11px]">out of credits {h.http_status ? ` ${h.http_status}` : ""}</span> : h.status === "usable" ? <span className="inline-flex items-center gap-1 text-emerald-ink bg-emerald-soft border border-emerald-line px-2 py-0.5 rounded-full font-semibold text-[11px]"><Check className="w-3 h-3" /> usable {h.latency_ms}ms</span> : h.status === "no-key" ? <span className="text-amber-ink bg-amber-soft border border-amber-line px-2 py-0.5 rounded-full text-[11px] font-semibold">no-key</span> : <span className="text-rose-ink font-semibold">{h.status}{h.http_status ? ` ${h.http_status}` : ""}</span>) : <span className="text-slate-400">—</span>}</td>
+                    <td className="px-3 py-3 font-mono text-secondary"><span className={used>0 ? "font-bold text-title" : ""}>{used}</span> / {parseLimit(m.limit)}</td>
                     <td className="px-3 py-3 text-center">
-                      <button onClick={() => checkSingle(m.id)} disabled={isInvalid || checkingOne === m.id} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold border ${isInvalid ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-white text-blue-700 border-blue-200 hover:bg-blue-50"}`} title={isInvalid ? "Invalid model ID — disabled" : t("models.check")}>
+                      <button onClick={() => checkSingle(m.id)} disabled={isInvalid || checkingOne === m.id} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold border ${isInvalid ? "bg-muted text-slate-400 border-line cursor-not-allowed" : "bg-surface text-blue-ink border-blue-line hover:bg-blue-soft"}`} title={isInvalid ? "Invalid model ID — disabled" : t("models.check")}>
                         {checkingOne === m.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />} {t("models.check")}
                       </button>
                     </td>
@@ -502,9 +502,9 @@ export default function Models() {
           </table>
         </div>
         {visible.length === 0 && <div className="p-8 text-center text-sm text-slate-400">{favOnly && favorites.size === 0 ? t("chat.no_favorites") : t("models.no_match")}</div>}
-        <div className="px-5 py-3 bg-slate-50/70 border-t border-slate-200 text-xs font-mono text-slate-600 flex items-center justify-between">
+        <div className="px-5 py-3 bg-raised/70 border-t border-line text-xs font-mono text-secondary flex items-center justify-between">
           <span>{visible.length} models • {selected.size} selected{favorites.size > 0 ? ` • ★ ${favorites.size} favorites` : ""}</span>
-          {favorites.size > 0 && <span className="hidden sm:inline text-[11px] text-amber-600">{t("models.favorites_tip")}</span>}
+          {favorites.size > 0 && <span className="hidden sm:inline text-[11px] text-amber-ink">{t("models.favorites_tip")}</span>}
         </div>
       </div>
     </div>
