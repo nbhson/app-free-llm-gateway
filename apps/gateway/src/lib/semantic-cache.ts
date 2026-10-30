@@ -162,6 +162,7 @@ export class SemanticCache {
           const val = await r.get(k);
           if (val !== null) {
             this.hits++;
+            this.scheduleStatsPersist();
             // promote legacy hit to composite key on next set (no migration overhead now)
             return val;
           }
@@ -189,27 +190,38 @@ export class SemanticCache {
       try {
         const { embedWithFallback, cosineSimilarity } = await import("./embeddings.js");
         // Add overall timeout 2000ms for embedding (harness 01: avoid 12s sequential fallback)
+        let embTimer: ReturnType<typeof setTimeout> | undefined;
         const qEmb = await Promise.race([
           embedWithFallback(query),
-          new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
-        ]);
+          new Promise<null>((resolve) => {
+            embTimer = setTimeout(() => resolve(null), 2000);
+            embTimer.unref?.();
+          }),
+        ]).finally(() => { if (embTimer) clearTimeout(embTimer); });
         if (qEmb) {
           let best: { key: string; entry: CacheEntry; score: number } | null = null;
           let scanned = 0;
           const maxScan = this.scanCap;
           // LRU scan: most-recent-first (Map is insertion-order oldest-first, so reverse)
           const entries = Array.from(this.mem.entries()).reverse() as Array<[string, CacheEntry]>;
+          // Tenant isolation for the cosine scan: composite keys embed the
+          // tenant segment (`semantic:${model}:${vk}:${hash}`) while legacy keys
+          // are anonymous-only. A caller without vkId ("anon") must never read
+          // a tenant's entries, and a tenant-scoped caller must never read
+          // anonymous entries — matching the strict exact-hash path.
+          const tenantVk = opts?.vkId || "anon";
+          const modelPrefix = `semantic:${model}:`;
           for (const [memKey, memEntry] of entries) {
             if (this.isExpired(memEntry) || !memEntry.embedding) continue;
-            // tenant/model isolation: composite keys contain vk, legacy keys contain model prefix
-            if (compositeKey) {
-              if (!memKey.startsWith(`semantic:${model}:`)) continue;
-              // strict tenant isolation — skip cross-tenant to prevent poisoning
-              if (opts?.vkId && memKey.includes(`:${opts.vkId}:`) === false) {
-                continue;
-              }
-            } else {
-              if (!memKey.startsWith(`semantic:${model}:`)) continue;
+            if (!memKey.startsWith(modelPrefix)) continue;
+            const rest = memKey.slice(modelPrefix.length);
+            if (rest.includes(":")) {
+              // composite entry — the segment before the final hash is the tenant
+              const vkSeg = rest.slice(0, rest.lastIndexOf(":"));
+              if (vkSeg !== tenantVk) continue;
+            } else if (opts?.vkId) {
+              // legacy anonymous entry — skip for tenant-scoped callers
+              continue;
             }
             const sim = cosineSimilarity(qEmb.embedding, memEntry.embedding);
             if (sim >= config.semanticCacheThreshold && (!best || sim > best.score)) {
@@ -259,29 +271,34 @@ export class SemanticCache {
     }
 
     // background embedding: don't block caller (harness 01 RAG pipeline async store)
-    let embedding: number[] | undefined;
     if (config.semanticCacheEnabled) {
       this.mem.set(k, { value: response, expiresAt, embedding: undefined, createdAt: Date.now() }, { ttl: ttlSec * 1000 });
       // enrich embedding in background
       void (async () => {
         try {
           const { embedWithFallback } = await import("./embeddings.js");
+          let embTimer: ReturnType<typeof setTimeout> | undefined;
           const res = await Promise.race([
             embedWithFallback(opts.query),
-            new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000)),
-          ]);
+            new Promise<null>((resolve) => {
+              embTimer = setTimeout(() => resolve(null), 2000);
+              embTimer.unref?.();
+            }),
+          ]).finally(() => { if (embTimer) clearTimeout(embTimer); });
           if (res?.embedding) {
             const entry = this.mem.get(k);
             if (entry && !this.isExpired(entry)) {
               entry.embedding = res.embedding;
             }
           }
-        } catch { /* ignore */ }
+        } catch (err) {
+          logger.warn({ err: (err as Error).message }, "[semantic-cache] background embedding failed — entry stored without vector");
+        }
       })();
       return;
     }
 
-    this.mem.set(k, { value: response, expiresAt, embedding, createdAt: Date.now() }, { ttl: ttlSec * 1000 });
+    this.mem.set(k, { value: response, expiresAt, embedding: undefined, createdAt: Date.now() }, { ttl: ttlSec * 1000 });
   }
 
   // fire-and-forget helper for callers that should not await (harness 10 Automation)

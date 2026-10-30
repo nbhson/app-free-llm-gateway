@@ -231,7 +231,9 @@ async function handleResponses(c: ResponsesHandlerContext, body: ResponsesReques
       c.header("X-Verified", vStatus);
       const usage = out.usage || data.usage;
       const total = usage?.total_tokens ?? usage?.total_tokens_compat ?? estimated.total;
-      if (usage?.total_tokens || usage?.total_tokens_compat) recordUsage(pid, key, total);
+      // Executor already committed estimated tokens — top up positive delta only.
+      const usageDelta = ((usage?.total_tokens ?? usage?.total_tokens_compat) ?? 0) - estimated.total;
+      if ((usage?.total_tokens || usage?.total_tokens_compat) && usageDelta > 0) recordUsage(pid, key, usageDelta, model, { countRequest: false });
       addLog({
         id: `req-${Date.now()}`,
         timestamp: new Date().toISOString(),

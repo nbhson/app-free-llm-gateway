@@ -112,7 +112,10 @@ async function peekBodyError(res: Response): Promise<{ status: number; text: str
     }
     try { reader.cancel().catch(() => {}); } catch { /* ignore */ }
     return classifyPeekedBody(acc, isSse);
-  } catch {
+  } catch (err) {
+    // Peek is best-effort — a failure only means we cannot detect a hidden
+    // upstream error behind HTTP 200, but it must stay observable.
+    logger.debug({ err: (err as Error).message }, "[executor] peekBodyError failed");
     return null;
   }
 }
@@ -127,12 +130,6 @@ async function peekBodyError(res: Response): Promise<{ status: number; text: str
  *   Omit to skip quota entirely (embeddings/images/audio legacy behavior).
  * - shouldSkip: per-provider veto (e.g. deprecated model) returning a reason.
  */
-
-export interface ProviderAttempt {
-  providerId: string;
-  provider: Provider;
-  key: string;
-}
 
 export interface TryProvidersOpts {
   providerOrder: string[];
@@ -160,7 +157,7 @@ function normalizeProviderOrder(ids: string[]): string[] {
   return out;
 }
 
-function jitterDelay(baseMs: number, jitterMs: number): Promise<void> {
+function jitterDelay(jitterMs: number): Promise<void> {
   if (!jitterMs || jitterMs <= 0) return Promise.resolve();
   const d = Math.floor(Math.random() * jitterMs);
   return new Promise((r) => setTimeout(r, d));
@@ -263,7 +260,12 @@ async function attemptProvider(
         }, timeoutMs);
         timer.unref?.();
       });
-      const res = await Promise.race([opts.call({ providerId: pid, provider, key, signal: controller.signal }), timeout]);
+      const res = await Promise.race([opts.call({ providerId: pid, provider, key, signal: controller.signal }), timeout])
+        // Clear the timeout timer when the race settles — success, non-ok, or
+        // peeked-error all exit the try block without the catch's clearTimeout.
+        // Without this the timer fires later and aborts the controller mid-SSE
+        // body for streams longer than timeoutMs.
+        .finally(() => { if (timer) clearTimeout(timer); });
       const latency = Date.now() - t0;
       metrics.llmLatency(pid, model || "auto", latency);
       if (config.adaptiveRoutingEnabled) updateLatencyEMA(pid, latency);
@@ -338,7 +340,7 @@ async function tryProvidersParallel(opts: TryProvidersOpts, batchSize: number): 
     const batch = ordered.slice(i, i + batchSize);
     const controllers = new Map<string, AbortController>();
     const attempts = batch.map(async (pid): Promise<{ providerId: string; key: string; res: Response }> => {
-      if (opts.jitterMs) await jitterDelay(0, opts.jitterMs);
+      if (opts.jitterMs) await jitterDelay(opts.jitterMs);
       const out = await attemptProvider(opts, pid, (p, c) => controllers.set(p, c));
       if (!out.ok) throw out.error;
       return { providerId: pid, key: out.key, res: out.res };
@@ -369,7 +371,7 @@ export async function tryProviders(opts: TryProvidersOpts): Promise<TryProviders
   const ordered = orderedByPairHealth(normalizedOrder, opts.quotaModel);
   const errors: ProviderError[] = [];
   for (const pid of ordered) {
-    if (opts.jitterMs) await jitterDelay(0, opts.jitterMs);
+    if (opts.jitterMs) await jitterDelay(opts.jitterMs);
     const out = await attemptProvider(opts, pid);
     if (out.ok) return { ok: true, providerId: pid, key: out.key, res: out.res };
     errors.push(out.error);

@@ -150,7 +150,9 @@ completionsRoute.post(
 
     const usage = (data as { usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number } } | null)?.usage;
     const total = usage?.total_tokens ?? estimated.total;
-    if (usage?.total_tokens) recordUsage(pid, key, total);
+    // Executor already committed estimated tokens — top up positive delta only.
+    const usageDelta = (usage?.total_tokens ?? 0) - estimated.total;
+    if (usage?.total_tokens && usageDelta > 0) recordUsage(pid, key, usageDelta, model, { countRequest: false });
     const per1M = FREELLMS_COST[pid] ?? 0.05;
     const cost = Number(((total / 1_000_000) * per1M).toFixed(6));
 

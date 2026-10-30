@@ -202,8 +202,9 @@ anthropicRoute.post("/", zValidator("json", anthropicSchema), async (c) => {
     } catch { /* ignore: cost routing failed */ }
   }
   const isReasoningModel = /3\.0|reasoning|thinking|r1|deepseek|glm-5/i.test(model);
-  const baseTimeout = isAuto ? (config.nodeEnv === "test" ? 4000 : config.providerTimeoutAutoMs) : isReasoningModel ? config.providerTimeoutReasoningMs : config.providerTimeoutMs;
-  const perProviderTimeout = baseTimeout;
+  const perProviderTimeout = isAuto
+    ? (config.nodeEnv === "test" ? 4000 : config.providerTimeoutAutoMs)
+    : isReasoningModel ? config.providerTimeoutReasoningMs : config.providerTimeoutMs;
 
   const estimated = estimateMessagesTokens(body.messages) + (body.max_tokens || 0);
   const startAll = Date.now();
@@ -420,7 +421,9 @@ anthropicRoute.post("/", zValidator("json", anthropicSchema), async (c) => {
               output_tokens: data.usage?.completion_tokens || estimateTokens(text),
             },
           };
-          if (data.usage?.total_tokens) recordUsage(pid, key, data.usage.total_tokens);
+          // Executor already committed estimated tokens — top up positive delta only.
+          const usageDelta = (data.usage?.total_tokens ?? 0) - estimatedForQuotaBase;
+          if (data.usage?.total_tokens && usageDelta > 0) recordUsage(pid, key, usageDelta, model, { countRequest: false });
         } else {
           anthData = {
             id: `msg_${Date.now()}`,

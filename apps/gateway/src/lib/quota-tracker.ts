@@ -153,11 +153,20 @@ export function checkQuota(provider: string, key: string, estimatedTokens: numbe
   return { allowed: true };
 }
 
-export function recordUsage(provider: string, key: string, tokens: number, model?: string) {
+/**
+ * Commit usage into quota windows. Called by the executor with the ESTIMATED
+ * token count right after a successful attempt (this is the single
+ * request-count increment). Routes that learn the ACTUAL usage from the
+ * upstream response afterwards call this again with only the positive delta
+ * and `countRequest: false`, so tokens are accurate without double-counting
+ * RPM/RPD.
+ */
+export function recordUsage(provider: string, key: string, tokens: number, model?: string, opts?: { countRequest?: boolean }) {
+  const countRequest = opts?.countRequest !== false;
   const now = Date.now();
   const k = windowKey(provider, key.slice(0, 8));
   const limits = FREELLMS_LIMITS[provider];
-  if (limits?.rpm) {
+  if (countRequest && limits?.rpm) {
     let w = rpmWindows.get(k);
     if (!w || w.resetAt <= now) w = { count: 0, resetAt: now + 60000 };
     w.count++;
@@ -169,7 +178,7 @@ export function recordUsage(provider: string, key: string, tokens: number, model
     w.count += tokens;
     tpmWindows.set(k, w);
   }
-  if (limits?.rpd) {
+  if (countRequest && limits?.rpd) {
     let w = rpdWindows.get(k);
     if (!w || w.resetAt <= now) w = { count: 0, resetAt: now + 86400000 };
     w.count++;
@@ -184,7 +193,7 @@ export function recordUsage(provider: string, key: string, tokens: number, model
   // also track per-model prefix if enabled (light in-memory)
   if (model && config.perModelQuotaEnabled) {
     const km = `${provider}:${model.slice(0,40)}:${key.slice(0,8)}`;
-    if (limits?.rpm) {
+    if (countRequest && limits?.rpm) {
       let w = rpmWindows.get(km);
       if (!w || w.resetAt <= now) w = { count: 0, resetAt: now + 60000 };
       w.count++; rpmWindows.set(km, w);

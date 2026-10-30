@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { config } from "../config.js";
 import { timingSafeEqual } from "./auth.js";
+import { logger } from "../middleware/logger.js";
+import { errMessage } from "./types.js";
 import { resolveDataPath } from "./paths.js";
 
 export interface VirtualKey {
@@ -28,9 +30,22 @@ function hashKey(key: string): string {
 }
 
 function load(): VirtualKey[] {
-  try {
-    if (fs.existsSync(STORE_PATH)) return JSON.parse(fs.readFileSync(STORE_PATH, "utf-8"));
-  } catch { /* ignore: store load failed */ }
+  if (fs.existsSync(STORE_PATH)) {
+    try {
+      const parsed = JSON.parse(fs.readFileSync(STORE_PATH, "utf-8")) as unknown;
+      if (Array.isArray(parsed)) return parsed as VirtualKey[];
+      throw new Error("store is not an array");
+    } catch (e) {
+      // Corrupt store: back the file up instead of letting the next save()
+      // overwrite it — the previous behavior silently reset the store to
+      // master-only and destroyed every user virtual key.
+      const backup = `${STORE_PATH}.corrupt-${Date.now()}`;
+      try {
+        fs.renameSync(STORE_PATH, backup);
+        logger.error({ err: errMessage(e), backup }, "virtual-keys.json corrupt — backed up, reseeding master key");
+      } catch { /* ignore: backup rename failed */ }
+    }
+  }
   // Seed with master key as admin virtual key if no store
   const master: VirtualKey = {
     id: "vk-master",
@@ -49,13 +64,19 @@ function load(): VirtualKey[] {
 
 function save(keys: VirtualKey[]): void {
   fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
-  fs.writeFileSync(STORE_PATH, JSON.stringify(keys, null, 2));
+  // Atomic write: tmp + rename so a crash mid-write can't corrupt the store
+  const tmp = `${STORE_PATH}.tmp`;
+  fs.writeFileSync(tmp, JSON.stringify(keys, null, 2));
+  fs.renameSync(tmp, STORE_PATH);
 }
 
 async function saveAsync(keys: VirtualKey[]): Promise<void> {
   try {
     await fs.promises.mkdir(path.dirname(STORE_PATH), { recursive: true });
-    await fs.promises.writeFile(STORE_PATH, JSON.stringify(keys, null, 2));
+    // Atomic write: tmp + rename so a crash mid-write can't corrupt the store
+    const tmp = `${STORE_PATH}.tmp`;
+    await fs.promises.writeFile(tmp, JSON.stringify(keys, null, 2));
+    await fs.promises.rename(tmp, STORE_PATH);
   } catch { /* ignore: async save failed */ }
 }
 

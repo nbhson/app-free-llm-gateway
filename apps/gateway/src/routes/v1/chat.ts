@@ -130,23 +130,24 @@ chatRoute.post(
           providerOrder = rankProvidersByCostAndLatency(providerOrder);
           logger.info({ providerOrder, isAuto }, "cost routing re-ranked");
         }
-      } catch { /* ignore */ }
+      } catch (err) {
+        logger.warn({ err: (err as Error).message, providerOrder }, "provider re-ranking failed — using original order");
+      }
     }
     // Per-provider timeout: reasoning models (agnes 3.0, glm-5.3, deepseek r1) need longer TTFB (~6s direct)
     const isReasoningModel = /3\.0|reasoning|thinking|r1|deepseek|glm-5/i.test(model);
-    const baseTimeout = isAuto ? (config.nodeEnv === "test" ? 4000 : config.providerTimeoutAutoMs) : isReasoningModel ? config.providerTimeoutReasoningMs : config.providerTimeoutMs;
-    const perProviderTimeout = baseTimeout;
+    const perProviderTimeout = isAuto ? (config.nodeEnv === "test" ? 4000 : config.providerTimeoutAutoMs) : isReasoningModel ? config.providerTimeoutReasoningMs : config.providerTimeoutMs;
 
     const estimated = estimateChatTokens({ messages: body.messages, max_tokens: body.max_tokens });
     const startAll = Date.now();
 
     // Web tools toggle per-request (must be early to skip cache when searching)
-    const _webToolsForCacheCheck = shouldEnableWebTools(c);
+    const webToolsForRequest = shouldEnableWebTools(c);
 
     // Vector 2: semantic cache check first (cheapest) - only for non-stream, skip when web tools active (fresh data)
     // harness 01 Retrieve: tenant-aware key (vkId + tools + temperature) prevents poisoning
     let cacheHitContent: string | null = null;
-    if (config.semanticCacheEnabled && !body.stream && !_webToolsForCacheCheck) {
+    if (config.semanticCacheEnabled && !body.stream && !webToolsForRequest) {
       try {
         const q = JSON.stringify(body.messages);
         cacheHitContent = await semanticCache.get(q, model, {
@@ -160,7 +161,9 @@ chatRoute.post(
           addLog({ id: `req-${Date.now()}`, timestamp: new Date().toISOString(), virtualKeyId: vk?.id, virtualKeyName: vk?.name, provider: "cache", model, promptTokens: estimated.prompt, completionTokens: estimateChatTokens({ messages: [{ role: "assistant", content: cacheHitContent }] }).prompt, totalTokens: estimated.prompt + 20, latencyMs: Date.now() - startAll, status: 200, verifiedStatus: "cache", cacheHit: true });
           return c.json({ id: `chatcmpl-cache-${Date.now()}`, object: "chat.completion", created: Math.floor(Date.now() / 1000), model, choices: [{ index: 0, message: { role: "assistant", content: cacheHitContent }, finish_reason: "stop" }], usage: { prompt_tokens: estimated.prompt, completion_tokens: 20, total_tokens: estimated.prompt + 20 } });
         }
-      } catch { /* ignore */ }
+      } catch (err) {
+        logger.warn({ err: (err as Error).message }, "semantic cache get failed — proceeding as cache miss");
+      }
     }
 
     // Vector 2: optional compression (only on cache miss) - harness 02 Build Context pipeline
@@ -186,7 +189,6 @@ chatRoute.post(
     const parentSessionId = c.req.header("x-parent-session-id") || c.req.header("X-Parent-Session-ID") || undefined;
 
     // ---- Web tools: inject gateway-hosted web_search + web_fetch ----
-    const webToolsForRequest = shouldEnableWebTools(c);
     let effectiveTools: unknown[] | undefined = body.tools as unknown[] | undefined;
     let effectiveToolChoice: unknown = body.tool_choice;
     if (webToolsForRequest) {
@@ -284,7 +286,6 @@ chatRoute.post(
               result = streamResult;
             } else {
               // fallback to non-stream data
-              result = r;
               // store data for non-stream path below: we will reconstruct
               // To avoid double-read, create a new Response with JSON
               const bodyText = JSON.stringify(data);
@@ -447,7 +448,10 @@ chatRoute.post(
           c.header("X-Gateway-Provider-Count", String(providerOrder.length));
           const usage = data.usage;
           const total = usage?.total_tokens || estimated.total;
-          if (usage?.total_tokens) recordUsage(pid, key, total);
+          // Executor already committed the estimated tokens (counted the request).
+          // Top up only the positive delta with actual usage — no double RPM count.
+          const usageDelta = (usage?.total_tokens ?? 0) - estimatedForQuota.total;
+          if (usage?.total_tokens && usageDelta > 0) recordUsage(pid, key, usageDelta, model, { countRequest: false });
           const per1M2 = FREELLMS_COST[pid] ?? 0.05;
           const actualCost = (total / 1_000_000) * per1M2;
           addLog({
