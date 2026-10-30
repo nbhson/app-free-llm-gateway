@@ -3,6 +3,38 @@
 > Free LLM Gateway: Hono API gateway đa provider (OpenAI-compatible), virtual keys,
 > circuit breaker, quota, semantic cache, BYOK, web tools. Monorepo `apps/gateway` + `apps/web`.
 
+## Round 4 (2026-10-30) — Security deps upgrade
+
+### Goals
+
+1. Vá toàn bộ lỗ hổng npm audit production (7: 5 high + 2 moderate) + 2 lỗi lint còn lại.
+2. Không regress: typecheck/test/build/lint phải xanh sau các breaking upgrade.
+
+### Kết quả
+
+| # | Loại | Vị trí | Vấn đề | Fix |
+|---|------|--------|--------|-----|
+| 1 | HIGH | zod 3.25.76 | GHSA-mrhx-c7xc-m3w5 — DoS bộ nhớ qua validation request (surface trực tiếp gateway) | zod 4.6.7 + `z.record` 2 tham số (chat.ts:65, compare.ts:19); `.passthrough()` vẫn chạy (deprecated) |
+| 2 | HIGH | drizzle-orm 0.38.4 | GHSA-gpj5-g38j-94v9 — SQL injection qua identifiers | 0.45.4 (schema/migrate không đổi API) |
+| 3 | MOD | @hono/node-server 1.19.17 | GHSA-rmxm-3fg6-px4f — serveStatic double-decode bypass (không backport 1.x) | 2.1.5 — gateway chỉ dùng `serve`, Node>=20 OK |
+| 4 | MOD | hono 4.13.7 | GHSA-5r4p-p66f-jhc7 — serveStatic bypass | 4.13.14 (non-breaking) |
+| 5 | HIGH | vite/source-map-js/brace-expansion/shell-quote | audit fix không breaking | `npm audit fix` |
+| 6 | CRITICAL (dev) | tinypool ≤2.1.1 + @vitest/mocker | RCE prototype pollution + mocker path traversal | vitest 5.0.5 — 356/356 pass, suite 28s→10s |
+| 7 | Lint | compression.ts:166, pinned-fetch.test.ts:1 | unused catch binding `e`, unused import `vi` | bare `catch`, bỏ import |
+| 8 | Bug (tooling) | drizzle-kit 0.31 + workspace hoisting | `db:generate` fail "Please install latest version of drizzle-orm" — bin.cjs import `drizzle-orm/version` từ root node_modules mà drizzle-orm chỉ nằm apps/gateway | Thêm drizzle-orm root devDependency (hoisted); `db:generate` OK, migration files không commit (migrate.ts tự tạo base tables raw SQL) |
+
+### Trạng thái Round 4
+
+- [x] `npm audit` production: **0 high/critical** (còn 4 moderate dev-only qua `drizzle-kit → @esbuild-kit/esm-loader → esbuild`; bản sửa duy nhất là drizzle-kit 1.0.0-rc pre-release — chấp nhận)
+- [x] `tsc --noEmit` root + gateway + web: 0 error; `tsc -p apps/gateway` + `vite build` pass
+- [x] vitest **356/356 pass (51/51 files)**, eslint 0 error
+- [x] Version `1.11.4→1.12.0` (3 package.json) + CHANGELOG
+
+### Không làm (cân nhắc, ghi nhận)
+
+- **Major upgrades framework** (React 19, Vite 8, ESLint 10, TS 7, ioredis 6, pino 10, zod-validator... không liên quan security): rủi ro cao, phải migrate ~7,400 dòng UI — để round riêng nếu cần.
+- **drizzle-kit 1.0.0-rc**: duy nhất cách xóa 4 moderate dev-only còn lại, nhưng pre-release — chờ stable.
+
 ## Round 3 (2026-10-29)
 
 ### Goals (2 follow-ups ghi nhận từ Round 2)

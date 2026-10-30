@@ -62,7 +62,7 @@ const chatSchema = z.object({
   max_tokens: z.number().optional(),
   stream: z.boolean().optional(),
   tools: z.array(toolSchema).optional(),
-  tool_choice: z.union([z.string(), z.record(z.unknown())]).optional(),
+  tool_choice: z.union([z.string(), z.record(z.string(), z.unknown())]).optional(),
   top_p: z.number().optional(),
   top_k: z.number().optional(),
   n: z.number().optional(),

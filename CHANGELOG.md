@@ -4,7 +4,30 @@ Tất cả thay đổi đáng chú ý sẽ được ghi ở đây. Format theo [
 
 ## [Unreleased]
 
-### Added
+## [1.12.0] - 2026-10-30
+
+### Security
+
+- **Vá toàn bộ lỗ hổng production (npm audit 7 → 0 production)** — Round 4:
+  - `zod` `3.25.76→4.6.7` (GHSA-mrhx-c7xc-m3w5, HIGH — DoS bộ nhớ qua validation request, surface trực tiếp của gateway). Breaking changes xử lý: `z.record(z.unknown())` → `z.record(z.string(), z.unknown())` (`routes/v1/chat.ts:65`, `routes/v1/compare.ts:19`); `.passthrough()` vẫn hoạt động (deprecated)
+  - `@hono/zod-validator` `0.4.3→0.9.1` (hỗ trợ zod 4)
+  - `drizzle-orm` `0.38.4→0.45.4` (GHSA-gpj5-g38j-94v9, HIGH — SQL injection qua SQL identifiers)
+  - `@hono/node-server` `1.19.17→2.1.5` (GHSA-rmxm-3fg6-px4f — serveStatic path-decode bypass; gateway chỉ dùng `serve`, Node >=20 khớp engines >=22)
+  - `hono` `4.13.7→4.13.14` (GHSA-5r4p-p66f-jhc7 — serveStatic bypass), `vite` `6.4.3→6.4.5`, `source-map-js`, `brace-expansion`, `shell-quote` qua `npm audit fix`
+  - `vitest` `3.2.7→5.0.5` (dev-only, GHSA-5gmw-xhrv-c9v3 critical tinypool RCE + mocker path traversal) — 356/356 pass, suite nhanh 28s→10s
+
+### Fixed
+
+- **Lint** — `lib/compression.ts:166` unused catch binding `e` → bare `catch`; `lib/pinned-fetch.test.ts:1` unused import `vi` — eslint 0 error
+
+### Changed
+
+- **`drizzle-kit`** `0.30.6→0.31.11` (khớp drizzle-orm 0.45; `db:generate` hoạt động — migration files cố tình không commit, `db/migrate.ts` tự tạo base tables bằng raw SQL)
+- **`drizzle-orm` thêm vào root devDependencies** (hoisted) — drizzle-kit `bin.cjs` import `drizzle-orm/version` từ root node_modules, nếu không hoisted thì `db:generate` fail "Please install latest version of drizzle-orm"
+- **Còn lại 4 moderate dev-only** qua chuỗi `drizzle-kit → @esbuild-kit/esm-loader → esbuild` — bản sửa duy nhất là drizzle-kit `1.0.0-rc` (pre-release), chấp nhận; production audit sạch
+- **Version** — `1.11.4→1.12.0` (`package.json`, `apps/gateway/package.json`, `apps/web/package.json`)
+
+### Added (từ [Unreleased] trước đó)
 - **History summarization thay vì xóa (SUMMARY_*)** — `apps/gateway/src/lib/summarizer.ts:1` mới: condense tin nhắn cũ thành 1 summary message qua provider nhanh (`SUMMARY_MODEL=free-llm-gateway/auto`, sequential để đỡ đốt quota), cache prefix theo `sha256` (`SUMMARY_CACHE_SIZE=200`), fail-open về extractive khi timeout/lỗi nên request chính không bao giờ fail vì bước này; `lib/compression.ts:1` thêm `historyCondense` (sync, extractive) + `historySummarizeLLM`/`compressMessagesAsync`/`compressWithMetricsAsync` (chỉ tóm tắt khi vượt budget, dưới budget giữ nguyên lossless), vòng budget bảo vệ summary message; `routes/v1/chat.ts` + `anthropic.ts` chuyển sang compress async; `SUMMARY_MODE=llm|extractive|off` (`SUMMARY_KEEP_RECENT=6`, `SUMMARY_MAX_TOKENS=600`, `SUMMARY_TIMEOUT_MS=10000`) config được qua `.env` + hot-reload `PUT /api/config`; `POST /api/compression/preview` trả thêm `summarized/summaryVia/droppedMessages`; 9 tests mới, `compression.test.ts` 24 pass
 - **Docs** — `.env.example` + `docs/en|vi/CONFIGURATION.md` + `docs/en|vi/API.md` mô tả `SUMMARY_*` và hành vi condense-thay-xóa
 

@@ -16,7 +16,7 @@ export const compareRoute = new Hono();
 
 const compareSchema = z.object({
   models: z.array(z.string().min(1)).min(2).max(5),
-  messages: z.array(z.object({ role: z.string(), content: z.union([z.string(), z.array(z.union([z.string(), z.record(z.unknown())]))]), tool_calls: z.array(z.unknown()).optional() }).passthrough()).min(1),
+  messages: z.array(z.object({ role: z.string(), content: z.union([z.string(), z.array(z.union([z.string(), z.record(z.string(), z.unknown())]))]), tool_calls: z.array(z.unknown()).optional() }).passthrough()).min(1),
   temperature: z.number().min(0).max(2).optional(),
   max_tokens: z.number().min(1).max(32000).optional(),
   stream: z.boolean().optional().default(false),

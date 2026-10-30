@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { clearPinCache, pinnedAddress, resolveAndPin, setPinnedLookup, pinnedFetch } from "./pinned-fetch.js";

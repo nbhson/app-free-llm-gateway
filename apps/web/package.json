@@ -2,7 +2,7 @@
   "name": "apps-web",
   "private": true,
   "type": "module",
-  "version": "1.11.4",
+  "version": "1.12.0",
   "scripts": {
     "dev": "vite --port 5173 --host",
     "build": "vite build",

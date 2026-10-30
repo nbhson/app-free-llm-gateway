@@ -163,7 +163,7 @@ export async function historySummarizeLLM(
           ? `[Earlier conversation — ${dropped.length} older messages, truncated excerpts]`
           : `[Earlier conversation — ${dropped.length} older messages condensed]`;
       summary = `${label}:\n${res.text}`;
-    } catch (e) {
+    } catch {
       // Injected or unexpected summarizer failure — same fail-open as summarizeHistory.
       summary =
         `[Earlier conversation — ${dropped.length} older messages, truncated excerpts]:\n` +
