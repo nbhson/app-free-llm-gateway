@@ -4,6 +4,23 @@ Tất cả thay đổi đáng chú ý sẽ được ghi ở đây. Format theo [
 
 ## [Unreleased]
 
+### Fixed (Round 7 — audit bug fixes)
+- **Executor timeout timer leak + cắt stream SSE giữa chừng** — `lib/provider-executor.ts` `attemptProvider()`: timer chỉ được clear ở nhánh `catch`, các nhánh success/non-ok/peeked-error đều bỏ sót → timer firing sau đó abort controller, đứt stream SSE chạy lâu hơn `timeoutMs` (trái thiết kế "chỉ timeout initial fetch"). Giờ timer được clear bằng `.finally()` ngay khi `Promise.race` settle — đồng thời sửa timer 2s không clear mỗi cache-miss trong `lib/semantic-cache.ts` (L8)
+- **Quota double-count** — executor record token ước lượng, rồi 4 route (`chat`/`completions`/`responses`/`anthropic`) record thêm token thật → mỗi request bị tính 2 lượt RPM và ~2× TPM. `recordUsage` nhận `{ countRequest: false }`, routes giờ chỉ top-up phần delta dương (usage thật − estimate)
+- **Mất toàn bộ virtual key khi file JSON hỏng** — `lib/virtual-keys.ts` `load()` nuốt lỗi parse rồi seed lại chỉ còn master, lần save sau ghi đè xóa key user. Giờ: backup file hỏng sang `virtual-keys.json.corrupt-<ts>` + log error; `save`/`saveAsync` chuyển sang atomic write (tmp + rename)
+- **Semantic cache rò rỉ cách ly tenant qua cosine scan (M13)** — caller ẩn danh đọc được entry cache của tenant khác (và ngược lại) khi scan LRU theo model prefix. Giờ khớp chặt segment tenant: anon chỉ thấy legacy + composite `anon`, tenant-scoped chỉ thấy đúng tenant mình
+- **Redis cache-hit thiếu persist stats (M14)** — hit-rate `/api/cache/stats` trôi thấp khi Redis là store chính; thêm `scheduleStatsPersist()` cho nhánh Redis hit
+- **Nuốt lỗi im lặng trên hot path (M12)** — 4 chỗ `catch {}` (rank re-rank, semantic cache get, background embedding, peekBodyError) giờ log `warn`/`debug`
+
+### Changed (Round 7 — dead code cleanup + BYOK UI)
+- **Dead code** — xóa `isValidVirtualKey` + `isValidMasterKey` (`lib/auth.ts`), 4 wrapper Redis không dùng `redisGet/redisSet/redisIncrWithExpire/redisPipeline` (`lib/redis.ts`), `ProviderAttempt` khai báo trùng + `jitterDelay` param chết (`lib/provider-executor.ts`), block scope-check rỗng không enforce gì (`app.ts`), biến `embedding` chết (`semantic-cache.ts`), alias `baseTimeout` (`chat.ts`/`anthropic.ts`), sort comparator tính `hasRealKey` 2 lần + re-force `FINAL_FALLBACK` thừa (`lib/router.ts`)
+- **Header `x-ratelimit-reset` nhất quán** — `middleware/rate-limit.ts`: trước đây allowed path trả absolute epoch, denied path trả relative seconds từ cùng field; giờ cả hai đều relative (chuẩn OpenAI)
+- **BYOK panel Dashboard** — trang `/keys` thêm section "BYOK — Provider Key riêng cho từng Virtual Key": chọn virtual key + provider (dropdown từ `GET /api/providers`), nhập nhiều key (1 dòng/key, ≤10), lưu/xóa qua `POST/DELETE /api/byok`, liệt kê masked keys, i18n VI/EN đầy đủ (`byok.*`). Backend BYOK đã có sẵn từ P8 (`lib/byok-store.ts` AES-256-GCM at-rest, override key lúc request-time) — round này chỉ bổ sung UI còn thiếu
+- **Coverage tooling** — script `test:coverage` (root + apps-gateway), dep `@vitest/coverage-v8` (baseline: 57.14% stmts)
+
+### Added (Round 7 — tests)
+- **14 tests mới (373 → 387, 52 → 56 files)** — `circuit-breaker-halfopen.test.ts` (half-open trial: cooldown→trial→2 successes đóng, failure lúc half-open mở lại, 4xx không trip / 429 trip), `quota-tracker-count.test.ts` (regression H2: `countRequest:false` không đốt slot RPM nhưng vẫn cộng TPM), `byok-store.test.ts` (CRUD, override gateway keys, cách ly vkId, mã hóa at-rest không lộ plaintext), `semantic-cache-tenant.test.ts` (regression M13: cosine scan cách ly tenant 2 chiều, mock embeddings deterministic)
+
 ### Changed (Round 6 — UI/UX: Minimalism token cleanup + dark mode consistency)
 - **Xoá toàn bộ ~200 chỗ hard-code `slate-*`** trong `apps/web/src` (103 `text-slate-400`, 41 `bg-slate-900`, 18 `bg-slate-800`, 19 `text-slate-300`...) — mọi màu giờ đi qua design token, dark mode nhất quán 100% (trước đây nút chính `bg-slate-900 text-white` gần như biến mất trên canvas `#0b1424`, badge `text-slate-300` gần như vô hình trên card trắng)
 - **Token mới** — `--app-primary/-hover/-ink`: nút chính đơn sắc, tự ĐẢO NGƯỢC trong dark mode (nút sáng chữ tối) nên CTA giữ contrast mạnh; `--app-codebg/-surface/-row/-line/-text*`: surface terminal (curl box, JSON viewer, code block) cố định luôn-tối ở cả 2 theme — terminal tối là convention, không lật theo theme
