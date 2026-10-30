@@ -1,11 +1,12 @@
 import { pinnedFetch } from "../lib/pinned-fetch.js";
 import type { Provider, ChatRequest, ModelInfo } from "./base.js";
+import { makeCallSignal } from "./base.js";
 
 // Pollinations is OpenAI-compatible at https://text.pollinations.ai/openai
 export const pollinationsProvider: Provider = {
   id: "pollinations",
   type: "scraped",
-  async chat(req: ChatRequest, apiKey: string): Promise<Response> {
+  async chat(req: ChatRequest, apiKey: string, externalSignal?: AbortSignal): Promise<Response> {
     const url = "https://text.pollinations.ai/openai";
     // Map generic aliases to pollinations openai model
     const aliasMap: Record<string, string> = { auto: "openai", "gpt-4": "openai", "gpt-3.5": "openai", llama: "openai" };
@@ -15,9 +16,7 @@ export const pollinationsProvider: Provider = {
     // If POLLINATIONS_API_KEY is configured (enter.pollinations.ai), send it so per-key budget is tracked correctly
     // Pollinations accepts Authorization: Bearer <key> for authenticated budget; anonymous still works without it
     if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
-    const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
-      ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
-      : undefined;
+    const signal = makeCallSignal(60000, externalSignal);
     return pinnedFetch(url, {
       method: "POST",
       headers,

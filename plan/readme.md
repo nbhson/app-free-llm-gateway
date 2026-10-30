@@ -3,6 +3,45 @@
 > Free LLM Gateway: Hono API gateway đa provider (OpenAI-compatible), virtual keys,
 > circuit breaker, quota, semantic cache, BYOK, web tools. Monorepo `apps/gateway` + `apps/web`.
 
+## Round 5 (2026-10-30) — Resilience: giảm 4xx/5xx khi providers còn valid
+
+### Vấn đề của user
+
+"Rất thường gặp lỗi 4xx/5xx trong khi rất nhiều provider vẫn valid." Chẩn đoán từ code:
+
+1. **0 retry cùng provider** — một 502/ECONNRESET vặt là bỏ ngay sang provider kế;
+   free-tier providers cực hay lỗi vặt kiểu này.
+2. **Breaker chỉ theo provider, không theo (provider, model)** — provider X mapping
+   stale cho model Y (400 "model not found") không bao giờ trip breaker → mỗi request
+   về model Y vẫn thử X đầu tiên, user ăn lại đúng lỗi đó.
+3. **Loser fetches trong parallel chạy tiếp đến cùng** (Round 1 đã ghi nhận).
+4. **HTTP 200 + error object trong body** (SSE/JSON) — client nhận stream đứt,
+   executor không fallback (chỉ peek với pollinations).
+
+### Triển khai (cả 4, user chọn)
+
+| # | Tính năng | File | Chi tiết |
+|---|-----------|------|----------|
+| 1 | Retry same provider | provider-executor.ts | Refactor `attemptProvider()` dùng chung; 5xx/network retry `PROVIDER_RETRIES` (1, max 3) lần, backoff jitter 400ms; timeout/429/4xx không retry |
+| 2 | Pair health | lib/pair-health.ts (mới) | 400/404/422 ×2 liên tiếp → pair xuống cuối order TTL 10 phút (không skip); success clears; persist `data/pair-health.json` |
+| 3 | Abort losers | base.ts + 4 providers + executor | `ProviderAttempt.signal` → `makeCallSignal` (`AbortSignal.any` với internal timeout); winner xong abort sibling; timeout executor giờ abort fetch thật |
+| 4 | Peek đầu-body mọi provider | provider-executor.ts | `peekBodyError()`: SSE `data:{"error"` ở đầu line + JSON top-level `error`; budget→402, else 502; window `PROVIDER_SSE_PEEK_MS` 250ms; shape-match đầu object chống false-positive |
+
+### Trạng thái Round 5
+
+- [x] `pair-health.test.ts` (8) + `provider-executor.test.ts` (+8): retry 5xx/network, không retry 4xx/timeout, peek + anti-false-positive, abort loser, demoted pair thử cuối
+- [x] vitest **373/373 pass (52 files)**; `tsc --noEmit` gateway pass
+- [x] Config + hot-reload `/api/config` cho 3 env mới; `.env.example` + `docs/en/CONFIGURATION.md`
+- [x] CHANGELOG [Unreleased] Round 5
+
+### Cân nhắc / không làm
+
+- **Retry timeout**: làm doubled worst-case latency (12-25s × 2) — không retry, fallback thay thế.
+- **Retry 4xx**: request's fault — fallback sang provider khác mới đúng.
+- **Pair health skip thay vì reorder**: demoted pair vẫn phải reachable khi mọi healthy fail — chọn reorder ra cuối.
+- **Mid-stream recovery sau N chunks**: không thể fallback sau khi đã flush SSE xuống client — peek 250ms đầu là giới hạn hợp lý.
+- **Plumb signal vào embeddings/images/audio**: call ngắn non-stream, waste bounded — để sau nếu cần.
+
 ## Round 4 (2026-10-30) — Security deps upgrade
 
 ### Goals

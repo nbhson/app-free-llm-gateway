@@ -458,6 +458,9 @@ apiRoute.get("/config", (c) => {
     PROVIDER_TIMEOUT_REASONING_MS: config.providerTimeoutReasoningMs,
     PROVIDER_PARALLEL_AUTO: config.providerParallelAuto,
     PROVIDER_PARALLEL_DEFAULT: config.providerParallelDefault,
+    PROVIDER_RETRIES: config.providerRetries,
+    PROVIDER_RETRY_BACKOFF_MS: config.providerRetryBackoffMs,
+    PROVIDER_SSE_PEEK_MS: config.providerSsePeekMs,
     CIRCUIT_BREAKER_THRESHOLD: config.circuitBreakerThreshold,
     CIRCUIT_BREAKER_COOLDOWN_MS: config.circuitBreakerCooldownMs,
     WEB_TOOLS_ENABLED: config.webToolsEnabled ? 1 : 0,
@@ -638,6 +641,21 @@ apiRoute.put("/config", async (c) => {
     if (!Number.isFinite(v) || v <= 0) errors.push("PROVIDER_PARALLEL_DEFAULT must be >0");
     else pending.providerParallelDefault = Math.min(v, 5);
   }
+  if (body.PROVIDER_RETRIES !== undefined) {
+    const v = parseInt(String(body.PROVIDER_RETRIES), 10);
+    if (!Number.isFinite(v) || v < 0) errors.push("PROVIDER_RETRIES must be >=0");
+    else pending.providerRetries = Math.min(v, 3);
+  }
+  if (body.PROVIDER_RETRY_BACKOFF_MS !== undefined) {
+    const v = parseInt(String(body.PROVIDER_RETRY_BACKOFF_MS), 10);
+    if (!Number.isFinite(v) || v < 0) errors.push("PROVIDER_RETRY_BACKOFF_MS must be >=0");
+    else pending.providerRetryBackoffMs = Math.min(v, 5000);
+  }
+  if (body.PROVIDER_SSE_PEEK_MS !== undefined) {
+    const v = parseInt(String(body.PROVIDER_SSE_PEEK_MS), 10);
+    if (!Number.isFinite(v) || v < 0) errors.push("PROVIDER_SSE_PEEK_MS must be >=0");
+    else pending.providerSsePeekMs = Math.min(v, 2000);
+  }
   if (body.CIRCUIT_BREAKER_THRESHOLD !== undefined) {
     const v = parseInt(String(body.CIRCUIT_BREAKER_THRESHOLD), 10);
     if (!Number.isFinite(v) || v <= 0) errors.push("CIRCUIT_BREAKER_THRESHOLD must be >0");
@@ -777,6 +795,9 @@ apiRoute.put("/config", async (c) => {
     providerTimeoutReasoningMs: "PROVIDER_TIMEOUT_REASONING_MS",
     providerParallelAuto: "PROVIDER_PARALLEL_AUTO",
     providerParallelDefault: "PROVIDER_PARALLEL_DEFAULT",
+    providerRetries: "PROVIDER_RETRIES",
+    providerRetryBackoffMs: "PROVIDER_RETRY_BACKOFF_MS",
+    providerSsePeekMs: "PROVIDER_SSE_PEEK_MS",
     circuitBreakerThreshold: "CIRCUIT_BREAKER_THRESHOLD",
     circuitBreakerCooldownMs: "CIRCUIT_BREAKER_COOLDOWN_MS",
     webToolsEnabled: "WEB_TOOLS_ENABLED",

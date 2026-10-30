@@ -260,7 +260,7 @@ anthropicRoute.post("/", zValidator("json", anthropicSchema), async (c) => {
       }
       return null;
     },
-    call: async ({ provider, key }) => {
+    call: async ({ provider, key, signal }) => {
       // Build AnthropicRequest — use compressed messages if applied (parity with chat upstream)
       const effectiveAnthMessages = messagesToSend || body.messages;
       const anthReq = {
@@ -278,7 +278,7 @@ anthropicRoute.post("/", zValidator("json", anthropicSchema), async (c) => {
       };
 
       if (provider.anthropic) {
-        return provider.anthropic(anthReq, key);
+        return provider.anthropic(anthReq, key, signal);
       }
       if (provider.chat) {
         // Translate Anthropic -> OpenAI ChatRequest (use compressed messages if applied)
@@ -298,7 +298,7 @@ anthropicRoute.post("/", zValidator("json", anthropicSchema), async (c) => {
           top_k: body.top_k,
           stop: body.stop_sequences,
         };
-        return provider.chat(chatReq as unknown as ChatRequest, key);
+        return provider.chat(chatReq as unknown as ChatRequest, key, signal);
       }
       throw new Error("provider has no anthropic or chat method");
     },

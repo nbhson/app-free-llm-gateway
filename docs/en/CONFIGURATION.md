@@ -121,6 +121,9 @@ then **auto boot-sync** (`jobs/boot-sync.ts`) tự phát hiện provider mới (
 | `PROVIDER_TIMEOUT_REASONING_MS` | `60000` | Timeout for reasoning models (`agnes-3.0-flash`, `glm-5.3`, `deepseek r1` — TTFB 4-8s, large 130k context needs 60s) | Number `1k..120k` |
 | `PROVIDER_PARALLEL_AUTO` | `3` | Parallel providers when `auto` (1..5) | Slider `1..5` |
 | `PROVIDER_PARALLEL_DEFAULT` | `2` | Hedged parallel for non-auto models with `>1` provider (1..5) — cuts tail latency | Slider `1..5` |
+| `PROVIDER_RETRIES` | `1` | Same-provider retry on transient failures (5xx / network error) before falling back (0..3) — 429/4xx are never retried | Number `0..3` |
+| `PROVIDER_RETRY_BACKOFF_MS` | `400` | Jittered backoff between same-provider retries (0..5000 ms) | Number `0..5k` |
+| `PROVIDER_SSE_PEEK_MS` | `250` | Peek window (ms) for HTTP-200 responses whose body starts with an upstream error object (`data: {"error":...}` SSE / top-level JSON error) — triggers fallback instead of a broken short stream (0 = off) | Number `0..2k` |
 | `CIRCUIT_BREAKER_THRESHOLD` | `8` | Consecutive failures before opening breaker (1..100) — raised from 5 | Number `1..100` |
 | `CIRCUIT_BREAKER_COOLDOWN_MS` | `20000` | Cooldown before half-open (1000..300000 ms) — reduced from 30s | Number `1k..300k` |
 | `FALLBACK_TIERS` | `[[...default 41 providers...]]` | Provider priority order — JSON array of arrays (max 8 tiers, 200 providers, 60/tier, deduped), runtime filtered to configured + public `pollinations/llm7-io` | JSON editor + preview chips (blue=public, white=key) + `Add to tier 1` + `Validate & Stage` + health warning |

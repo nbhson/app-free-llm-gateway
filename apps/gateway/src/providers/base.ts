@@ -98,14 +98,34 @@ export interface AnthropicRequest {
 export interface Provider {
   id: string;
   type: "openai-compatible" | "gemini" | "anthropic" | "scraped";
-  chat(req: ChatRequest, apiKey: string): Promise<Response>;
+  /** `signal` = executor abort (timeout / parallel-loser cleanup). Providers
+   * combine it with their internal timeout via AbortSignal.any — aborting
+   * cancels the in-flight fetch. */
+  chat(req: ChatRequest, apiKey: string, signal?: AbortSignal): Promise<Response>;
   embeddings?(req: EmbeddingsRequest, apiKey: string): Promise<Response>;
   images?(req: ImagesRequest, apiKey: string): Promise<Response>;
   transcriptions?(req: AudioTranscriptionRequest, apiKey: string): Promise<Response>;
   translations?(req: AudioTranscriptionRequest, apiKey: string): Promise<Response>;
   speech?(req: AudioSpeechRequest, apiKey: string): Promise<Response>;
-  responses?(req: ResponsesRequest, apiKey: string): Promise<Response>;
-  anthropic?(req: AnthropicRequest, apiKey: string): Promise<Response>;
+  responses?(req: ResponsesRequest, apiKey: string, signal?: AbortSignal): Promise<Response>;
+  anthropic?(req: AnthropicRequest, apiKey: string, signal?: AbortSignal): Promise<Response>;
   models(apiKey?: string): Promise<ModelInfo[]>;
   health(apiKey: string): Promise<boolean>;
+}
+
+/**
+ * Combine the executor's abort signal with a per-call timeout.
+ * Returns undefined when AbortSignal.timeout is unavailable (old runtimes) —
+ * callers already handle undefined signal.
+ */
+export function makeCallSignal(ms: number, external?: AbortSignal): AbortSignal | undefined {
+  const abs = AbortSignal as unknown as {
+    timeout?: (ms: number) => AbortSignal;
+    any?: (signals: AbortSignal[]) => AbortSignal;
+  };
+  const t = abs.timeout ? abs.timeout(ms) : undefined;
+  if (t && external && abs.any) {
+    try { return abs.any([t, external]); } catch { return t; }
+  }
+  return t ?? external;
 }

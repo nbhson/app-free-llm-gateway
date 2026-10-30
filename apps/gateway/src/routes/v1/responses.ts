@@ -111,8 +111,8 @@ async function handleResponses(c: ResponsesHandlerContext, body: ResponsesReques
       }
       return null;
     },
-    call: ({ provider, key }) =>
-      provider.responses ? provider.responses(body, key) : provider.chat(chatReq, key),
+    call: ({ provider, key, signal }) =>
+      provider.responses ? provider.responses(body, key, signal) : provider.chat(chatReq, key, signal),
   });
 
   if (result.ok) {

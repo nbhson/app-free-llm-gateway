@@ -4,6 +4,15 @@ Tất cả thay đổi đáng chú ý sẽ được ghi ở đây. Format theo [
 
 ## [Unreleased]
 
+### Added (Round 5 — resilience: giảm 4xx/5xx cho người dùng khi providers còn valid)
+- **Retry cùng provider trên lỗi tạm thời** — `lib/provider-executor.ts` refactor thành `attemptProvider()` dùng chung (sequential + parallel): 5xx/network error được retry in-place `PROVIDER_RETRIES` lần (default 1, max 3) với backoff jitter `PROVIDER_RETRY_BACKOFF_MS` (default 400ms) trước khi đốt fallback hop; timeout của executor và 429/4xx không retry (429 đã rotate key + cooldown; retry timeout sẽ nhân đôi worst-case latency)
+- **Pair health theo cặp (provider, model)** — `lib/pair-health.ts` mới: nhớ 400/404/422 liên tiếp ≥2 (`MODEL_FAIL_THRESHOLD`) cho một cặp → đẩy pair xuống CUỐI provider order trong TTL 10 phút (`MODEL_DEMOTE_TTL_MS`) thay vì skip (vẫn thử khi mọi option healthy đã fail); success trên pair clears ngay; persist `data/pair-health.json` sống qua restart — hết cảnh ăn lại 400 "model not found" y hệt mỗi request do mapping drift
+- **Abort loser fetches trong parallel mode** — `ProviderAttempt.signal?: AbortSignal` plumbing xuyên executor → `providers/base.ts` (`chat/responses/anthropic` nhận optional signal, combine với internal timeout qua `AbortSignal.any` helper `makeCallSignal`) → 4 provider implementations; sau khi `Promise.any` có winner, executor abort các sibling còn treo (kết thúc "loser fetch chạy tiếp"); timeout của executor giờ cũng abort fetch thật (trước đây fetch treo tiếp ngầm)
+- **Peek lỗi đầu-body cho MỌI provider** — `peekBodyError()` thay `detectBudgetErrorInResponse` (trước chỉ pollinations): HTTP 200 nhưng body mở đầu bằng error object (`data: {"error":...}` ở đầu SSE data line, hoặc JSON top-level `error`) → coi như fail để fallback thay vì trả client stream đứt; shape-match đầu JSON object nên không false-positive với nội dung assistant nhắc chữ "error"; budget-shaped giữ semantics 402; window `PROVIDER_SSE_PEEK_MS` (default 250ms, 0 = off)
+- **Compare fan-out** — `routes/v1/compare.ts` tự abort fetch khi timeout (trước đây leak socket treo)
+- **Config + hot-reload** — `PROVIDER_RETRIES` / `PROVIDER_RETRY_BACKOFF_MS` / `PROVIDER_SSE_PEEK_MS` vào `.env.example`, `GET/PUT /api/config` (validate + caps) — tune được qua `/settings` không cần restart
+- **Tests** — `pair-health.test.ts` 8 tests mới + `provider-executor.test.ts` 8 tests mới (retry 5xx/network, không retry 4xx/timeout, peek JSON error + không false-positive, abort loser, demoted pair thử cuối); `chat-auto.test.ts` cập nhật khớp peek mới; **373/373 pass (52 files)**
+
 ## [1.12.0] - 2026-10-30
 
 ### Security

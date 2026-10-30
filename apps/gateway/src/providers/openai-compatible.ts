@@ -1,6 +1,7 @@
 import { pinnedFetch } from "../lib/pinned-fetch.js";
 import crypto from "node:crypto";
 import type { Provider, ChatRequest, ModelInfo, AudioTranscriptionRequest, AudioSpeechRequest, ResponsesRequest } from "./base.js";
+import { makeCallSignal } from "./base.js";
 import { translateResponsesToChat } from "../lib/responses-translator.js";
 import { sanitizeFreellmsName } from "../lib/sanitize.js";
 
@@ -31,7 +32,7 @@ export function createOpenAICompatibleProvider(opts: {
   return {
     id: opts.id,
     type: "openai-compatible",
-    async chat(req: ChatRequest, apiKey: string): Promise<Response> {
+    async chat(req: ChatRequest, apiKey: string, externalSignal?: AbortSignal): Promise<Response> {
       const base = resolveBase();
       const url = `${base}/chat/completions`;
       const headers: Record<string, string> = {
@@ -143,9 +144,8 @@ export function createOpenAICompatibleProvider(opts: {
       if (req.user !== undefined && req.user !== null) body.user = req.user;
       // Abort underlying socket on timeout so Promise.race in provider-executor
       // doesn't leak hanging fetches (storm of "fetch failed" on next requests).
-      const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
-        ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
-        : undefined;
+      // Executor signal (timeout / parallel-loser cleanup) is combined via any().
+      const signal = makeCallSignal(60000, externalSignal);
       // Initial fetch with auto session header if needed
       let res = await pinnedFetch(url, {
         method: "POST",
@@ -275,23 +275,24 @@ export function createOpenAICompatibleProvider(opts: {
       if (model.includes("/")) model = model.split("/").slice(1).join("/");
       return pinnedFetch(url, { method: "POST", headers, body: JSON.stringify({ model, input: req.input, voice: req.voice, response_format: req.response_format, speed: req.speed }) });
     },
-    async responses(req: ResponsesRequest, apiKey: string): Promise<Response> {
+    async responses(req: ResponsesRequest, apiKey: string, externalSignal?: AbortSignal): Promise<Response> {
       // Prefer native /responses if provider supports, else fallback to /chat/completions via translation
       const base = resolveBase();
       const url = `${base}/responses`;
       const headers: Record<string, string> = { "Content-Type": "application/json", "User-Agent": opts.id === "cline" ? "Cline/3.24.1" : "opencode-gateway/1.0" };
       if (apiKey) headers.Authorization = `Bearer ${apiKey}`;
+      const signal = makeCallSignal(60000, externalSignal);
       const chat = translateResponsesToChat(req);
       // try native responses endpoint first
       try {
-        const native = await pinnedFetch(url, { method: "POST", headers, body: JSON.stringify(req) });
+        const native = await pinnedFetch(url, { method: "POST", headers, body: JSON.stringify(req), ...(signal ? { signal } : {}) });
         if (native.ok || native.status < 500) return native;
       } catch { /* ignore: native responses failed, fallback to chat */ }
       // fallback to chat completions
       const chatUrl = `${base}/chat/completions`;
       let model = chat.model;
       if (model.includes("/")) model = model.split("/").slice(1).join("/");
-      return pinnedFetch(chatUrl, { method: "POST", headers, body: JSON.stringify({ model, messages: chat.messages, temperature: chat.temperature, max_tokens: chat.max_tokens, stream: chat.stream, tools: chat.tools }) });
+      return pinnedFetch(chatUrl, { method: "POST", headers, body: JSON.stringify({ model, messages: chat.messages, temperature: chat.temperature, max_tokens: chat.max_tokens, stream: chat.stream, tools: chat.tools }), ...(signal ? { signal } : {}) });
     },
     async health(apiKey: string): Promise<boolean> {
       try {

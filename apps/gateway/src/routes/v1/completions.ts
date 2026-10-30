@@ -93,7 +93,7 @@ completionsRoute.post(
       quotaModel: model,
       vkId: vk?.id,
       timeoutMs: config.providerTimeoutMs,
-      call: ({ provider, key }) =>
+      call: ({ provider, key, signal }) =>
         provider.chat(
           {
             model,
@@ -105,7 +105,8 @@ completionsRoute.post(
             stop: body.stop,
             user: body.user,
           },
-          key
+          key,
+          signal
         ),
     });
 

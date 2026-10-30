@@ -88,7 +88,17 @@ compareRoute.post("/compare", zValidator("json", compareSchema), async (c) => {
         temperature: body.temperature,
         max_tokens: body.max_tokens,
       } as unknown as Parameters<typeof provider.chat>[0];
-      const res = (await provider.chat(req, key)) as Response;
+      // Abort in-flight fetch on timeout so the fan-out doesn't leak sockets.
+      const controller = new AbortController();
+      let timer: NodeJS.Timeout | undefined;
+      const timeout = new Promise<never>((_, rej) => {
+        timer = setTimeout(() => { try { controller.abort(); } catch { /* ignore */ } rej(new Error(`timeout ${config.providerTimeoutMs}ms`)); }, config.providerTimeoutMs);
+        timer.unref?.();
+      });
+      let res: Response;
+      try {
+        res = (await Promise.race([provider.chat(req, key, controller.signal), timeout])) as Response;
+      } finally { if (timer) clearTimeout(timer); }
       const latencyMs = Date.now() - t0;
       if (!res.ok) {
         const txt = await res.text().catch(() => "");

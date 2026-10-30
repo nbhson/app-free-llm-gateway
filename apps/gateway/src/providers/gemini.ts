@@ -1,5 +1,6 @@
 import { pinnedFetch } from "../lib/pinned-fetch.js";
 import type { Provider, ChatRequest, ModelInfo } from "./base.js";
+import { makeCallSignal } from "./base.js";
 import { translateOpenAIToGemini, translateGeminiToOpenAI } from "../lib/format-translator.js";
 import { geminiToOpenAIStream } from "../lib/gemini-stream.js";
 
@@ -46,7 +47,7 @@ export function isKnownGeminiModel(raw: string): boolean {
 export const geminiProvider: Provider = {
   id: "gemini",
   type: "gemini",
-  async chat(req: ChatRequest, apiKey: string): Promise<Response> {
+  async chat(req: ChatRequest, apiKey: string, externalSignal?: AbortSignal): Promise<Response> {
     if (!isKnownGeminiModel(req.model)) {
       return new Response(JSON.stringify({ error: { message: `unknown gemini model: ${req.model}`, type: "model_not_found" } }), {
         status: 404,
@@ -63,9 +64,7 @@ export const geminiProvider: Provider = {
     const geminiBody = translateOpenAIToGemini(req);
     const authHeaders = { "Content-Type": "application/json", "x-goog-api-key": apiKey };
 
-    const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
-      ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
-      : undefined;
+    const signal = makeCallSignal(60000, externalSignal);
 
     if (!isStream) {
       const res = await pinnedFetch(url, {

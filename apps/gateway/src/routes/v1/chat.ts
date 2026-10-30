@@ -221,7 +221,7 @@ chatRoute.post(
           }
           return null;
         },
-        call: ({ provider, key }) =>
+        call: ({ provider, key, signal }) =>
           provider.chat(
             {
               model,
@@ -241,7 +241,8 @@ chatRoute.post(
               sessionId,
               parentSessionId,
             },
-            key
+            key,
+            signal
           ),
       });
 

@@ -1,5 +1,6 @@
 import { pinnedFetch } from "../lib/pinned-fetch.js";
 import type { Provider, AnthropicRequest, ChatRequest, ModelInfo } from "./base.js";
+import { makeCallSignal } from "./base.js";
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_MODELS_URL = "https://api.anthropic.com/v1/models";
@@ -28,7 +29,7 @@ export const anthropicProvider: Provider = {
     throw new Error("anthropic provider: use anthropic() method, not chat()");
   },
 
-  async anthropic(req: AnthropicRequest, apiKey: string): Promise<Response> {
+  async anthropic(req: AnthropicRequest, apiKey: string, externalSignal?: AbortSignal): Promise<Response> {
     const model = stripPrefix(req.model) || "claude-3-5-sonnet-20241022";
 
     const body: {
@@ -64,9 +65,7 @@ export const anthropicProvider: Provider = {
     };
 
     const url = ANTHROPIC_API_URL;
-    const signal = (AbortSignal as unknown as { timeout?: (ms: number) => AbortSignal }).timeout
-      ? (AbortSignal as unknown as { timeout: (ms: number) => AbortSignal }).timeout(60000)
-      : undefined;
+    const signal = makeCallSignal(60000, externalSignal);
 
     // Streaming: forward SSE directly
     if (req.stream) {

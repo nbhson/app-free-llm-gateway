@@ -89,12 +89,23 @@ describe("Fix 1.9.2 — free-llm-gateway/auto slow 10-15s", () => {
     expect(txt).toMatch(/providerOrder\.length > 1/);
   });
 
-  it("provider-executor budget detection only for pollinations (no 500ms overhead elsewhere)", () => {
+  it("provider-executor peek: all providers, error-object shape match, budget-aware status", () => {
     const txt = readGate("apps/gateway/src/lib/provider-executor.ts");
-    expect(txt).toContain("BUDGET_SSE_PROVIDERS");
-    expect(txt).toContain("pollinations");
-    expect(txt).toContain("detectBudgetErrorInResponse(res, pid)");
-    // timeout reduced from 500 to 250 for pollinations check
-    expect(txt).toContain("timeoutMs = 250");
+    // peekBodyError runs for ALL providers (SSE + JSON), window from config
+    expect(txt).toContain("async function peekBodyError(res: Response)");
+    expect(txt).toContain("config.providerSsePeekMs");
+    // error object at the START of a data line (not anywhere) — safe against
+    // assistant content that merely mentions "error"
+    expect(txt).toContain("SSE_DATA_ERROR_RE");
+    // budget errors keep 402 semantics
+    expect(txt).toContain("BUDGET_ERROR_RE.test(errText) ? 402 : 502");
+  });
+
+  it("provider-executor retries transient failures in place", () => {
+    const txt = readGate("apps/gateway/src/lib/provider-executor.ts");
+    expect(txt).toContain("config.providerRetries");
+    expect(txt).toContain("providerRetryBackoffMs");
+    // losers aborted after a parallel winner
+    expect(txt).toContain("c.abort()");
   });
 });

@@ -334,6 +334,27 @@ export const config = {
     const v = parseInt(process.env.PROVIDER_PARALLEL_DEFAULT || "2", 10);
     return isNaN(v) || v <= 0 ? 2 : Math.min(v, 5);
   })(),
+  // Same-provider retry for TRANSIENT failures (5xx / network error) before
+  // falling back to the next provider. Free-tier providers are flaky — a
+  // single 502/ECONNRESET usually clears on an immediate retry. 429 (key
+  // rotation + cooldown) and 4xx (request's fault) are never retried here.
+  providerRetries: (() => {
+    const v = parseInt(process.env.PROVIDER_RETRIES || "1", 10);
+    return isNaN(v) || v < 0 ? 1 : Math.min(v, 3);
+  })(),
+  // Same-provider retry backoff (ms) between attempts.
+  providerRetryBackoffMs: (() => {
+    const v = parseInt(process.env.PROVIDER_RETRY_BACKOFF_MS || "400", 10);
+    return isNaN(v) || v < 0 ? 400 : Math.min(v, 5000);
+  })(),
+  // Early SSE/JSON error peek window (ms). 0 disables the peek. Detects
+  // providers that return HTTP 200 but emit an error object as the first
+  // body chunk — lets the executor fall back instead of handing the client
+  // a broken short stream.
+  providerSsePeekMs: (() => {
+    const v = parseInt(process.env.PROVIDER_SSE_PEEK_MS || "250", 10);
+    return isNaN(v) || v < 0 ? 250 : Math.min(v, 2000);
+  })(),
   // ---- Web tools (gateway-hosted web_search + web_fetch) ----
   webToolsEnabled: parseBoolEnv(process.env.WEB_TOOLS_ENABLED),
   webSearchProvider: (process.env.WEB_SEARCH_PROVIDER || "tavily").trim().toLowerCase(),
