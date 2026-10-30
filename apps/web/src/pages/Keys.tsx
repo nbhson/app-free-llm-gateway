@@ -115,6 +115,118 @@ export default function Keys() {
         </div>
         {keys.length === 0 && <div className="p-8 text-center text-sm text-mutedtxt">{t("keys.no_keys")}</div>}
       </div>
+
+      {/* BYOK — per-virtual-key provider keys (self-serve) */}
+      <ByokPanel keys={keys} />
+    </div>
+  );
+}
+
+interface ByokVkLite { id: string; name?: string; role?: string }
+
+function ByokPanel({ keys }: { keys: VirtualKeyView[] }) {
+  const { t } = useLang();
+  const [vkId, setVkId] = useState("");
+  const [provider, setProvider] = useState("");
+  const [providerIds, setProviderIds] = useState<string[]>([]);
+  const [raw, setRaw] = useState("");
+  const [byok, setByok] = useState<Record<string, string[]>>({});
+  const [msg, setMsg] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+
+  // provider list for the dropdown (single page covers all providers)
+  useEffect(() => {
+    fetch("/api/providers?page=1&limit=100", { headers: { Authorization: `Bearer ${mk()}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        const ids: string[] = (d?.detailed || d?.data || d?.providers || []).map((p: { id?: string }) => p.id).filter(Boolean);
+        if (ids.length === 0) throw new Error("empty");
+        setProviderIds(ids);
+        setProvider((p) => p || ids[0]);
+      })
+      .catch(() => setMsg(t("byok.load_error")));
+  }, []);
+
+  const loadByok = (id: string) => {
+    if (!id) return;
+    fetch(`/api/byok?vkId=${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${mk()}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => setByok(d?.providers || {}))
+      .catch(() => setByok({}));
+  };
+  useEffect(() => {
+    if (!vkId && keys.length > 0) setVkId(keys[0].id);
+    if (vkId) loadByok(vkId);
+  }, [keys, vkId]);
+
+  const save = async () => {
+    const keysArr = raw.split("\n").map((s) => s.trim()).filter(Boolean);
+    if (!vkId || !provider) return;
+    if (keysArr.length === 0) { alert(t("byok.keys_hint")); return; }
+    const res = await fetch("/api/byok", { method: "POST", headers: { Authorization: `Bearer ${mk()}`, "Content-Type": "application/json" }, body: JSON.stringify({ vkId, provider, keys: keysArr }) });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) { alert(JSON.stringify(d)); return; }
+    setRaw("");
+    setMsg(t("byok.saved").replace("{provider}", provider));
+    loadByok(vkId);
+  };
+  const remove = async (pid: string) => {
+    if (!confirm(`${t("byok.delete")}: ${pid}?`)) return;
+    const res = await fetch(`/api/byok?vkId=${encodeURIComponent(vkId)}&provider=${encodeURIComponent(pid)}`, { method: "DELETE", headers: { Authorization: `Bearer ${mk()}` } });
+    if (res.ok) { setMsg(t("byok.deleted").replace("{provider}", pid)); loadByok(vkId); }
+  };
+
+  const vks: ByokVkLite[] = keys.map((k) => ({ id: k.id, name: k.name, role: k.role }));
+
+  return (
+    <div className="bg-surface rounded-xl border border-line/90 shadow-2xs">
+      <button type="button" onClick={() => setOpen(!open)} className="w-full flex items-center justify-between p-5 text-left">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-violet-500/10 flex items-center justify-center text-violet-500"><Key className="w-4 h-4" /></div>
+          <div><h2 className="text-sm font-bold text-heading">{t("byok.title")}</h2><p className="text-xs text-mutedtxt">{t("byok.subtitle")}</p></div>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-mutedtxt transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="px-5 pb-5 space-y-3">
+          <div className="flex flex-wrap gap-3 items-end bg-raised/50 p-3 rounded-lg border border-linesoft">
+            <label className="flex flex-col gap-1.5 text-xs font-bold text-body uppercase tracking-wider min-w-[200px]">
+              {t("byok.vk_label")}
+              <select value={vkId} onChange={(e) => setVkId(e.target.value)} className="px-3 py-2 bg-surface border border-linestrong rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                {vks.map((k) => <option key={k.id} value={k.id}>{k.id === "vk-master" ? k.id : `${k.name || k.id} (${k.id})`}</option>)}
+              </select>
+            </label>
+            <label className="flex flex-col gap-1.5 text-xs font-bold text-body uppercase tracking-wider min-w-[180px]">
+              {t("byok.provider_label")}
+              <select value={provider} onChange={(e) => setProvider(e.target.value)} className="px-3 py-2 bg-surface border border-linestrong rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20">
+                {providerIds.map((id) => <option key={id} value={id}>{id}</option>)}
+              </select>
+            </label>
+          </div>
+          <label className="flex flex-col gap-1.5 text-xs font-bold text-body uppercase tracking-wider">
+            {t("byok.keys_label")}
+            <textarea value={raw} onChange={(e) => setRaw(e.target.value)} rows={3} placeholder={"gsk_xxx...\nAIza_xxx..."} className="px-3 py-2 bg-surface border border-linestrong rounded-lg text-xs font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20" />
+          </label>
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={save} className="h-[34px] px-4 rounded-lg text-xs font-bold bg-violet-600 text-white hover:bg-violet-700 shadow-xs active:scale-[0.98] transition-transform">{t("byok.save")}</button>
+            {msg && <span className="text-[11px] font-semibold text-emerald-ink bg-emerald-soft border border-emerald-line px-2.5 py-1 rounded-full">{msg}</span>}
+          </div>
+          <p className="text-[11px] text-mutedtxt">{t("byok.keys_hint")}</p>
+          <div className="border border-linesoft rounded-lg divide-y divide-divsoft overflow-hidden">
+            {Object.keys(byok).length === 0 ? (
+              <div className="p-4 text-center text-xs text-mutedtxt">{t("byok.empty")}</div>
+            ) : (
+              Object.entries(byok).map(([pid, masked]) => (
+                <div key={pid} className="flex items-center gap-3 px-3 py-2.5 hover:bg-raised/70">
+                  <code className="text-xs font-bold text-heading min-w-[120px]">{pid}</code>
+                  <span className="flex-1 font-mono text-[11px] text-mutedtxt truncate">{masked.join(", ")}</span>
+                  <button onClick={() => remove(pid)} className="inline-flex items-center gap-1 text-xs font-semibold text-rose-ink hover:bg-rose-soft px-2 py-1 rounded-md border border-transparent hover:border-rose-line"><Trash2 className="w-3.5 h-3.5" />{t("byok.delete")}</button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

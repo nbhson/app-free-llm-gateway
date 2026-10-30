@@ -11,6 +11,7 @@
     "lint": "eslint src --ext .ts",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx src/db/migrate.ts",
     "sync:providers": "tsx src/jobs/sync.ts",
@@ -39,6 +40,7 @@
   "devDependencies": {
     "@types/lru-cache": "^7.10.9",
     "@types/node": "^22.10.5",
+    "@vitest/coverage-v8": "^5.0.5",
     "better-sqlite3": "^13.0.3",
     "drizzle-kit": "^0.31.11",
     "tsx": "^4.19.1",
