@@ -243,10 +243,10 @@ export default function Usage() {
       </div>
 
       {/* Summary bar */}
-      <div className="px-5 py-3.5 bg-slate-900 text-slate-100 rounded-xl shadow-xs border border-slate-800 flex flex-wrap justify-between gap-3 text-xs font-medium">
+      <div className="px-5 py-3.5 bg-codesurface text-codetextbright rounded-xl shadow-xs border border-codeline flex flex-wrap justify-between gap-3 text-xs font-medium">
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse inline-block" />{stats?.logs?.total ?? 0} requests</span>
-          <span className="text-body">•</span><span className="text-slate-300">{stats?.logs?.allTimeTokens?.toLocaleString() ?? 0} tokens all-time</span>
+          <span className="text-body">•</span><span className="text-mutedtxt">{stats?.logs?.allTimeTokens?.toLocaleString() ?? 0} tokens all-time</span>
           <span className="text-body">•</span><span className="font-mono font-bold text-emerald-400">{stats?.logs?.avgLatencyMs ?? 0}ms avg</span>
           <span className="text-body">•</span><span>{Math.round((stats?.logs?.errorRate || 0) * 100)}% err</span>
           {activeProvider && <><span className="text-body">•</span><span className="inline-flex items-center gap-1.5 font-mono text-emerald-300"><Activity className="w-3 h-3" />{activeProvider}</span></>}
@@ -275,7 +275,7 @@ export default function Usage() {
         <div className="p-4 sm:p-6">
           {syncInfo?.lastAdded?.length ? <div className="mb-3 inline-flex items-center gap-2 text-xs font-bold text-violet-ink bg-violet-soft border border-violet-line px-3 py-1.5 rounded-full"><Sparkles className="w-3.5 h-3.5" /> NEW provider: {syncInfo.lastAdded.join(", ")} {syncInfo.lastAddedAt ? `• ${new Date(syncInfo.lastAddedAt).toLocaleString()}` : ""} {syncInfo.bootSync?.status ? `• bootSync: ${syncInfo.bootSync.status}` : ""}</div> : null}
           {topologyProviders.length === 0 ? (
-            <p className="text-xs text-slate-400 text-center py-12">{t("dashboard.no_data")}</p>
+            <p className="text-xs text-mutedtxt text-center py-12">{t("dashboard.no_data")}</p>
           ) : (
             <ProviderTopology providers={topologyProviders} activeProvider={activeProvider} newestProviders={newestProviders} logs={logs} />
           )}
@@ -295,19 +295,19 @@ export default function Usage() {
               <div className="flex items-center gap-2 mb-3"><div className="p-1.5 bg-blue-soft rounded-lg"><BarChart3 className="w-3.5 h-3.5 text-blue-ink" /></div><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("dashboard.requests_by_provider")}</h3></div>
               {stats?.logs?.byProvider && Object.keys(stats.logs.byProvider).length > 0 ? (
                 <ResponsiveContainer width="100%" height={180}><BarChart data={Object.entries(stats.logs.byProvider).map(([name, v]) => ({ name, count: v as number }))}><CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" /><XAxis dataKey="name" tick={{ fontSize: 11 }} interval={0} angle={-15} textAnchor="end" height={50} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
-              ) : <p className="text-xs text-slate-400">{t("dashboard.no_data")}</p>}
+              ) : <p className="text-xs text-mutedtxt">{t("dashboard.no_data")}</p>}
             </div>
             <div className="bg-surface rounded-xl p-5 border border-line/90 shadow-2xs">
               <div className="flex items-center gap-2 mb-3"><div className="p-1.5 bg-purple-soft rounded-lg"><Sparkles className="w-3.5 h-3.5 text-purple-ink" /></div><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("dashboard.tokens_by_provider")}</h3></div>
               {stats?.logs?.tokensByProvider && Object.keys(stats.logs.tokensByProvider).length > 0 ? (
                 <ResponsiveContainer width="100%" height={180}><BarChart data={Object.entries(stats.logs.tokensByProvider).map(([name, v]) => ({ name, tokens: v as number }))}><CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" /><XAxis dataKey="name" tick={{ fontSize: 11 }} /><YAxis tick={{ fontSize: 11 }} /><Tooltip /><Bar dataKey="tokens" fill="#9333ea" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>
-              ) : <p className="text-xs text-slate-400">{t("dashboard.no_data")}</p>}
+              ) : <p className="text-xs text-mutedtxt">{t("dashboard.no_data")}</p>}
             </div>
             <div className="bg-surface rounded-xl p-5 border border-line/90 shadow-2xs">
               <div className="flex items-center gap-2 mb-3"><div className="p-1.5 bg-emerald-soft rounded-lg"><Activity className="w-3.5 h-3.5 text-emerald-ink" /></div><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("logs.status_distribution")}</h3></div>
               {(stats?.logs?.total || 0) > 0 ? (
                 <ResponsiveContainer width="100%" height={180}><PieChart><Pie data={[{ name: "success", value: 100 - Math.round((stats.logs.errorRate || 0) * 100) }, { name: "error", value: Math.round((stats.logs.errorRate || 0) * 100) }]} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label><Cell fill="#10b981" /><Cell fill="#ef4444" /></Pie><Tooltip /><Legend /></PieChart></ResponsiveContainer>
-              ) : <p className="text-xs text-slate-400">{t("dashboard.no_data")}</p>}
+              ) : <p className="text-xs text-mutedtxt">{t("dashboard.no_data")}</p>}
             </div>
           </div>
           <div className="bg-surface rounded-xl p-4 border border-line/90 shadow-2xs text-xs leading-relaxed">
@@ -512,8 +512,8 @@ function ProviderTopology({ providers, activeProvider, newestProviders, logs }: 
 
       {/* legend below svg for mobile */}
       <div className="mt-3 flex flex-wrap items-center justify-center gap-2 text-[11px] font-medium">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900 text-white"><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />{activeProvider ? `${activeProvider} active` : "no active request"}</span>
-        <span className="text-slate-400">• Tap Refresh or send POST /v1/chat/completions to trigger animation</span>
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary text-primary-ink"><span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />{activeProvider ? `${activeProvider} active` : "no active request"}</span>
+        <span className="text-mutedtxt">• Tap Refresh or send POST /v1/chat/completions to trigger animation</span>
       </div>
     </div>
   );

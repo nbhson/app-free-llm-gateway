@@ -151,24 +151,24 @@ export default function Providers() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-heading">{t("providers.title")} <span className="text-mutedtxt font-mono text-lg">({data?.pagination?.total ?? data?.count ?? sorted.length})</span></h1>
           <p className="text-sm text-mutedtxt mt-0.5">{t("providers.subtitle")} {syncStatus?.lastAdded?.length ? <span className="ml-2 inline-flex items-center gap-1 text-xs font-bold text-emerald-ink bg-emerald-soft border border-emerald-line px-2 py-0.5 rounded-full">NEW: {syncStatus.lastAdded.join(", ")}</span> : null} {autoSyncing && <span className="ml-2 inline-flex items-center gap-1 text-xs font-semibold text-blue-ink bg-blue-soft border border-blue-line px-2 py-0.5 rounded-full"><RefreshCw className="w-3 h-3 animate-spin" /> boot-sync…</span>}</p>
-          {syncStatus?.liveModels && <p className="text-[11px] font-mono text-slate-400 mt-1">live-models: {syncStatus.liveModels.total ?? 0} models • {syncStatus.liveModels.providers ?? 0} providers • {syncStatus.liveModels.generated_at ? new Date(syncStatus.liveModels.generated_at).toLocaleString() : "—"} {syncStatus.bootSync?.status ? `• bootSync: ${syncStatus.bootSync.status}` : ""}</p>}
+          {syncStatus?.liveModels && <p className="text-[11px] font-mono text-mutedtxt mt-1">live-models: {syncStatus.liveModels.total ?? 0} models • {syncStatus.liveModels.providers ?? 0} providers • {syncStatus.liveModels.generated_at ? new Date(syncStatus.liveModels.generated_at).toLocaleString() : "—"} {syncStatus.bootSync?.status ? `• bootSync: ${syncStatus.bootSync.status}` : ""}</p>}
         </div>
       </div>
 
-      {!data ? <p className="text-sm text-slate-400">{t("providers.loading")}</p> : (
+      {!data ? <p className="text-sm text-mutedtxt">{t("providers.loading")}</p> : (
         <>
           <div className="bg-surface rounded-xl p-4 border border-line/90 shadow-2xs flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-1 min-w-[280px] flex-wrap items-center gap-3">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input placeholder={t("providers.filter")} value={q} onChange={(e) => setQ(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-raised border border-line rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-heading/10 placeholder:text-slate-400 font-medium" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-mutedtxt" />
+                <input placeholder={t("providers.filter")} value={q} onChange={(e) => setQ(e.target.value)} className="w-full pl-9 pr-3 py-2 bg-raised border border-line rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-heading/10 placeholder:text-mutedtxt font-medium" />
               </div>
               <label className={`inline-flex items-center gap-2 px-3 py-2 rounded-full text-xs font-semibold border cursor-pointer transition-colors ${hasKeyOnly ? "bg-emerald-soft text-emerald-ink border-emerald-line" : "bg-surface text-secondary border-line hover:bg-raised"}`}>
                 <input type="checkbox" checked={hasKeyOnly} onChange={(e) => setHasKeyOnly(e.target.checked)} className="w-4 h-4 rounded border-linestrong text-heading focus:ring-heading/20 accent-emerald-600" /> {t("providers.hasKey")}
               </label>
             </div>
             <div className="flex items-center gap-2.5">
-              <button onClick={handleRefresh} disabled={refreshing} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-60 shadow-xs">
+              <button onClick={handleRefresh} disabled={refreshing} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-ink hover:bg-primary-hover disabled:opacity-60 shadow-xs">
                 {refreshing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} {refreshing ? t("providers.syncing") : t("models.refresh")}
               </button>
               <button onClick={checkHealth} disabled={loadingHealth} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-muted text-body border border-line hover:bg-strong disabled:opacity-60">
@@ -182,13 +182,13 @@ export default function Providers() {
               <div className="flex items-center justify-between px-4 py-3 border-b border-linesoft bg-raised/70">
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-400/80 inline-block" /><span className="w-2.5 h-2.5 rounded-full bg-amber-400/80 inline-block" /><span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80 inline-block" /></div>
-                  <span className="text-slate-300 mx-1">|</span>
+                  <span className="text-mutedtxt mx-1">|</span>
                   <h2 className="text-xs font-bold uppercase tracking-wider text-body">{t("providers.live_health_summary")}</h2>
                   <span className="text-[11px] font-mono bg-surface border border-line px-2 py-0.5 rounded-full">{health.summary ? `${health.summary.online}/${health.summary.total} online` : `${health.providers?.length ?? 0} providers`}</span>
                 </div>
                 <button onClick={() => setHealth(null)} className="text-[11px] font-semibold text-mutedtxt hover:text-body">{t("providers.close")}</button>
               </div>
-              <div className="p-4 bg-slate-950 text-slate-200 font-mono text-xs overflow-x-auto leading-relaxed max-h-72">
+              <div className="p-4 bg-codebg text-codetext font-mono text-xs overflow-x-auto leading-relaxed max-h-72">
                 <pre className="text-emerald-400"><code>{JSON.stringify(health.summary || health, null, 2)}</code></pre>
               </div>
             </div>
@@ -203,7 +203,7 @@ export default function Providers() {
               { key: "free", label: t("providers.th_free") },
               { key: "keys", label: t("providers.th_keys") },
             ].map((s) => (
-              <button key={s.key} onClick={() => toggleSort(s.key)} className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border text-xs font-semibold transition-colors ${sort.col === s.key ? "bg-slate-900 text-white border-heading" : "bg-surface text-secondary border-line hover:bg-raised"}`}>
+              <button key={s.key} onClick={() => toggleSort(s.key)} className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full border text-xs font-semibold transition-colors ${sort.col === s.key ? "bg-primary text-primary-ink border-heading" : "bg-surface text-secondary border-line hover:bg-raised"}`}>
                 {s.label} <ArrowUpDown className="w-3 h-3 opacity-60" />{sort.col === s.key ? (sort.dir === "asc" ? " ↑" : " ↓") : ""}
               </button>
             ))}
@@ -231,7 +231,7 @@ export default function Providers() {
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {hasKey && <span className="inline-block text-[10px] font-bold text-emerald-ink bg-emerald-wash px-2 py-0.5 rounded-full border border-emerald-line">● has key</span>}
                       {isNewest && <span className="inline-block text-[10px] font-bold text-violet-ink bg-violet-wash px-2 py-0.5 rounded-full border border-violet-line animate-pulse">★ NEW</span>}
-                      {(p as unknown as { addedAt?: string }).addedAt && <span className="text-[10px] font-mono text-slate-400">{new Date((p as unknown as { addedAt: string }).addedAt).toLocaleDateString()}</span>}
+                      {(p as unknown as { addedAt?: string }).addedAt && <span className="text-[10px] font-mono text-mutedtxt">{new Date((p as unknown as { addedAt: string }).addedAt).toLocaleDateString()}</span>}
                     </div>
                   </div>
 
@@ -262,7 +262,7 @@ export default function Providers() {
                     <div>
                       <div className="text-[10px] font-bold uppercase tracking-wider text-mutedtxt mb-1">{t("providers.th_caps")}</div>
                       <div className="flex flex-wrap gap-1">
-                        {(p.caps || []).length ? (p.caps || []).slice(0, 6).map((c: string) => <span key={c} className="text-[10px] bg-muted border border-line px-1.5 py-0.5 rounded font-medium text-secondary">{c}</span>) : <span className="text-[11px] text-slate-400">—</span>}
+                        {(p.caps || []).length ? (p.caps || []).slice(0, 6).map((c: string) => <span key={c} className="text-[10px] bg-muted border border-line px-1.5 py-0.5 rounded font-medium text-secondary">{c}</span>) : <span className="text-[11px] text-mutedtxt">—</span>}
                       </div>
                     </div>
 
@@ -272,11 +272,11 @@ export default function Providers() {
                       {baseUrl ? (
                         <div className="flex items-center gap-1.5">
                           <code className="flex-1 text-[11px] font-mono bg-raised border border-line px-2 py-1.5 rounded-md truncate">{baseUrl}</code>
-                          <button onClick={() => { navigator.clipboard.writeText(baseUrl); setCopied(p.id); setTimeout(() => setCopied(null), 1500); }} className="p-1.5 text-slate-400 hover:text-secondary border border-line rounded-md bg-surface shrink-0">
+                          <button onClick={() => { navigator.clipboard.writeText(baseUrl); setCopied(p.id); setTimeout(() => setCopied(null), 1500); }} className="p-1.5 text-mutedtxt hover:text-secondary border border-line rounded-md bg-surface shrink-0">
                             {copied === p.id ? <Check className="w-3.5 h-3.5 text-emerald-ink" /> : <Copy className="w-3.5 h-3.5" />}
                           </button>
                         </div>
-                      ) : <span className="text-slate-400 text-xs">—</span>}
+                      ) : <span className="text-mutedtxt text-xs">—</span>}
                     </div>
 
                     {/* get key */}
@@ -285,7 +285,7 @@ export default function Providers() {
                       {getProviderInfoUrl(p.id) !== "#" ? (
                         <a href={getProviderInfoUrl(p.id)} target="_blank" rel="noopener" className="text-[11px] font-medium text-mutedtxt hover:text-body border border-line bg-surface px-2.5 py-1.5 rounded-md">info ↗</a>
                       ) : (
-                        <span className="text-[11px] font-medium text-slate-400 border border-line bg-raised px-2.5 py-1.5 rounded-md">—</span>
+                        <span className="text-[11px] font-medium text-mutedtxt border border-line bg-raised px-2.5 py-1.5 rounded-md">—</span>
                       )}
                     </div>
                   </div>

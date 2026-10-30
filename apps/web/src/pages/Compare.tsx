@@ -296,7 +296,7 @@ export default function Benchmark() {
             {t("benchmark.subtitle")} • {runs} runs, avg/median/p95/stdDev, auto-rank.
             <code className="ml-1 px-1 py-0.5 bg-muted rounded text-xs">POST /v1/chat/compare</code> (isolated, no cross-fallback).
           </p>
-          <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1"><Info className="w-3 h-3" /> Latency đo server-side per-model (ms), TPS = completion_tokens / latency, cost ước tính minh bạch (free=0).</p>
+          <p className="text-[11px] text-mutedtxt mt-1 flex items-center gap-1"><Info className="w-3 h-3" /> Latency đo server-side per-model (ms), TPS = completion_tokens / latency, cost ước tính minh bạch (free=0).</p>
         </div>
         <div className="flex items-center gap-2">
           <a href="/metrics" target="_blank" className="text-xs px-3 py-1.5 rounded-lg border bg-surface hover:bg-raised inline-flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" /> /metrics</a>
@@ -326,14 +326,14 @@ export default function Benchmark() {
                 <button onClick={() => setModels(models.filter((x) => x !== m))} className="ml-1 hover:text-rose-ink"><X className="w-3 h-3" /></button>
               </span>
             ))}
-            <button onClick={() => setShowAvail(!showAvail)} className="text-xs px-2.5 py-1 rounded-lg bg-slate-900 text-white inline-flex items-center gap-1">{showAvail ? <X className="w-3 h-3" /> : <Search className="w-3 h-3" />} {showAvail ? t("benchmark.close") : t("benchmark.add_model")}</button>
+            <button onClick={() => setShowAvail(!showAvail)} className="text-xs px-2.5 py-1 rounded-lg bg-primary text-primary-ink inline-flex items-center gap-1">{showAvail ? <X className="w-3 h-3" /> : <Search className="w-3 h-3" />} {showAvail ? t("benchmark.close") : t("benchmark.add_model")}</button>
             <button onClick={() => setModels(["free-llm-gateway/auto", "groq/llama-3.3-70b-versatile", "kilo-code/kilo-auto"])} className="text-xs px-2 py-1 border rounded-lg bg-surface">{t("benchmark.reset")}</button>
           </div>
           {showAvail && (
             <div className="border rounded-xl p-3 bg-raised/50 space-y-2">
               <div className="flex gap-2">
                 <div className="relative flex-1">
-                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+                  <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-mutedtxt" />
                   <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t("benchmark.filter_placeholder")} className="w-full pl-8 pr-3 py-2 text-sm border rounded-lg bg-surface" />
                 </div>
                 <span className="text-xs text-mutedtxt py-2">{filteredAvail.length}/{available.length} models</span>
@@ -345,7 +345,7 @@ export default function Benchmark() {
                   return (
                     <button key={m.id} disabled={sel || models.length >= 5} onClick={() => setModels([...models, m.id].slice(0, 5))} className={`text-left px-2.5 py-2 rounded-lg border text-xs flex items-center justify-between ${sel ? "bg-emerald-soft border-emerald-line text-emerald-ink" : "bg-surface hover:bg-raised border-line"}`}>
                       <span className="truncate flex items-center gap-1.5">{fav && <Star className="w-3 h-3 fill-amber-400 text-amber-400" />}{m.id}</span>
-                      <span className="text-[11px] text-slate-400 ml-2">{m.provider}</span>
+                      <span className="text-[11px] text-mutedtxt ml-2">{m.provider}</span>
                     </button>
                   );
                 })}
@@ -364,16 +364,16 @@ export default function Benchmark() {
           </div>
           <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder={t("benchmark.prompt_placeholder")} className="w-full border rounded-xl p-3 text-sm min-h-[96px] focus:outline-none focus:ring-2 focus:ring-violet-500/20 focus:border-violet-line" />
           <div className="flex flex-wrap items-center gap-3 text-xs">
-            <label className="inline-flex items-center gap-1.5">{t("benchmark.runs")}: <input type="range" min={1} max={5} value={runs} onChange={(e) => setRuns(parseInt(e.target.value))} className="w-24" /> <span className="font-mono font-bold w-6">{runs}</span><span className="text-slate-400"> (avg/median/p95)</span></label>
+            <label className="inline-flex items-center gap-1.5">{t("benchmark.runs")}: <input type="range" min={1} max={5} value={runs} onChange={(e) => setRuns(parseInt(e.target.value))} className="w-24" /> <span className="font-mono font-bold w-6">{runs}</span><span className="text-mutedtxt"> (avg/median/p95)</span></label>
             <label className="inline-flex items-center gap-1.5">{t("benchmark.temp")}: <input type="range" min={0} max={1} step={0.1} value={temperature} onChange={(e) => setTemperature(parseFloat(e.target.value))} className="w-24" /> <span className="font-mono w-8">{temperature}</span></label>
             <label className="inline-flex items-center gap-1.5">max_tokens: <input type="range" min={32} max={2048} step={32} value={maxTokens} onChange={(e) => setMaxTokens(parseInt(e.target.value))} className="w-24" /> <span className="font-mono w-12">{maxTokens}</span></label>
-            <span className="text-slate-400">• {prompt.length} {t("benchmark.chars")} • {t("benchmark.tokens_est")} {Math.ceil(prompt.length / 4)} tokens</span>
+            <span className="text-mutedtxt">• {prompt.length} {t("benchmark.chars")} • {t("benchmark.tokens_est")} {Math.ceil(prompt.length / 4)} tokens</span>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
           {!loading ? (
-            <button onClick={runBenchmark} disabled={!prompt.trim() || models.length < 2} className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-semibold shadow hover:bg-black disabled:opacity-50">
+            <button onClick={runBenchmark} disabled={!prompt.trim() || models.length < 2} className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-ink rounded-xl text-sm font-semibold shadow hover:bg-black disabled:opacity-50">
               <Play className="w-4 h-4 fill-white" /> {`${t("benchmark.run")} (${models.length} models × ${runs} runs)`}
             </button>
           ) : (
@@ -425,12 +425,12 @@ export default function Benchmark() {
                       <td className="px-3 py-2.5 font-bold">{i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}</td>
                       <td className="px-3 py-2 font-mono text-xs max-w-[220px] truncate" title={a.model}>{a.model} {i === 0 && <span className="ml-1 px-1.5 py-0.5 rounded bg-amber-500 text-white text-[10px]">{t("benchmark.winner")}</span>}</td>
                       <td className="px-3 py-2 text-xs"><span className="px-2 py-0.5 rounded-full bg-muted border text-[11px]">{a.provider}</span></td>
-                      <td className="px-3 py-2 text-right font-mono font-bold text-title">{a.avgLatency || "—"} <span className="text-slate-400 font-normal">{a.avgLatency ? "ms" : ""}</span></td>
+                      <td className="px-3 py-2 text-right font-mono font-bold text-title">{a.avgLatency || "—"} <span className="text-mutedtxt font-normal">{a.avgLatency ? "ms" : ""}</span></td>
                       <td className="px-3 py-2 text-right font-mono text-secondary">{a.medianLatency ? `${a.medianLatency}ms` : "—"}</td>
                       <td className="px-3 py-2 text-right font-mono text-secondary">{a.p95 ? `${a.p95}ms` : "—"}</td>
                       <td className="px-3 py-2 text-right font-mono text-xs text-mutedtxt">{a.minLatency || "—"}/{a.maxLatency || "—"}</td>
                       <td className="px-3 py-2 text-right font-mono text-xs text-mutedtxt">{a.stdDev || "—"}</td>
-                      <td className="px-3 py-2 text-right font-mono font-semibold text-emerald-ink">{a.avgTps}<span className="text-slate-400 font-normal">/s</span></td>
+                      <td className="px-3 py-2 text-right font-mono font-semibold text-emerald-ink">{a.avgTps}<span className="text-mutedtxt font-normal">/s</span></td>
                       <td className="px-3 py-2 text-right font-mono text-xs">{a.avgCost === 0 ? <span className="text-emerald-ink font-bold">free</span> : `$${a.avgCost.toFixed(4)}`}</td>
                       <td className="px-3 py-2 text-center">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${a.successRate === 1 ? "bg-emerald-soft border-emerald-line text-emerald-ink" : a.successRate >= 0.5 ? "bg-amber-soft border-amber-line text-amber-ink" : "bg-rose-soft border-rose-line text-rose-ink"}`}>
@@ -468,19 +468,19 @@ export default function Benchmark() {
                 return (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                      <div className="p-3 rounded-lg bg-raised border"><div className="text-mutedtxt">{t("benchmark.avg_latency")}</div><div className="font-mono font-bold text-lg">{a.avgLatency || "—"}ms</div><div className="text-slate-400">median {a.medianLatency} / p95 {a.p95} / σ {a.stdDev}</div><div className="text-slate-400">min {a.minLatency} / max {a.maxLatency}</div></div>
-                      <div className="p-3 rounded-lg bg-emerald-soft border border-emerald-line"><div className="text-mutedtxt">{t("benchmark.throughput")}</div><div className="font-mono font-bold text-lg text-emerald-ink">{a.avgTps} tok/s</div><div className="text-slate-400">{a.avgTokens} avg tokens • per-run TPS mean</div></div>
-                      <div className="p-3 rounded-lg bg-violet-soft border border-violet-line"><div className="text-mutedtxt">{t("benchmark.cost_est")}</div><div className="font-mono font-bold text-lg">{a.avgCost === 0 ? <span className="text-emerald-ink">free</span> : `$${a.avgCost.toFixed(4)}`}</div><div className="text-slate-400">per run • provider {a.provider} • est. only</div></div>
-                      <div className="p-3 rounded-lg bg-amber-soft border border-amber-line"><div className="text-mutedtxt">{t("benchmark.reliability")}</div><div className="font-mono font-bold text-lg">{Math.round(a.successRate * 100)}%</div><div className="text-slate-400">{a.okCount} ok / {a.failCount} fail • {a.runs.length} runs</div></div>
+                      <div className="p-3 rounded-lg bg-raised border"><div className="text-mutedtxt">{t("benchmark.avg_latency")}</div><div className="font-mono font-bold text-lg">{a.avgLatency || "—"}ms</div><div className="text-mutedtxt">median {a.medianLatency} / p95 {a.p95} / σ {a.stdDev}</div><div className="text-mutedtxt">min {a.minLatency} / max {a.maxLatency}</div></div>
+                      <div className="p-3 rounded-lg bg-emerald-soft border border-emerald-line"><div className="text-mutedtxt">{t("benchmark.throughput")}</div><div className="font-mono font-bold text-lg text-emerald-ink">{a.avgTps} tok/s</div><div className="text-mutedtxt">{a.avgTokens} avg tokens • per-run TPS mean</div></div>
+                      <div className="p-3 rounded-lg bg-violet-soft border border-violet-line"><div className="text-mutedtxt">{t("benchmark.cost_est")}</div><div className="font-mono font-bold text-lg">{a.avgCost === 0 ? <span className="text-emerald-ink">free</span> : `$${a.avgCost.toFixed(4)}`}</div><div className="text-mutedtxt">per run • provider {a.provider} • est. only</div></div>
+                      <div className="p-3 rounded-lg bg-amber-soft border border-amber-line"><div className="text-mutedtxt">{t("benchmark.reliability")}</div><div className="font-mono font-bold text-lg">{Math.round(a.successRate * 100)}%</div><div className="text-mutedtxt">{a.okCount} ok / {a.failCount} fail • {a.runs.length} runs</div></div>
                     </div>
                     {a.runs.map((r, idx) => (
                       <div key={idx} className={`rounded-xl border p-3 ${r.ok ? "bg-surface border-line" : "bg-rose-soft border-rose-line"}`}>
                         <div className="flex items-center justify-between text-xs font-mono text-mutedtxt mb-2">
                           <span>{t("benchmark.run_label")} #{idx + 1} • {r.provider} • {r.latencyMs ? `${r.latencyMs}ms` : "no timing"} • {r.usage?.completion_tokens ?? Math.ceil((r.content?.length || 0) / 4)} {t("benchmark.tokens_label")} • {r.ok ? t("benchmark.ok") : t("benchmark.fail")}</span>
-                          <span className="text-slate-400">{r.usage ? `${r.usage.prompt_tokens ?? "?"}/${r.usage.completion_tokens ?? "?"}/${r.usage.total_tokens ?? "?"}` : "estimated"}</span>
+                          <span className="text-mutedtxt">{r.usage ? `${r.usage.prompt_tokens ?? "?"}/${r.usage.completion_tokens ?? "?"}/${r.usage.total_tokens ?? "?"}` : "estimated"}</span>
                         </div>
                         {r.ok ? (
-                          <div className="prose prose-sm max-w-none text-sm"><ReactMarkdown remarkPlugins={[remarkGfm]}>{r.content.slice(0, 4000)}</ReactMarkdown>{r.content.length > 4000 && <span className="text-xs text-slate-400">… truncated {r.content.length - 4000} chars</span>}</div>
+                          <div className="prose prose-sm max-w-none text-sm"><ReactMarkdown remarkPlugins={[remarkGfm]}>{r.content.slice(0, 4000)}</ReactMarkdown>{r.content.length > 4000 && <span className="text-xs text-mutedtxt">… truncated {r.content.length - 4000} chars</span>}</div>
                         ) : (
                           <div className="text-xs text-rose-ink whitespace-pre-wrap bg-surface rounded-lg p-2 border border-rose-line">{r.error}</div>
                         )}
@@ -507,7 +507,7 @@ export default function Benchmark() {
                   <Bar dataKey="p95" fill="#94a3b8" radius={[0, 4, 4, 0]} name="p95 ms" />
                 </BarChart>
               </ResponsiveContainer>
-              <div className="text-[11px] text-slate-400 mt-1">P95 via linear interpolation — cần ≥3 runs để có ý nghĩa, 5 runs khuyến nghị.</div>
+              <div className="text-[11px] text-mutedtxt mt-1">P95 via linear interpolation — cần ≥3 runs để có ý nghĩa, 5 runs khuyến nghị.</div>
             </div>
             <div className="bg-surface rounded-xl border border-line shadow-sm p-5">
               <div className="flex items-center gap-2 mb-3"><Gauge className="w-4 h-4 text-emerald-ink" /><h3 className="text-xs font-bold uppercase tracking-wider text-body">{t("benchmark.throughput_chart")}</h3></div>
@@ -522,7 +522,7 @@ export default function Benchmark() {
                   <Bar yAxisId="tok" dataKey="tokens" fill="#a7f3d0" radius={[4, 4, 0, 0]} name="avg tokens" />
                 </BarChart>
               </ResponsiveContainer>
-              <div className="text-[11px] text-slate-400 mt-1">TPS = tokens / seconds per ok run, rồi mean — chính xác hơn avgTokens/avgLatency.</div>
+              <div className="text-[11px] text-mutedtxt mt-1">TPS = tokens / seconds per ok run, rồi mean — chính xác hơn avgTokens/avgLatency.</div>
             </div>
           </div>
 
@@ -565,9 +565,9 @@ export default function Benchmark() {
           </div>
 
           {/* Raw prompt */}
-          <div className="bg-slate-900 text-slate-100 rounded-xl p-4 text-xs">
+          <div className="bg-codesurface text-codetextbright rounded-xl p-4 text-xs">
             <div className="font-mono font-bold mb-2 opacity-80 flex items-center gap-2"><Zap className="w-3 h-3 text-amber-400" /> {t("benchmark.config_copy")}</div>
-            <pre className="whitespace-pre-wrap break-words text-slate-300">POST /v1/chat/compare{"\n"}{JSON.stringify({ models, messages: [{ role: "user", content: prompt }], temperature, max_tokens: maxTokens, runs }, null, 2)}</pre>
+            <pre className="whitespace-pre-wrap break-words text-codetextdim">POST /v1/chat/compare{"\n"}{JSON.stringify({ models, messages: [{ role: "user", content: prompt }], temperature, max_tokens: maxTokens, runs }, null, 2)}</pre>
           </div>
         </>
       )}
@@ -577,8 +577,8 @@ export default function Benchmark() {
           <div className="w-12 h-12 rounded-xl bg-amber-wash flex items-center justify-center mx-auto mb-3"><Trophy className="w-6 h-6 text-amber-ink" /></div>
           <h3 className="font-bold text-title">{t("benchmark.empty_title")}</h3>
           <p className="text-sm text-mutedtxt mt-1">{t("benchmark.empty_desc").replace("{runs}", String(runs))}</p>
-          <p className="text-xs text-slate-400 mt-2">{t("benchmark.empty_hint")}</p>
-          <p className="text-[11px] text-slate-400 mt-3 flex items-center justify-center gap-1"><Info className="w-3 h-3" /> Server đo latency per-model, rank success → avgLatency → p95. Dùng ≥3 runs để median/p95 có ý nghĩa.</p>
+          <p className="text-xs text-mutedtxt mt-2">{t("benchmark.empty_hint")}</p>
+          <p className="text-[11px] text-mutedtxt mt-3 flex items-center justify-center gap-1"><Info className="w-3 h-3" /> Server đo latency per-model, rank success → avgLatency → p95. Dùng ≥3 runs để median/p95 có ý nghĩa.</p>
         </div>
       )}
     </div>

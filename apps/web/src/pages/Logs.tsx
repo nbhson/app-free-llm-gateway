@@ -82,10 +82,10 @@ export default function Logs() {
 
       {authError && <div className="px-4 py-3 bg-rose-soft border border-rose-line text-rose-ink rounded-xl text-xs font-semibold">⚠️ {authError} — {t("logs.auth_error_hint")}</div>}
 
-      <div className="px-5 py-3.5 bg-slate-900 text-slate-100 rounded-xl shadow-xs border border-slate-800 flex flex-wrap justify-between gap-3 text-xs font-medium">
+      <div className="px-5 py-3.5 bg-codesurface text-codetextbright rounded-xl shadow-xs border border-codeline flex flex-wrap justify-between gap-3 text-xs font-medium">
         <div className="flex flex-wrap items-center gap-3">
           <span className="inline-flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse inline-block" />{stats?.logs?.total ?? 0} requests</span>
-          <span className="text-body">•</span><span className="text-slate-300">{stats?.logs?.allTimeTokens?.toLocaleString() ?? 0} tokens all-time</span>
+          <span className="text-body">•</span><span className="text-mutedtxt">{stats?.logs?.allTimeTokens?.toLocaleString() ?? 0} tokens all-time</span>
           <span className="text-body">•</span><span className="font-mono font-bold text-emerald-400">{stats?.logs?.avgLatencyMs ?? 0}ms avg</span>
           <span className="text-body">•</span><span>{Math.round((stats?.logs?.errorRate || 0) * 100)}% err</span>
           {(stats?.logs?.cacheHitRate ?? 0) > 0 && <><span className="text-body">•</span><span className="text-sky-300">{Math.round((stats!.logs!.cacheHitRate ?? 0) * 100)}% cache hit</span></>}
@@ -100,7 +100,7 @@ export default function Logs() {
           <span className={`px-2 py-0.5 rounded-full border font-bold text-[11px] ${stats.flags.compression ? "bg-violet-soft text-violet-ink border-violet-line" : "bg-raised text-mutedtxt border-line"}`}>compression {stats.flags.compression ? "ON" : "OFF"}</span>
           <span className={`px-2 py-0.5 rounded-full border font-bold text-[11px] ${stats.flags.semanticCache ? "bg-sky-soft text-sky-ink border-sky-line" : "bg-raised text-mutedtxt border-line"}`}>semantic cache {stats.flags.semanticCache ? "ON" : "OFF"}</span>
           <span className={`px-2 py-0.5 rounded-full border font-bold text-[11px] ${stats.flags.costRouting ? "bg-amber-soft text-amber-ink border-amber-line" : "bg-raised text-mutedtxt border-line"}`}>cost routing {stats.flags.costRouting ? "ON" : "OFF"}</span>
-          <span className="ml-auto text-[11px] text-slate-400">xem chi tiết ở Settings page</span>
+          <span className="ml-auto text-[11px] text-mutedtxt">xem chi tiết ở Settings page</span>
         </div>
       )}
 
@@ -125,7 +125,7 @@ export default function Logs() {
                       <td className="px-4 py-3"><span className="font-mono text-xs px-2 py-0.5 rounded bg-muted border border-line">{l.provider}</span></td>
                       <td className="px-4 py-3 font-mono text-[11px] max-w-[200px] truncate" title={l.model}>{l.model}</td>
                       <td className="px-4 py-3 font-mono">
-                        {l.totalTokens ?? "-"}<span className="text-slate-400 text-[10px]"> ({l.promptTokens ?? 0}+{l.completionTokens ?? 0})</span>
+                        {l.totalTokens ?? "-"}<span className="text-mutedtxt text-[10px]"> ({l.promptTokens ?? 0}+{l.completionTokens ?? 0})</span>
                         {savedTokens !== undefined && savedTokens > 0 && (
                           <div className="text-[10px] text-violet-ink" title={`Original prompt ${l.promptTokens}, compressed to ${l.compressedTokens}`}>
                             ↓ {l.compressedTokens} compressed (−{savedTokens})
@@ -149,7 +149,7 @@ export default function Logs() {
                             <div className="space-y-1"><div><b>ID:</b> <code className="bg-surface border px-1.5 py-0.5 rounded font-mono text-[11px]">{l.id}</code></div><div><b>Time:</b> {l.timestamp ? new Date(l.timestamp).toLocaleString() : "-"}</div><div><b>Key:</b> {l.virtualKeyName} ({l.virtualKeyId})</div><div><b>Provider:</b> {l.provider}</div><div><b>Model:</b> <code className="bg-surface border px-1.5 py-0.5 rounded font-mono text-[11px]">{l.model}</code></div></div>
                             <div className="space-y-1"><div><b>Tokens:</b> {l.promptTokens ?? 0} prompt + {l.completionTokens ?? 0} completion = <b>{l.totalTokens ?? 0}</b></div><div><b>Latency:</b> {l.latencyMs}ms</div><div><b>Status:</b> {l.status}</div><div><b>Verified:</b> {l.verifiedStatus || "-"}</div>{l.compressedTokens !== undefined && l.compressedTokens > 0 && <div className="bg-violet-soft border border-violet-line rounded-lg px-3 py-2"><b className="text-violet-ink">Compact:</b> {l.promptTokens} → {l.compressedTokens} tokens <span className="text-violet-ink font-bold">(saved {savedTokens} = {l.promptTokens ? Math.round((savedTokens! / l.promptTokens)*100) : 0}%, ratio {typeof l.compressionRatio === "number" ? l.compressionRatio.toFixed(3) : l.compressionRatio ?? "-"})</span> — Settings: COMPRESSION_ENABLED{(l.compressionRatio ?? 0) > 0 ? " ON" : " (log shows compact)"}</div>}{l.cacheHit && <div><b>Cache:</b> <span className="text-sky-ink font-semibold">cache hit (semantic cache ON)</span>{l.semanticHit ? " • semantic" : ""}</div>}{!l.cacheHit && l.semanticHit && <div><b>Cache:</b> <span className="text-indigo-ink font-semibold">semantic hit</span></div>}{l.cost !== undefined && l.cost > 0 && <div><b>Cost:</b> ${l.cost} (est.) — cost routing {l.cost > 0 ? "active" : "off"}</div>}<pre className="bg-surface border border-line rounded-lg p-3 max-h-32 overflow-auto font-mono text-[11px] whitespace-pre-wrap break-all">{l.error || "—"}</pre></div>
                           </div>
-                          <div className="mt-3"><b className="text-xs">Raw JSON:</b><pre className="bg-slate-950 text-slate-200 rounded-xl p-4 font-mono text-xs overflow-auto max-h-48 mt-1">{JSON.stringify(l, null, 2)}</pre></div>
+                          <div className="mt-3"><b className="text-xs">Raw JSON:</b><pre className="bg-codebg text-codetext rounded-xl p-4 font-mono text-xs overflow-auto max-h-48 mt-1">{JSON.stringify(l, null, 2)}</pre></div>
                         </td>
                       </tr>
                     )}
@@ -159,7 +159,7 @@ export default function Logs() {
             </tbody>
           </table>
         </div>
-        {logs.length === 0 && <div className="p-8 text-center text-sm text-slate-400">{t("logs.no_logs")}</div>}
+        {logs.length === 0 && <div className="p-8 text-center text-sm text-mutedtxt">{t("logs.no_logs")}</div>}
         {moreCount > 0 && (
           <div className="px-4 py-3 text-center text-xs font-mono text-mutedtxt bg-raised border-t border-line/80">
             ... + {moreCount} more

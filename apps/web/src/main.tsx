@@ -121,7 +121,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex flex-col bg-canvas">
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-slate-900 focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-primary-ink"
       >
                 {t("a11y.skipToContent")}
       </a>
@@ -140,7 +140,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
               <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border shadow-2xs ${health === "ok" ? "bg-emerald-soft text-emerald-ink border-emerald-line/80" : health === "down" ? "bg-rose-soft text-rose-ink border-rose-line/80" : "bg-muted text-secondary border-line/80"}`}>
                 <span className="relative flex h-2 w-2">
                   {health === "ok" && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>}
-                  <span className={`relative inline-flex rounded-full h-2 w-2 ${health === "ok" ? "bg-emerald-500" : health === "down" ? "bg-rose-500" : "bg-slate-400"}`}></span>
+                  <span className={`relative inline-flex rounded-full h-2 w-2 ${health === "ok" ? "bg-emerald-500" : health === "down" ? "bg-rose-500" : "bg-strong"}`}></span>
                 </span>
                 <span className="tracking-wide">{health === "ok" ? t("header.online") : health === "down" ? t("header.offline") : t("header.loading")}</span>
               </div>
@@ -148,7 +148,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
               <div className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-muted text-secondary border border-line/80 shadow-2xs">
                 <span className="font-semibold text-title">{headerStats?.providers ?? headerStats?.count ?? "—"}</span>
                 <span>providers</span>
-                <span className="text-slate-300">•</span>
+                <span className="text-mutedtxt">•</span>
                 <span className="font-semibold text-amber-ink">{headerStats?.free_models ?? "—"}</span>
                 <span>free</span>
               </div>
@@ -165,7 +165,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-body bg-surface hover:bg-raised active:bg-muted border border-line transition-colors shadow-2xs"
                 >
                   <span>{lang === "en" ? "🇬🇧 EN" : "🇻🇳 VI"}</span>
-                  <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ${langMenuOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 text-mutedtxt transition-transform duration-150 ${langMenuOpen ? "rotate-180" : ""}`} />
                 </button>
                 {langMenuOpen && (
                   <div
@@ -216,10 +216,10 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   readOnly={false}
                   disabled={false}
                 />
-                <button type="button" onClick={() => setShowKey(!showKey)} className="p-1 text-slate-400 hover:text-secondary rounded transition-colors" title={showKey ? "Hide" : "Show"}>
+                <button type="button" onClick={() => setShowKey(!showKey)} className="p-1 text-mutedtxt hover:text-secondary rounded transition-colors" title={showKey ? "Hide" : "Show"}>
                   {showKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                 </button>
-                <button type="button" onClick={handleCopyMasterKey} className="p-1 text-slate-400 hover:text-body rounded transition-colors" title="Copy">
+                <button type="button" onClick={handleCopyMasterKey} className="p-1 text-mutedtxt hover:text-body rounded transition-colors" title="Copy">
                   {copiedKey ? <Check className="w-3.5 h-3.5 text-emerald-ink" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
@@ -233,19 +233,19 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   key={item.to}
                   to={item.to}
                   end={item.end}
-                  className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-secondary hover:text-heading hover:bg-muted/80"}`}
+                  className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-primary text-primary-ink shadow-xs" : "text-secondary hover:text-heading hover:bg-muted/80"}`}
                 >
                   {({ isActive }) => (
                     <>
                       <span className={isActive ? "text-amber-400" : "text-mutedtxt"}>{item.icon}</span>
                       <span>{item.label}</span>
                       {item.badge && (
-                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-slate-800 text-slate-200 border border-slate-700" : "bg-strong/80 text-body"}`}>
+                        <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${isActive ? "bg-primary-ink/10 text-primary-ink border border-primary-ink/20" : "bg-strong/80 text-body"}`}>
                           {item.badge}
                         </span>
                       )}
                       {isActive && (
-                        <div className="absolute inset-0 rounded-lg -z-10 bg-slate-900" />
+                        <div className="absolute inset-0 rounded-lg -z-10 bg-primary" />
                       )}
                     </>
                   )}
@@ -256,13 +256,13 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
                   <NavLink
                     key={item.to}
                     to={item.to}
-                    className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-slate-900 text-white shadow-xs" : "text-secondary hover:text-heading hover:bg-muted/80"}`}
+                    className={({ isActive }) => `relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-semibold transition-all duration-150 active:scale-[0.98] ${isActive ? "bg-primary text-primary-ink shadow-xs" : "text-secondary hover:text-heading hover:bg-muted/80"}`}
                   >
                     {({ isActive }) => (
                       <>
                         <span className={isActive ? "text-amber-400" : "text-mutedtxt"}>{item.icon}</span>
                         <span>{item.label}</span>
-                        {isActive && <div className="absolute inset-0 rounded-lg -z-10 bg-slate-900" />}
+                        {isActive && <div className="absolute inset-0 rounded-lg -z-10 bg-primary" />}
                       </>
                     )}
                   </NavLink>

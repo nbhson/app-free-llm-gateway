@@ -21,15 +21,15 @@ export const MessageList = React.memo(function MessageList({ messages, isStreami
       {messages.map((m) => (
         <div key={m.id} id={`msg-${m.id}`} className={`flex gap-3 scroll-mt-4 transition-all duration-300 ${m.role === "user" ? "justify-end" : "justify-start"} ${highlightedId === m.id ? "ring-2 ring-amber-400 rounded-2xl" : ""}`}>
           {m.role !== "user" && (
-            <div className="w-7 h-7 rounded-full bg-slate-900 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-7 h-7 rounded-full bg-primary text-primary-ink flex items-center justify-center shrink-0 mt-0.5">
               <Bot className="w-4 h-4" />
             </div>
           )}
-          <div className={`max-w-[92%] sm:max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-6 ${m.role === "user" ? "bg-slate-900 text-white rounded-br-md" : "bg-surface border border-line shadow-sm rounded-bl-md"} ${m.error ? "border-rose-line bg-rose-soft" : ""}`}>
+          <div className={`max-w-[92%] sm:max-w-[78%] rounded-2xl px-4 py-3 text-sm leading-6 ${m.role === "user" ? "bg-primary text-primary-ink rounded-br-md" : "bg-surface border border-line shadow-sm rounded-bl-md"} ${m.error ? "border-rose-line bg-rose-soft" : ""}`}>
             {m.attachments && m.attachments.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {m.attachments.map((a) => (
-                  <div key={a.id} className={`${m.role === "user" ? "bg-white/10 border-white/20 text-white" : "bg-raised border-line"} border rounded-lg overflow-hidden`}>
+                  <div key={a.id} className={`${m.role === "user" ? "bg-primary-ink/10 border-primary-ink/20 text-primary-ink" : "bg-raised border-line"} border rounded-lg overflow-hidden`}>
                     {a.type === "image" && a.preview ? (
                       <div className="p-1">
                         <img src={a.preview} alt={a.name} className="max-h-40 rounded-lg border border-line" />
@@ -50,14 +50,14 @@ export const MessageList = React.memo(function MessageList({ messages, isStreami
               m.content ? (
                 <ErrorBoundary><MarkdownContent content={m.content} /></ErrorBoundary>
               ) : isStreaming && m.id === lastId ? (
-                <span className="inline-flex items-center gap-1.5 text-slate-400" role="status" aria-live="polite">
-                  <span className="w-2 h-2 rounded-full bg-slate-400 animate-pulse" /> thinking...
+                <span className="inline-flex items-center gap-1.5 text-mutedtxt" role="status" aria-live="polite">
+                  <span className="w-2 h-2 rounded-full bg-strong animate-pulse" /> thinking...
                 </span>
               ) : null
             ) : (
               <div className="whitespace-pre-wrap break-words">{m.content}</div>
             )}
-            <div className={`mt-1.5 flex items-center gap-2 text-[11px] ${m.role === "user" ? "text-slate-300 justify-end" : "text-mutedtxt"}`}>
+            <div className={`mt-1.5 flex items-center gap-2 text-[11px] ${m.role === "user" ? "text-mutedtxt justify-end" : "text-mutedtxt"}`}>
               <span>{new Date(m.createdAt).toLocaleTimeString()}</span>
               {m.provider && <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-muted border border-line text-secondary font-mono">{m.provider}</span>}
               {m.latencyMs && <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" />{m.latencyMs}ms</span>}
@@ -65,7 +65,7 @@ export const MessageList = React.memo(function MessageList({ messages, isStreami
                 <button
                   aria-label="Copy message"
                   onClick={() => navigator.clipboard.writeText(m.content).catch(() => {})}
-                  className="ml-auto p-1 rounded hover:bg-muted text-slate-400 hover:text-secondary"
+                  className="ml-auto p-1 rounded hover:bg-muted text-mutedtxt hover:text-secondary"
                   title="Copy"
                 >
                   <Copy className="w-3.5 h-3.5" />

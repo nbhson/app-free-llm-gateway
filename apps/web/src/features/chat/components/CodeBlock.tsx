@@ -24,13 +24,13 @@ export const CodeBlock = React.memo(function CodeBlock({ children, className }: 
     );
   }
   return (
-    <div className="my-3 rounded-xl border border-slate-700 overflow-hidden bg-slate-950">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900 border-b border-slate-700">
-        <span className="text-xs font-mono font-semibold text-slate-300">{lang || t("chat.code")}</span>
+    <div className="my-3 rounded-xl border border-codeline overflow-hidden bg-codebg">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-codesurface border-b border-codeline">
+        <span className="text-xs font-mono font-semibold text-codetextdim">{lang || t("chat.code")}</span>
         <button
           aria-label={copied ? "Copied" : "Copy code"}
           onClick={handleCopy}
-          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-semibold bg-slate-800 border border-slate-700 hover:bg-slate-800/80 text-slate-200"
+          className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-semibold bg-coderow border border-codeline hover:bg-coderow/80 text-codetext"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
           {copied ? t("chat.copied") : t("chat.copy")}

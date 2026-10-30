@@ -120,27 +120,27 @@ export const ContextPanel = React.memo(function ContextPanel({
         </div>
 
         {lastMeta && (
-          <div className="rounded-xl bg-slate-900 text-slate-100 p-3 space-y-1.5">
+          <div className="rounded-xl bg-codesurface text-codetextbright p-3 space-y-1.5">
             <div className="text-xs font-bold flex items-center gap-1.5">
               <Zap className="w-3.5 h-3.5 text-amber-400" /> {t("chat.lastResponse")}
             </div>
             <div className="grid grid-cols-2 gap-2 text-xs font-mono">
               <div>
-                <div className="text-slate-400">provider</div>
-                <div className="font-semibold text-white truncate">{lastMeta.provider || "—"}</div>
+                <div className="text-codetextfaint">provider</div>
+                <div className="font-semibold text-codetext truncate">{lastMeta.provider || "—"}</div>
               </div>
               <div>
-                <div className="text-slate-400">latency</div>
-                <div className="font-semibold text-white">{lastMeta.latencyMs ? `${lastMeta.latencyMs}ms` : "—"}</div>
+                <div className="text-codetextfaint">latency</div>
+                <div className="font-semibold text-codetextbright">{lastMeta.latencyMs ? `${lastMeta.latencyMs}ms` : "—"}</div>
               </div>
               {usage && (
                 <>
                   <div>
-                    <div className="text-slate-400">prompt</div>
+                    <div className="text-codetextfaint">prompt</div>
                     <div className="text-emerald-300">{String(usage.prompt_tokens ?? usage.promptTokens ?? "—")}</div>
                   </div>
                   <div>
-                    <div className="text-slate-400">completion</div>
+                    <div className="text-codetextfaint">completion</div>
                     <div className="text-amber-300">{String(usage.completion_tokens ?? usage.completionTokens ?? "—")}</div>
                   </div>
                 </>
@@ -161,11 +161,11 @@ export const ContextPanel = React.memo(function ContextPanel({
 
         <button
           onClick={onRefresh}
-          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold shadow-sm"
+          className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-sm"
         >
           <RotateCcw className="w-4 h-4" /> {t("chat.refreshFromStart")}
         </button>
-        <p className="text-center text-[11px] text-slate-400">{t("chat.noMultiSession")}</p>
+        <p className="text-center text-[11px] text-codetextfaint">{t("chat.noMultiSession")}</p>
       </div>
     </div>
   );

@@ -41,7 +41,7 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold tracking-tight text-heading">{t("dashboard.title")}</h1>
           <p className="text-sm text-mutedtxt mt-0.5">{t("dashboard.subtitle")}</p>
         </div>
-        <button onClick={() => setShowSidebar(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 shadow-xs">
+        <button onClick={() => setShowSidebar(true)} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-ink hover:bg-primary-hover shadow-xs">
           <PanelRight className="w-3.5 h-3.5" /> {t("dashboard.gateway_health")} & {t("dashboard.stats_detail")}
         </button>
       </div>
@@ -56,9 +56,9 @@ export default function Dashboard() {
             <div className="text-3xl font-extrabold tracking-tight text-heading font-mono">{stats?.providers ?? 40}</div>
             <div className="mt-2.5 pt-2.5 border-t border-linesoft flex items-center justify-between text-xs text-secondary">
               <span className="font-semibold text-emerald-ink bg-emerald-soft px-1.5 py-0.5 rounded border border-emerald-line/60">{stats?.free_models ?? 316} free</span>
-              <span className="text-slate-400">/</span>
+              <span className="text-mutedtxt">/</span>
               <span className="text-secondary">365 total</span>
-              <span className="text-slate-300">•</span>
+              <span className="text-mutedtxt">•</span>
               <span className="font-medium text-mutedtxt">{stats?.freellms_providers ?? 30} freellms</span>
             </div>
           </div>
@@ -72,8 +72,8 @@ export default function Dashboard() {
           <div className="mt-3">
             {verify ? (
               <>
-                <div className="text-2xl sm:text-3xl font-extrabold tracking-tight font-mono" style={{ color: verify.total_verified_free > 300 ? "#059669" : "#ea580c" }}>
-                  {verify.total_verified_free}<span className="text-base font-semibold text-slate-400">/{verify.total_freellms_free}</span><span className="text-xs font-semibold text-amber-ink ml-1.5">verified</span>
+                <div className={`text-2xl sm:text-3xl font-extrabold tracking-tight font-mono ${verify.total_verified_free > 300 ? "text-emerald-ink" : "text-orange-ink"}`}>
+                  {verify.total_verified_free}<span className="text-base font-semibold text-mutedtxt">/{verify.total_freellms_free}</span><span className="text-xs font-semibold text-amber-ink ml-1.5">verified</span>
                 </div>
                 <div className="w-full h-1.5 bg-muted rounded-full mt-2.5 overflow-hidden flex">
                   <div className="bg-emerald-500 h-full" style={{ width: `${(verify.total_verified_free / verify.total_freellms_free) * 100}%` }} />
@@ -81,11 +81,11 @@ export default function Dashboard() {
                 </div>
                 <div className="mt-2 flex items-center justify-between text-[11px] text-mutedtxt font-medium">
                   <span className="text-rose-ink font-semibold">{verify.total_deprecated} deprecated</span>
-                  <span className="text-slate-300">•</span>
+                  <span className="text-mutedtxt">•</span>
                   <span>{verify.total_unverified_no_key} unverified</span>
                 </div>
               </>
-            ) : <span className="text-xs text-slate-400">loading / no data</span>}
+            ) : <span className="text-xs text-mutedtxt">loading / no data</span>}
           </div>
         </div>
 
@@ -98,9 +98,9 @@ export default function Dashboard() {
             <div className="text-3xl font-extrabold tracking-tight text-heading font-mono">{stats?.logs?.total ?? stats?.requests ?? 0}</div>
             <div className="mt-2.5 pt-2.5 border-t border-linesoft flex items-center justify-between text-xs text-secondary">
               <span className="font-mono text-emerald-ink bg-emerald-soft px-1.5 py-0.5 rounded border border-emerald-line/60 font-semibold">{stats?.logs?.avgLatencyMs ?? 0}ms</span>
-              <span className="text-slate-300">•</span>
+              <span className="text-mutedtxt">•</span>
               <span className="text-secondary font-medium">{Math.round((stats?.logs?.errorRate || 0) * 100)}% err</span>
-              <span className="text-slate-300">•</span>
+              <span className="text-mutedtxt">•</span>
               <span className="text-mutedtxt font-medium">{Object.keys(stats?.logs?.byProvider || {}).length} providers</span>
             </div>
           </div>
@@ -127,29 +127,29 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Guideline */}
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-5 border border-slate-800 shadow-2xs">
+      <div className="bg-codesurface rounded-xl p-5 border border-codeline shadow-2xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center text-white"><Zap className="w-4 h-4" /></div>
-            <div><h2 className="text-sm font-bold text-white">{t("dashboard.quick_guideline_title")}</h2><p className="text-xs text-slate-400">{t("dashboard.quick_guideline_desc")} — <NavLink to="/keys" className="underline text-amber-300 hover:text-amber-200">Keys</NavLink></p></div>
+            <div><h2 className="text-sm font-bold text-white">{t("dashboard.quick_guideline_title")}</h2><p className="text-xs text-mutedtxt">{t("dashboard.quick_guideline_desc")} — <NavLink to="/keys" className="underline text-amber-300 hover:text-amber-200">Keys</NavLink></p></div>
           </div>
           <NavLink to="/keys" className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-surface text-heading hover:bg-muted">{t("dashboard.go_to_keys")} <ArrowRight className="w-3.5 h-3.5" /></NavLink>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
           <div className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-colors">
             <div className="flex items-center gap-2 mb-2"><span className="w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold">1</span><Key className="w-4 h-4 text-amber-300" /><span className="text-xs font-bold text-white">{t("dashboard.step1_title")}</span></div>
-            <p className="text-xs text-slate-300 leading-relaxed">{t("dashboard.step1_desc")}</p>
-            <p className="text-[11px] text-slate-400 mt-2">{t("dashboard.step1_check")}</p>
+            <p className="text-xs text-mutedtxt leading-relaxed">{t("dashboard.step1_desc")}</p>
+            <p className="text-[11px] text-mutedtxt mt-2">{t("dashboard.step1_check")}</p>
           </div>
           <div className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-colors">
             <div className="flex items-center gap-2 mb-2"><span className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold">2</span><Key className="w-4 h-4 text-blue-300" /><span className="text-xs font-bold text-white">{t("dashboard.step2_title")}</span></div>
-            <p className="text-xs text-slate-300 leading-relaxed">{t("dashboard.step2_desc")}</p>
-            <p className="text-[11px] text-slate-400 mt-2">{t("dashboard.step2_need")}</p>
+            <p className="text-xs text-mutedtxt leading-relaxed">{t("dashboard.step2_desc")}</p>
+            <p className="text-[11px] text-mutedtxt mt-2">{t("dashboard.step2_need")}</p>
           </div>
           <div className="bg-white/10 rounded-xl p-4 border border-white/10 hover:bg-white/15 transition-colors">
             <div className="flex items-center gap-2 mb-2"><span className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">3-4</span><Terminal className="w-4 h-4 text-emerald-300" /><span className="text-xs font-bold text-white">{t("dashboard.step3_title")}</span></div>
-            <p className="text-xs text-slate-300 leading-relaxed">{t("dashboard.step3_desc")}</p>
-            <p className="text-[11px] text-slate-400 mt-2">{t("dashboard.step3_table")}</p>
+            <p className="text-xs text-mutedtxt leading-relaxed">{t("dashboard.step3_desc")}</p>
+            <p className="text-[11px] text-mutedtxt mt-2">{t("dashboard.step3_table")}</p>
           </div>
         </div>
       </div>
@@ -170,7 +170,7 @@ export default function Dashboard() {
                 <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
-          ) : <p className="text-xs text-slate-400">{t("dashboard.no_data")}</p>}
+          ) : <p className="text-xs text-mutedtxt">{t("dashboard.no_data")}</p>}
         </div>
         <div className="bg-surface rounded-xl p-5 border border-line/90 shadow-2xs">
           <div className="flex items-center justify-between mb-3">
@@ -187,7 +187,7 @@ export default function Dashboard() {
                 <Line type="monotone" dataKey="ms" stroke="#16a34a" strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
-          ) : <p className="text-xs text-slate-400">{t("dashboard.no_data")}</p>}
+          ) : <p className="text-xs text-mutedtxt">{t("dashboard.no_data")}</p>}
         </div>
       </div>
 
@@ -203,7 +203,7 @@ export default function Dashboard() {
                 <Tooltip /><Legend />
               </PieChart>
             </ResponsiveContainer>
-          ) : <p className="text-xs text-slate-400">{t("dashboard.no_verify")}</p>}
+          ) : <p className="text-xs text-mutedtxt">{t("dashboard.no_verify")}</p>}
         </div>
         <div className="lg:col-span-8 bg-surface rounded-xl border border-line/90 shadow-2xs overflow-hidden flex flex-col">
           <div className="px-5 py-3.5 border-b border-linesoft flex items-center justify-between bg-raised/70">
@@ -211,13 +211,13 @@ export default function Dashboard() {
             <span className="text-xs text-secondary font-semibold bg-muted px-2 py-0.5 rounded border border-line/70">{recent.length} records</span>
           </div>
           <div className="overflow-x-auto">
-            {recent.length === 0 ? <p className="p-4 text-sm text-slate-400">{t("dashboard.no_requests")}</p> : (
+            {recent.length === 0 ? <p className="p-4 text-sm text-mutedtxt">{t("dashboard.no_requests")}</p> : (
               <table className="w-full text-left text-xs">
                 <thead className="bg-raised text-secondary font-bold border-b border-line/80 uppercase tracking-wider text-[11px]">
                   <tr><th className="px-4 py-3">Time</th><th className="px-4 py-3">Provider</th><th className="px-4 py-3">Model</th><th className="px-4 py-3">Tokens</th><th className="px-4 py-3">MS</th><th className="px-4 py-3">Status</th></tr>
                 </thead>
                 <tbody className="divide-y divide-divsoft">
-                  {recent.map((l) => <tr key={l.id} className="hover:bg-raised/80"><td className="px-4 py-3 font-mono text-secondary">{l.timestamp ? new Date(l.timestamp).toLocaleTimeString() : "-"}</td><td className="px-4 py-3"><span className="font-mono text-xs px-2 py-0.5 rounded bg-muted text-title border font-semibold">{l.provider}</span></td><td className="px-4 py-3 font-semibold text-title">{l.model.split("/").pop()}</td><td className="px-4 py-3 font-mono">{l.totalTokens ?? "-"}<span className="text-slate-400"> ({l.promptTokens ?? 0}+{l.completionTokens ?? 0})</span></td><td className="px-4 py-3 font-mono">{l.latencyMs}</td><td className="px-4 py-3"><span className={`inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded-full text-[11px] border ${l.status === 200 ? "text-emerald-ink bg-emerald-soft border-emerald-line" : "text-rose-ink bg-rose-soft border-rose-line"}`}>{l.status}</span></td></tr>)}
+                  {recent.map((l) => <tr key={l.id} className="hover:bg-raised/80"><td className="px-4 py-3 font-mono text-secondary">{l.timestamp ? new Date(l.timestamp).toLocaleTimeString() : "-"}</td><td className="px-4 py-3"><span className="font-mono text-xs px-2 py-0.5 rounded bg-muted text-title border font-semibold">{l.provider}</span></td><td className="px-4 py-3 font-semibold text-title">{l.model.split("/").pop()}</td><td className="px-4 py-3 font-mono">{l.totalTokens ?? "-"}<span className="text-mutedtxt"> ({l.promptTokens ?? 0}+{l.completionTokens ?? 0})</span></td><td className="px-4 py-3 font-mono">{l.latencyMs}</td><td className="px-4 py-3"><span className={`inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded-full text-[11px] border ${l.status === 200 ? "text-emerald-ink bg-emerald-soft border-emerald-line" : "text-rose-ink bg-rose-soft border-rose-line"}`}>{l.status}</span></td></tr>)}
                 </tbody>
               </table>
             )}
@@ -227,7 +227,7 @@ export default function Dashboard() {
 
       {showSidebar && (
         <>
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40" onClick={() => setShowSidebar(false)} />
+          <div className="fixed inset-0 bg-heading/40 backdrop-blur-sm z-40" onClick={() => setShowSidebar(false)} />
           <div className="fixed right-0 top-0 h-full w-[520px] max-w-[90vw] bg-surface shadow-2xl z-50 flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-line">
               <h2 className="text-sm font-bold text-heading">{t("dashboard.sidebar_title")}</h2>
@@ -238,14 +238,14 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between px-4 py-3 border-b border-linesoft bg-raised/70">
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-400/80 inline-block" /><span className="w-2.5 h-2.5 rounded-full bg-amber-400/80 inline-block" /><span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80 inline-block" /></div>
-                    <span className="text-slate-300 mx-1">|</span>
+                    <span className="text-mutedtxt mx-1">|</span>
                     <h2 className="text-xs font-bold uppercase tracking-wider text-body">{t("dashboard.gateway_health")}</h2>
                   </div>
                   <button onClick={handleCopyHealth} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-secondary bg-surface hover:bg-muted border border-line shadow-2xs">
                     {copiedHealth ? <Check className="w-3.5 h-3.5 text-emerald-ink" /> : <Copy className="w-3.5 h-3.5" />}<span>{copiedHealth ? "Copied" : "Copy JSON"}</span>
                   </button>
                 </div>
-                <div className="p-4 bg-slate-950 text-slate-200 font-mono text-xs overflow-x-auto leading-relaxed max-h-[45vh]">
+                <div className="p-4 bg-codebg text-codetext font-mono text-xs overflow-x-auto leading-relaxed max-h-[45vh]">
                   <pre className="text-emerald-400"><code>{JSON.stringify(health, null, 2) || "loading..."}</code></pre>
                 </div>
               </div>
@@ -253,14 +253,14 @@ export default function Dashboard() {
                 <div className="flex items-center justify-between px-4 py-3 border-b border-linesoft bg-raised/70">
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-400/80 inline-block" /><span className="w-2.5 h-2.5 rounded-full bg-amber-400/80 inline-block" /><span className="w-2.5 h-2.5 rounded-full bg-emerald-400/80 inline-block" /></div>
-                    <span className="text-slate-300 mx-1">|</span>
+                    <span className="text-mutedtxt mx-1">|</span>
                     <h2 className="text-xs font-bold uppercase tracking-wider text-body">{t("dashboard.stats_detail")}</h2>
                   </div>
                   <button onClick={handleCopyStats} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold text-secondary bg-surface hover:bg-muted border border-line shadow-2xs">
                     {copiedStats ? <Check className="w-3.5 h-3.5 text-emerald-ink" /> : <Copy className="w-3.5 h-3.5" />}<span>{copiedStats ? "Copied" : "Copy"}</span>
                   </button>
                 </div>
-                <div className="p-4 bg-slate-950 text-slate-200 font-mono text-xs overflow-x-auto leading-relaxed max-h-[45vh]">
+                <div className="p-4 bg-codebg text-codetext font-mono text-xs overflow-x-auto leading-relaxed max-h-[45vh]">
                   <pre className="text-sky-300"><code>{JSON.stringify(stats, null, 2).slice(0, 4000) || "loading..."}{JSON.stringify(stats, null, 2).length > 4000 ? "\n... (truncated, Copy để xem đủ)" : ""}</code></pre>
                 </div>
               </div>

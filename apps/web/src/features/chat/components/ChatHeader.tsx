@@ -51,7 +51,7 @@ export const ChatHeader = React.memo(function ChatHeader({
   return (
     <div className="flex items-center gap-2 px-3 py-2.5 border-b border-line bg-raised/80 shrink-0">
       <div className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-primary text-primary-ink flex items-center justify-center">
           <MessageSquare className="w-4 h-4" />
         </div>
         <div className="hidden sm:block">
@@ -74,7 +74,7 @@ export const ChatHeader = React.memo(function ChatHeader({
           <span className="hidden sm:inline-flex items-center gap-1 text-[11px] px-1.5 py-0.5 rounded-full bg-muted border border-line font-mono">
             {effectiveContext >= 1000000 ? `${Math.round(effectiveContext / 1000000)}M` : `${Math.round(effectiveContext / 1000)}K`}
           </span>
-          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${open ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-4 h-4 text-mutedtxt transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
         {open && (
           <div className="absolute left-0 right-0 mt-2 bg-surface rounded-xl shadow-lg border border-line z-30 overflow-hidden">
@@ -105,11 +105,11 @@ export const ChatHeader = React.memo(function ChatHeader({
                         setOpen(false);
                         setFilter("");
                       }}
-                      className={`w-full text-left px-3 py-2 hover:bg-amber-soft flex items-center gap-2 border-b border-slate-50 last:border-0 ${m.id === selectedModel ? "bg-slate-900 text-white hover:bg-slate-800" : ""}`}
+                      className={`w-full text-left px-3 py-2 hover:bg-amber-soft flex items-center gap-2 border-b border-linesoft last:border-0 ${m.id === selectedModel ? "bg-primary text-primary-ink hover:bg-primary-hover" : ""}`}
                     >
                       <Star className={`w-3.5 h-3.5 shrink-0 ${m.id === selectedModel ? "fill-amber-400 text-amber-400" : "fill-amber-400 text-amber-500"}`} />
                       <span className="font-mono text-xs flex-1 truncate">{m.id}</span>
-                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full border ${m.id === selectedModel ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-amber-soft border-amber-line text-amber-ink"}`}>
+                      <span className={`text-[11px] px-1.5 py-0.5 rounded-full border ${m.id === selectedModel ? "bg-primary-ink/10 border-primary-ink/20 text-primary-ink" : "bg-amber-soft border-amber-line text-amber-ink"}`}>
                         {m.context_length ? (m.context_length >= 1000000 ? `${m.context_length / 1000000}M` : `${Math.round(m.context_length / 1000)}K`) : "—"}
                       </span>
                     </button>
@@ -131,15 +131,15 @@ export const ChatHeader = React.memo(function ChatHeader({
                     setOpen(false);
                     setFilter("");
                   }}
-                  className={`w-full text-left px-3 py-2 hover:bg-raised flex items-center gap-2 border-b border-slate-50 last:border-0 ${m.id === selectedModel ? "bg-slate-900 text-white hover:bg-slate-800" : ""}`}
+                  className={`w-full text-left px-3 py-2 hover:bg-raised flex items-center gap-2 border-b border-linesoft last:border-0 ${m.id === selectedModel ? "bg-primary text-primary-ink hover:bg-primary-hover" : ""}`}
                 >
                   <span className="font-mono text-xs flex-1 truncate">{m.id}</span>
-                  <span className={`text-[11px] px-1.5 py-0.5 rounded-full border ${m.id === selectedModel ? "bg-slate-800 border-slate-700 text-slate-200" : "bg-muted border-line text-secondary"}`}>
+                  <span className={`text-[11px] px-1.5 py-0.5 rounded-full border ${m.id === selectedModel ? "bg-primary-ink/10 border-primary-ink/20 text-primary-ink" : "bg-muted border-line text-secondary"}`}>
                     {m.context_length ? (m.context_length >= 1000000 ? `${m.context_length / 1000000}M` : `${Math.round(m.context_length / 1000)}K`) : "—"}
                   </span>
                 </button>
               ))}
-              {filteredModels.length === 0 && <div className="p-4 text-center text-sm text-slate-400">{favoriteSet && favoriteSet.size === 0 && !filter ? t("chat.no_favorites") : t("chat.noMatch")}</div>}
+              {filteredModels.length === 0 && <div className="p-4 text-center text-sm text-mutedtxt">{favoriteSet && favoriteSet.size === 0 && !filter ? t("chat.no_favorites") : t("chat.noMatch")}</div>}
               {filteredModels.length > 0 && favoriteSet && favoriteSet.size === 0 && !filter && favoritesInView.length === 0 && (
                 <div className="px-3 py-2 bg-amber-soft/50 border-t border-amber-line text-[11px] text-amber-ink text-center">{t("chat.favorites_hint")}</div>
               )}
@@ -162,7 +162,7 @@ export const ChatHeader = React.memo(function ChatHeader({
           aria-label="Toggle settings"
           aria-expanded={showSettings}
           onClick={onToggleSettings}
-          className={`p-2 rounded-lg border ${showSettings ? "bg-slate-900 text-white border-heading" : "bg-surface border-line hover:bg-raised text-secondary"}`}
+          className={`p-2 rounded-lg border ${showSettings ? "bg-primary text-primary-ink border-heading" : "bg-surface border-line hover:bg-raised text-secondary"}`}
           title="Settings"
         >
           <Settings2 className="w-4 h-4" />

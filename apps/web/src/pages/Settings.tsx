@@ -60,10 +60,10 @@ function HelpTip({ text, id }: { text: string; id?: string }) {
         <span
           id={id}
           role="tooltip"
-          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 max-w-[260px] z-50 px-3 py-2 rounded-lg bg-slate-900 text-white text-xs leading-relaxed shadow-xl border border-slate-700 whitespace-normal break-words"
+          className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-64 max-w-[260px] z-50 px-3 py-2 rounded-lg bg-primary text-primary-ink text-xs leading-relaxed shadow-xl border border-linestrong whitespace-normal break-words"
         >
           {text}
-          <span className="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2 bg-slate-900 rotate-45 border-r border-b border-slate-700 -mt-1" aria-hidden />
+          <span className="absolute left-1/2 -translate-x-1/2 top-full w-2 h-2 bg-primary rotate-45 border-r border-b border-linestrong -mt-1" aria-hidden />
         </span>
       )}
     </span>
@@ -1017,14 +1017,14 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
               <span className={`px-2 py-0.5 rounded-full border font-semibold ${source === "localStorage" ? "bg-amber-soft text-amber-ink border-amber-line" : "bg-muted text-secondary border-line"}`}>
                 {source === "localStorage" ? "localStorage" : ".env"} {source === "localStorage" ? t("settings.overridden") : t("settings.default")}
               </span>
-              <span className="text-slate-400 hidden sm:inline">{t("settings.hint")}</span>
-              {lastSaved && <span className="text-slate-400">• saved {new Date(lastSaved).toLocaleString()}</span>}
+              <span className="text-mutedtxt hidden sm:inline">{t("settings.hint")}</span>
+              {lastSaved && <span className="text-mutedtxt">• saved {new Date(lastSaved).toLocaleString()}</span>}
               {diffKeys.length > 0 && <span className="px-2 py-0.5 rounded-full bg-amber-wash text-amber-ink border border-amber-line font-semibold">{diffKeys.length} modified</span>}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-mutedtxt" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -1034,7 +1034,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
               />
               {search && (
                 <button type="button" onClick={() => setSearch("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 hover:bg-muted rounded" aria-label="Clear filter">
-                  <X className="w-3 h-3 text-slate-400" />
+                  <X className="w-3 h-3 text-mutedtxt" />
                 </button>
               )}
             </div>
@@ -1057,7 +1057,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             <button onClick={handleReset} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-line bg-surface hover:bg-raised text-body">
               <RotateCcw className="w-3.5 h-3.5" /> {t("settings.reset") || "Reset to .env"}
             </button>
-            <button onClick={handleSave} className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold border shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${isDirty ? "bg-slate-900 text-white border-heading hover:bg-slate-800" : "bg-surface text-mutedtxt border-line"} ${validationErrors.length > 0 ? "opacity-70" : ""}`} aria-disabled={validationErrors.length > 0} title={validationErrors.length ? validationErrors.join(", ") : undefined}>
+            <button onClick={handleSave} className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-xs font-bold border shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 ${isDirty ? "bg-amber-500 text-white border-amber-600 hover:bg-amber-600" : "bg-surface text-mutedtxt border-line"} ${validationErrors.length > 0 ? "opacity-70" : ""}`} aria-disabled={validationErrors.length > 0} title={validationErrors.length ? validationErrors.join(", ") : undefined}>
               {saved ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Save className="w-3.5 h-3.5" />}
               {saved ? (t("settings.saved") || "Saved") : (t("settings.save") || "Save to localStorage")}
             </button>
@@ -1075,26 +1075,26 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
       </div>
 
       {/* Cache live stats banner - pretty */}
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl p-4 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-codesurface rounded-xl p-4 border border-codeline flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3 flex-1 min-w-[220px]">
           <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white shrink-0">
             <Sparkles className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-sm font-bold text-white flex items-center gap-2">
-              {t("settings.cacheLive") || "Cache Live"} <HelpTip text={t("settings.cacheLiveDesc") || "Live semantic cache status — requires admin MASTER_KEY"} /> <span className={`w-2 h-2 rounded-full ${cacheStats?.enabled ? "bg-emerald-400 animate-pulse" : "bg-slate-500"}`} aria-label={cacheStats?.enabled ? "enabled" : "disabled"} />
+              {t("settings.cacheLive") || "Cache Live"} <HelpTip text={t("settings.cacheLiveDesc") || "Live semantic cache status — requires admin MASTER_KEY"} /> <span className={`w-2 h-2 rounded-full ${cacheStats?.enabled ? "bg-emerald-400 animate-pulse" : "bg-codetextfaint"}`} aria-label={cacheStats?.enabled ? "enabled" : "disabled"} />
               {cacheError && <span className="text-xs font-normal text-rose-300">• {cacheError}</span>}
             </div>
-            <div className="text-xs text-slate-300 flex flex-wrap gap-2 mt-0.5">
-              {cacheLoading ? <span className="text-slate-400">loading...</span> : cacheStats ? (
+            <div className="text-xs text-codetextdim flex flex-wrap gap-2 mt-0.5">
+              {cacheLoading ? <span className="text-mutedtxt">loading...</span> : cacheStats ? (
                 <>
                   <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded" title={t("settings.cacheHits") || "hits"}>{cacheStats.hits ?? 0} {t("settings.cacheHits") || "hits"}</span>
                   <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded" title={t("settings.cacheMisses") || "misses"}>{cacheStats.misses ?? 0} {t("settings.cacheMisses") || "misses"}</span>
                   <span className="font-mono bg-emerald-500/20 text-emerald-200 px-1.5 py-0.5 rounded border border-emerald-500/30" title={t("settings.cacheHitRate") || "hit rate"}>{typeof cacheStats.hitRate === "number" ? `${(cacheStats.hitRate * 100).toFixed(1)}%` : "—"} {t("settings.cacheHitRate") || "hit rate"}</span>
                   <span className="font-mono bg-white/10 px-1.5 py-0.5 rounded" title={t("settings.cacheSize") || "entries"}>{cacheStats.size ?? 0} {t("settings.cacheSize") || "entries"}</span>
-                  <span className={`px-1.5 py-0.5 rounded text-xs ${cacheStats.enabled ? "bg-emerald-500 text-white" : "bg-slate-600 text-slate-200"}`}>{cacheStats.enabled ? "enabled" : "disabled"}</span>
+                  <span className={`px-1.5 py-0.5 rounded text-xs ${cacheStats.enabled ? "bg-emerald-500 text-white" : "bg-strong text-secondary"}`}>{cacheStats.enabled ? "enabled" : "disabled"}</span>
                 </>
-              ) : <span className="text-slate-400">No stats yet — call /api/cache/stats</span>}
+              ) : <span className="text-mutedtxt">No stats yet — call /api/cache/stats</span>}
             </div>
           </div>
         </div>
@@ -1131,7 +1131,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 <input type="range" min={0.7} max={0.99} step={0.01} value={form.SEMANTIC_THRESHOLD} onChange={(e) => update({ SEMANTIC_THRESHOLD: parseFloat(e.target.value) || 0.92 })} className="flex-1 accent-amber-500" aria-label="SEMANTIC_THRESHOLD slider" />
                 <input type="number" step="0.01" min={0} max={1} value={form.SEMANTIC_THRESHOLD} onChange={(e) => update({ SEMANTIC_THRESHOLD: parseFloat(e.target.value) || 0 })} className="w-20 rounded-lg border border-line px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-amber-500" aria-label="SEMANTIC_THRESHOLD input" />
               </div>
-              <p className="text-xs text-slate-400 mt-1">{t("settings.thresholdDesc")} • Recommended 0.92 <span className="inline-block w-2 h-2 rounded-full bg-amber-500 ml-1" title="recommended" /></p>
+              <p className="text-xs text-mutedtxt mt-1">{t("settings.thresholdDesc")} • Recommended 0.92 <span className="inline-block w-2 h-2 rounded-full bg-amber-500 ml-1" title="recommended" /></p>
             </div>
 
             <div className={`${isModified("CACHE_TTL_S") ? "border-amber-line bg-amber-soft/30" : "border-line"} border rounded-lg p-3`}>
@@ -1146,7 +1146,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                   </button>
                 ))}
               </div>
-              <p className="text-xs text-slate-400 mt-1">{t("settings.ttlDesc")} • cap 7d</p>
+              <p className="text-xs text-mutedtxt mt-1">{t("settings.ttlDesc")} • cap 7d</p>
             </div>
 
             <div className={`border rounded-lg p-3 ${isModified("SEMANTIC_CACHE_MAX_MEM") || isModified("SEMANTIC_CACHE_SCAN_CAP") ? "border-amber-line bg-amber-soft/20" : "border-linesoft bg-raised/30"}`}>
@@ -1175,7 +1175,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 </button>
               </div>
               <input type="text" value={form.EMBEDDING_MODEL} onChange={(e) => { update({ EMBEDDING_MODEL: e.target.value }); setEmbStatus("idle"); }} className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 ${embStatus === "ok" ? "border-green-500 ring-green-500 bg-green-soft/30" : embStatus === "error" ? "border-red-500 ring-red-500 bg-red-soft/30" : "border-line focus:ring-amber-500"}`} aria-label="EMBEDDING_MODEL" />
-              <p className="text-xs text-slate-400 mt-1">{t("settings.embeddingFallbackDesc")}</p>
+              <p className="text-xs text-mutedtxt mt-1">{t("settings.embeddingFallbackDesc")}</p>
             </div>
 
             <div className={`${isModified("EMBEDDING_FALLBACKS") ? "border-amber-line" : "border-line"} border rounded-lg p-3`}>
@@ -1220,7 +1220,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded border">{form.COMPRESSION_MAX_TOKENS}</span>
               </label>
               <input type="range" min={512} max={32000} step={512} value={form.COMPRESSION_MAX_TOKENS} onChange={(e) => update({ COMPRESSION_MAX_TOKENS: parseInt(e.target.value) || 4096 })} className="w-full mt-2 accent-amber-500" aria-label="COMPRESSION_MAX_TOKENS" />
-              <div className="flex justify-between text-[11px] text-slate-400">
+              <div className="flex justify-between text-[11px] text-mutedtxt">
                 <span>512</span>
                 <span>16k</span>
                 <span>32k</span>
@@ -1248,7 +1248,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 <div key={w.k} className={`${isModified(w.k) ? "bg-amber-soft border-amber-line" : "bg-surface border-line"} border rounded-lg p-2.5`}>
                   <div className="flex items-center justify-between">
                     <label className="text-xs font-semibold text-body flex items-center gap-1.5">
-                      <SlidersHorizontal className="w-3 h-3 text-mutedtxt" /> {w.label} <span className="font-normal text-slate-400">({w.range})</span> <HelpTip text={w.tip} /> {isModified(w.k) && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+                      <SlidersHorizontal className="w-3 h-3 text-mutedtxt" /> {w.label} <span className="font-normal text-mutedtxt">({w.range})</span> <HelpTip text={w.tip} /> {isModified(w.k) && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
                     </label>
                     <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded border">{form[w.k]}</span>
                   </div>
@@ -1259,15 +1259,15 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
 
             <div className="border border-line rounded-lg p-3 space-y-2">
               <div className="text-xs font-bold text-body flex items-center gap-1.5">
-                <FileJson className="w-3.5 h-3.5" /> Compression Preview • POST /api/compression/preview <span className="font-normal text-slate-400">(7 msgs sample triggers compression)</span>
+                <FileJson className="w-3.5 h-3.5" /> Compression Preview • POST /api/compression/preview <span className="font-normal text-mutedtxt">(7 msgs sample triggers compression)</span>
               </div>
               <textarea value={previewInput} onChange={(e) => setPreviewInput(e.target.value)} rows={6} className="w-full rounded-lg border border-line px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 focus:ring-amber-500" placeholder='[{"role":"user","content":"hello"}]' aria-label="Compression preview input" />
               {previewError && <div className="text-xs text-rose-ink bg-rose-soft border border-rose-line rounded px-2 py-1" role="alert">{previewError}</div>}
-              <button type="button" onClick={handleCompressionPreview} disabled={previewLoading} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 disabled:opacity-50 flex items-center gap-1.5">
+              <button type="button" onClick={handleCompressionPreview} disabled={previewLoading} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-primary-ink hover:bg-primary-hover disabled:opacity-50 flex items-center gap-1.5">
                 {previewLoading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Eye className="w-3.5 h-3.5" />} Preview
               </button>
               {previewResult && (
-                <pre className="text-xs font-mono bg-slate-900 text-emerald-200 p-3 rounded-lg overflow-x-auto max-h-48 whitespace-pre-wrap break-all" role="status">
+                <pre className="text-xs font-mono bg-codesurface text-emerald-200 p-3 rounded-lg overflow-x-auto max-h-48 whitespace-pre-wrap break-all" role="status">
                   {JSON.stringify(previewResult, null, 2)}
                 </pre>
               )}
@@ -1284,7 +1284,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 <input type="number" min={1000} max={120000} value={form.PROVIDER_TIMEOUT_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_MS: parseInt(e.target.value) || 25000 })} className="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_MS" />
               </div>
               <div className={`${isModified("PROVIDER_TIMEOUT_AUTO_MS") ? "border-amber-line bg-amber-soft/30" : "border-line"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-body flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-mutedtxt" /> PROVIDER_TIMEOUT_AUTO_MS (1k..30k) <span className="font-normal text-slate-400">rec ≥12k</span> <HelpTip text={t("settings.providerTimeoutAutoTip")} /></label>
+                <label className="text-xs font-semibold text-body flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-mutedtxt" /> PROVIDER_TIMEOUT_AUTO_MS (1k..30k) <span className="font-normal text-mutedtxt">rec ≥12k</span> <HelpTip text={t("settings.providerTimeoutAutoTip")} /></label>
                 <input type="number" min={1000} max={30000} value={form.PROVIDER_TIMEOUT_AUTO_MS} onChange={(e) => update({ PROVIDER_TIMEOUT_AUTO_MS: parseInt(e.target.value) || 12000 })} className="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm font-mono" aria-label="PROVIDER_TIMEOUT_AUTO_MS" />
               </div>
               <div className={`${isModified("PROVIDER_TIMEOUT_REASONING_MS") ? "border-amber-line bg-amber-soft/30" : "border-line"} border rounded-lg p-3`}>
@@ -1302,7 +1302,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 <div className="text-xs font-mono text-center bg-muted rounded py-0.5 mt-1">{form.PROVIDER_PARALLEL_DEFAULT}</div>
               </div>
               <div className={`${isModified("CIRCUIT_BREAKER_THRESHOLD") ? "border-amber-line bg-amber-soft/30" : "border-line"} border rounded-lg p-3`}>
-                <label className="text-xs font-semibold text-body flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-mutedtxt" /> CIRCUIT_BREAKER_THRESHOLD (1..100) <span className="font-normal text-slate-400">rec 8</span> <HelpTip text={t("settings.breakerThresholdTip")} /></label>
+                <label className="text-xs font-semibold text-body flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-mutedtxt" /> CIRCUIT_BREAKER_THRESHOLD (1..100) <span className="font-normal text-mutedtxt">rec 8</span> <HelpTip text={t("settings.breakerThresholdTip")} /></label>
                 <input type="number" min={1} max={100} value={form.CIRCUIT_BREAKER_THRESHOLD} onChange={(e) => update({ CIRCUIT_BREAKER_THRESHOLD: parseInt(e.target.value) || 8 })} className="mt-1 w-full rounded-lg border border-line px-3 py-2 text-sm font-mono" aria-label="CIRCUIT_BREAKER_THRESHOLD" />
               </div>
               <div className={`sm:col-span-2 ${isModified("CIRCUIT_BREAKER_COOLDOWN_MS") ? "border-amber-line bg-amber-soft/30" : "border-line"} border rounded-lg p-3`}>
@@ -1389,7 +1389,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                 <span className="font-bold text-title">{form.ANALYTICS_RETENTION_DAYS} days</span>
                 <span>365</span>
               </div>
-              <p className="text-xs text-slate-400 mt-1">{t("settings.analyticsDesc")}</p>
+              <p className="text-xs text-mutedtxt mt-1">{t("settings.analyticsDesc")}</p>
             </div>
           </Section>
 
@@ -1398,15 +1398,15 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-body"><ListOrdered className="w-3.5 h-3.5 text-mutedtxt" /> Add provider <HelpTip text={t("settings.fallbackAddTip")} /></div>
                 <input type="text" value={newProvider} onChange={(e) => setNewProvider(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleTiersAddProvider(); } }} placeholder="Add provider id (e.g. groq)" className="flex-1 rounded-lg border border-line px-3 py-1.5 text-xs font-mono" aria-label="New provider id" />
-                <button type="button" onClick={handleTiersAddProvider} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-1.5"><Plus className="w-3.5 h-3.5" /> Add to tier 1</button>
+                <button type="button" onClick={handleTiersAddProvider} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-primary-ink hover:bg-primary-hover flex items-center gap-1.5"><Plus className="w-3.5 h-3.5" /> Add to tier 1</button>
               </div>
               <div className="flex items-center gap-1.5 text-xs font-semibold text-body"><FileJson className="w-3.5 h-3.5 text-mutedtxt" /> FALLBACK_TIERS JSON <HelpTip text={t("settings.fallbackJsonTip")} /></div>
               <textarea value={tiersText} onChange={(e) => setTiersText(e.target.value)} rows={6} className={`w-full rounded-lg border px-3 py-2 text-xs font-mono focus:outline-none focus:ring-1 ${tiersError ? "border-red-line ring-red-500 bg-red-soft/30" : isModified("FALLBACK_TIERS") ? "border-amber-line focus:ring-amber-500 bg-amber-soft/20" : "border-line focus:ring-amber-500"}`} placeholder={DEFAULT_TIER_JSON} aria-label="FALLBACK_TIERS JSON" aria-invalid={!!tiersError} />
               {tiersError && <p className="text-xs text-red-ink" role="alert">{tiersError}</p>}
               <div className="flex items-center gap-2">
-                <button type="button" onClick={handleTiersSave} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> Validate & Stage</button>
+                <button type="button" onClick={handleTiersSave} className="px-3 py-1.5 rounded-lg text-xs font-bold bg-primary text-primary-ink hover:bg-primary-hover flex items-center gap-1.5"><Check className="w-3.5 h-3.5" /> Validate & Stage</button>
                 <button type="button" onClick={() => { const norm = normalizeTiersString(DEFAULT_TIER_JSON); setTiersText(norm); update({ FALLBACK_TIERS: norm }); setTiersError(null); }} className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-line bg-surface hover:bg-raised flex items-center gap-1.5"><RotateCcw className="w-3.5 h-3.5" /> Reset default</button>
-                <span className="text-xs text-slate-400">JSON array of arrays • deduped, max 60/tier</span>
+                <span className="text-xs text-mutedtxt">JSON array of arrays • deduped, max 60/tier</span>
               </div>
               <div className="flex flex-wrap gap-1.5 p-2 bg-raised rounded-lg border border-line max-h-32 overflow-y-auto" role="list" aria-label="Tiers preview">
                 {(() => {
@@ -1422,7 +1422,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                       );
                     });
                   } catch {
-                    return <span className="text-xs text-slate-400">Invalid JSON</span>;
+                    return <span className="text-xs text-mutedtxt">Invalid JSON</span>;
                   }
                 })()}
               </div>
@@ -1437,7 +1437,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
                   return <p className="text-xs text-mutedtxt">{total} providers • {publicCount} public • sẽ filter theo hasRealKey (đã config) khi chạy.</p>;
                 } catch { return null; }
               })()}
-              <p className="text-xs text-slate-400">Chips xanh = public (giữ lại khi filter), trắng = cần key. Router mới chỉ fallback vào provider đã config + public.</p>
+              <p className="text-xs text-mutedtxt">Chips xanh = public (giữ lại khi filter), trắng = cần key. Router mới chỉ fallback vào provider đã config + public.</p>
             </div>
           </Section>
 
@@ -1480,16 +1480,16 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
         </div>
       </div>
 
-      <div className="bg-slate-900 rounded-xl border border-slate-800 p-4">
+      <div className="bg-codesurface rounded-xl border border-codeline p-4">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
           <div className="flex items-center gap-2">
-            <div className="text-xs font-bold text-slate-200">{t("settings.envSnippet")} </div>
-            <label className="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+            <div className="text-xs font-bold text-codetext">{t("settings.envSnippet")} </div>
+            <label className="flex items-center gap-1.5 text-xs text-mutedtxt cursor-pointer">
               <input type="checkbox" checked={showSnippetDiffOnly} onChange={(e) => setShowSnippetDiffOnly(e.target.checked)} className="accent-amber-500" aria-label="Show diff only" /> diff only ({diffKeys.length})
             </label>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={handleCopyDiff} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-800 text-slate-200 hover:bg-slate-700 border border-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+            <button type="button" onClick={handleCopyDiff} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-coderow text-codetext hover:bg-coderow/80 border border-codeline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
               {copiedDiff ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
               {copiedDiff ? (t("settings.copied") || "Copied") : "Copy diff"}
             </button>
@@ -1502,18 +1502,18 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
             </button>
           </div>
         </div>
-        <pre className="text-xs font-mono text-emerald-200 whitespace-pre-wrap break-all bg-slate-800 rounded-lg p-3 border border-slate-700 max-h-64 overflow-y-auto" tabIndex={0} aria-label=".env snippet">{envSnippet}</pre>
+        <pre className="text-xs font-mono text-emerald-200 whitespace-pre-wrap break-all bg-coderow rounded-lg p-3 border border-codeline max-h-64 overflow-y-auto" tabIndex={0} aria-label=".env snippet">{envSnippet}</pre>
       </div>
 
       {isDirty && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 bg-slate-900 text-white px-4 py-2.5 rounded-full shadow-xl border border-slate-700 flex items-center gap-3 text-sm" role="status" aria-live="polite">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-30 bg-primary text-primary-ink px-4 py-2.5 rounded-full shadow-xl border border-linestrong flex items-center gap-3 text-sm" role="status" aria-live="polite">
           <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" aria-hidden />
           <span className="font-semibold">Unsaved changes • {diffKeys.length} fields</span>
           {validationErrors.length > 0 && <span className="text-rose-300 text-xs">• {validationErrors.length} invalid</span>}
           <button type="button" onClick={handleSave} disabled={validationErrors.length > 0} className="ml-2 px-3 py-1 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold disabled:opacity-50">Save</button>
           <button type="button" onClick={handleApplyToServer} disabled={applying || validationErrors.length > 0} className="px-3 py-1 rounded-full bg-surface text-heading hover:bg-muted text-xs font-bold disabled:opacity-50">Apply</button>
           <button type="button" onClick={() => setIsDirty(false)} className="p-1 hover:bg-white/10 rounded-full" aria-label="Dismiss">
-            <X className="w-4 h-4 text-slate-400" />
+            <X className="w-4 h-4 text-mutedtxt" />
           </button>
         </div>
       )}

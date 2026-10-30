@@ -355,18 +355,18 @@ export default function Models() {
         <span className="text-xs text-mutedtxt font-mono">{visible.length} models</span>
         {syncStatus?.lastAdded?.length ? <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-ink bg-emerald-soft border border-emerald-line px-2 py-0.5 rounded-full">NEW provider: {syncStatus.lastAdded.join(", ")}</span> : null}
         {syncStatus?.bootSync?.status === "running" && <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-ink bg-blue-soft border border-blue-line px-2 py-1 rounded-full"><RefreshCw className="w-3 h-3 animate-spin" /> auto syncing…</span>}
-        {syncStatus?.liveModels && <span className="text-[11px] font-mono text-slate-400">live: {syncStatus.liveModels.total ?? 0} • {syncStatus.liveModels.generated_at ? new Date(syncStatus.liveModels.generated_at).toLocaleTimeString() : ""}</span>}
+        {syncStatus?.liveModels && <span className="text-[11px] font-mono text-mutedtxt">live: {syncStatus.liveModels.total ?? 0} • {syncStatus.liveModels.generated_at ? new Date(syncStatus.liveModels.generated_at).toLocaleTimeString() : ""}</span>}
       </div>
 
       <div className="bg-surface rounded-xl border border-line/90 shadow-2xs p-4 space-y-3">
         <div className="flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[180px] max-w-[260px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input placeholder="Filter by ID..." value={q} onChange={(e) => setQ(e.target.value)} className="w-full pl-9 pr-8 py-2 bg-raised border border-line rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-heading/10 placeholder:text-slate-400" />
-            {q && <button onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-strong rounded-full"><X className="w-3 h-3 text-slate-400" /></button>}
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-mutedtxt" />
+            <input placeholder="Filter by ID..." value={q} onChange={(e) => setQ(e.target.value)} className="w-full pl-9 pr-8 py-2 bg-raised border border-line rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-heading/10 placeholder:text-mutedtxt" />
+            {q && <button onClick={() => setQ("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-strong rounded-full"><X className="w-3 h-3 text-mutedtxt" /></button>}
           </div>
           <div className="relative flex-1 min-w-[160px] max-w-[220px]">
-            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-mutedtxt pointer-events-none" />
             <select value={provider} onChange={(e) => setProvider(e.target.value)} className="w-full pl-9 pr-8 py-2 bg-raised border border-line rounded-lg text-xs font-medium focus:outline-none focus:ring-2 focus:ring-heading/10 appearance-none">
               <option value="">All providers</option>
               {allProviders.map((p) => (
@@ -375,7 +375,7 @@ export default function Models() {
                 </option>
               ))}
             </select>
-            {provider && <button onClick={() => setProvider("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-strong rounded-full"><X className="w-3 h-3 text-slate-400" /></button>}
+            {provider && <button onClick={() => setProvider("")} className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-strong rounded-full"><X className="w-3 h-3 text-mutedtxt" /></button>}
           </div>
           <select value={verified} onChange={(e) => setVerified(e.target.value)} className="px-3 py-2 bg-surface border border-line rounded-lg text-xs font-semibold">
             <option value="all">{t("models.verified_all")} ({total})</option>
@@ -385,7 +385,7 @@ export default function Models() {
           </select>
           <div className="relative">
             <button type="button" onClick={() => setFilterOpen(!filterOpen)} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-surface border border-line hover:bg-raised shadow-2xs">
-              <Filter className="w-3.5 h-3.5 text-mutedtxt" /> Filters {(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0) > 0 && <span className="bg-slate-900 text-white text-[10px] px-1.5 py-0.5 rounded-full">{(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0)}</span>} <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${filterOpen ? "rotate-180" : ""}`} />
+              <Filter className="w-3.5 h-3.5 text-mutedtxt" /> Filters {(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0) > 0 && <span className="bg-primary text-primary-ink text-[10px] px-1.5 py-0.5 rounded-full">{(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0)}</span>} <ChevronDown className={`w-3.5 h-3.5 text-mutedtxt transition-transform ${filterOpen ? "rotate-180" : ""}`} />
             </button>
             {filterOpen && (
               <div className="absolute left-0 mt-2 w-64 bg-surface rounded-xl shadow-lg border border-line py-2 z-20">
@@ -405,7 +405,7 @@ export default function Models() {
                   {hidePayment && <Check className="w-3.5 h-3.5 text-amber-ink" />}
                 </label>
                 <label className="flex items-center gap-3 px-3 py-2 hover:bg-raised cursor-pointer">
-                  <input type="checkbox" checked={hideInvalid} onChange={(e) => setHideInvalid(e.target.checked)} className="w-4 h-4 rounded border-linestrong accent-slate-600" />
+                  <input type="checkbox" checked={hideInvalid} onChange={(e) => setHideInvalid(e.target.checked)} className="w-4 h-4 rounded border-linestrong accent-amber-500" />
                   <span className="text-xs font-semibold text-body flex-1">{t("models.hide_invalid")}</span>
                   {hideInvalid && <Check className="w-3.5 h-3.5 text-secondary" />}
                 </label>
@@ -415,7 +415,7 @@ export default function Models() {
                   {favOnly && <Check className="w-3.5 h-3.5 text-amber-ink" />}
                 </label>
                 <div className="border-t border-linesoft mt-2 pt-2 px-3 flex justify-between items-center">
-                  <span className="text-[11px] text-slate-400">{(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0)} active</span>
+                  <span className="text-[11px] text-mutedtxt">{(hasKeyOnly?1:0)+(hide404?1:0)+(hidePayment?1:0)+(hideInvalid?1:0)+(favOnly?1:0)} active</span>
                   <button onClick={handleResetFilters} className="text-[11px] font-semibold text-secondary hover:text-heading">Reset default</button>
                 </div>
               </div>
@@ -423,12 +423,12 @@ export default function Models() {
           </div>
           <div className="ml-auto flex flex-wrap gap-2 items-center">
             <div className="relative group" title={!hasFilter ? t("models.check_live_tooltip") : ""}>
-              <button onClick={checkSelected} disabled={checking || selected.size === 0 || !hasFilter} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold shadow-xs ${!hasFilter ? "bg-muted text-slate-400 border border-line cursor-not-allowed" : selected.size > 0 ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-surface text-slate-400 border border-line"}`}>{checking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}{checking ? t("models.checking") : `${t("models.check_live")} (${selected.size})`}</button>
-              {!hasFilter && <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover:block bg-slate-900 text-white text-[11px] px-2 py-1 rounded whitespace-nowrap z-10">{t("models.check_live_tooltip")}</span>}
+              <button onClick={checkSelected} disabled={checking || selected.size === 0 || !hasFilter} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold shadow-xs ${!hasFilter ? "bg-muted text-mutedtxt border border-line cursor-not-allowed" : selected.size > 0 ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-surface text-mutedtxt border border-line"}`}>{checking ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}{checking ? t("models.checking") : `${t("models.check_live")} (${selected.size})`}</button>
+              {!hasFilter && <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover:block bg-primary text-primary-ink text-[11px] px-2 py-1 rounded whitespace-nowrap z-10">{t("models.check_live_tooltip")}</span>}
             </div>
             <div className="relative group">
               <button onClick={syncLive} disabled={syncing} className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold ${syncing ? "bg-muted text-mutedtxt border border-line" : "bg-emerald-600 text-white hover:bg-emerald-700"}`}>{syncing ? t("models.syncing") : t("models.sync")}</button>
-              <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover:block bg-slate-900 text-white text-[11px] px-2 py-1 rounded whitespace-nowrap z-10 max-w-[220px] text-center">{t("models.sync_hint")}</span>
+              <span className="absolute left-1/2 -translate-x-1/2 top-full mt-1 hidden group-hover:block bg-primary text-primary-ink text-[11px] px-2 py-1 rounded whitespace-nowrap z-10 max-w-[220px] text-center">{t("models.sync_hint")}</span>
             </div>
             <button onClick={handleRefresh} disabled={refreshing} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold bg-surface border border-line hover:bg-raised disabled:opacity-60">{refreshing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <RefreshCw className="w-3.5 h-3.5" />} {refreshing ? t("models.syncing") : t("models.refresh")}</button>
           </div>
@@ -444,7 +444,7 @@ export default function Models() {
             {hidePayment && <span className="bg-amber-soft border border-amber-line text-amber-ink px-2.5 py-1 rounded-full font-semibold">{t("models.hide_payment")}</span>}
             {hideInvalid && <span className="bg-muted border border-linestrong text-body px-2.5 py-1 rounded-full font-semibold">{t("models.hide_invalid")}</span>}
             {favOnly && <span className="bg-amber-soft border border-amber-line text-amber-ink px-2.5 py-1 rounded-full font-semibold flex items-center gap-1"><Star className="w-3 h-3 fill-amber-500 text-amber-500" />{t("models.favorites_only")} ({favorites.size})</span>}
-            <span className="ml-auto text-slate-400 font-mono">{selected.size} selected • {visible.length} visible</span>
+            <span className="ml-auto text-mutedtxt font-mono">{selected.size} selected • {visible.length} visible</span>
           </div>
         )}
       </div>
@@ -480,18 +480,18 @@ export default function Models() {
                 const isInvalid = isInvalidId(m);
                 const fav = favorites.has(m.id);
                 return (
-                  <tr key={`${m.id}::${idx}`} className={`${disabled ? `${isPayment ? "bg-amber-soft/60 opacity-60 line-through decoration-amber-400" : isInvalid ? "bg-muted/60 opacity-60 line-through decoration-slate-400" : "bg-rose-soft/60 opacity-60 line-through decoration-rose-400"}` : fav ? "bg-amber-soft/30" : selected.has(m.id) ? "bg-blue-soft/40" : "hover:bg-raised/80"} transition-colors`} title={isInvalid ? "Invalid model ID" : isPayment ? "Out of credits / payment required" : is404 || isGone ? "404/410" : fav ? t("models.favorite") : ""}>
+                  <tr key={`${m.id}::${idx}`} className={`${disabled ? `${isPayment ? "bg-amber-soft/60 opacity-60 line-through decoration-amber-400" : isInvalid ? "bg-muted/60 opacity-60 line-through decoration-mutedtxt" : "bg-rose-soft/60 opacity-60 line-through decoration-rose-400"}` : fav ? "bg-amber-soft/30" : selected.has(m.id) ? "bg-blue-soft/40" : "hover:bg-raised/80"} transition-colors`} title={isInvalid ? "Invalid model ID" : isPayment ? "Out of credits / payment required" : is404 || isGone ? "404/410" : fav ? t("models.favorite") : ""}>
                     <td className="px-3 py-3 text-center"><input type="checkbox" checked={selected.has(m.id)} onChange={() => toggle(m.id)} disabled={isInvalid} className="w-4 h-4 accent-heading disabled:opacity-30 disabled:cursor-not-allowed" /></td>
-                    <td className="px-2 py-3 text-center"><button onClick={() => toggleFav(m.id)} title={fav ? t("models.remove_fav") : t("models.add_fav")} className={`p-1 rounded-md transition-colors ${fav ? "text-amber-500 hover:bg-amber-wash" : "text-slate-300 hover:text-amber-400 hover:bg-amber-soft"}`}><Star className={`w-4 h-4 ${fav ? "fill-amber-400 text-amber-500" : ""}`} /></button></td>
-                    <td className="px-3 py-3"><div className="inline-flex items-center gap-1.5 group/id"><code className={`text-xs font-mono px-2 py-0.5 rounded border font-semibold ${disabled ? (isInvalid ? "bg-strong text-secondary border-linestrong line-through" : isPayment ? "bg-amber-wash text-amber-ink border-amber-line line-through" : "bg-rose-wash text-rose-ink border-rose-line line-through") : fav ? "bg-amber-soft text-amber-ink border-amber-line" : "bg-muted text-title border-line"}`}>{m.id}</code><button onClick={() => { navigator.clipboard.writeText(m.id).catch(()=>{}); setCopiedId(m.id); setTimeout(()=> setCopiedId(null), 1500); }} className="p-1 rounded-md hover:bg-strong opacity-70 hover:opacity-100 transition-colors" title="Copy ID">{copiedId === m.id ? <Check className="w-3.5 h-3.5 text-emerald-ink" /> : <Copy className="w-3.5 h-3.5 text-slate-400 group-hover/id:text-secondary" />}</button></div></td>
+                    <td className="px-2 py-3 text-center"><button onClick={() => toggleFav(m.id)} title={fav ? t("models.remove_fav") : t("models.add_fav")} className={`p-1 rounded-md transition-colors ${fav ? "text-amber-500 hover:bg-amber-wash" : "text-mutedtxt hover:text-amber-400 hover:bg-amber-soft"}`}><Star className={`w-4 h-4 ${fav ? "fill-amber-400 text-amber-500" : ""}`} /></button></td>
+                    <td className="px-3 py-3"><div className="inline-flex items-center gap-1.5 group/id"><code className={`text-xs font-mono px-2 py-0.5 rounded border font-semibold ${disabled ? (isInvalid ? "bg-strong text-secondary border-linestrong line-through" : isPayment ? "bg-amber-wash text-amber-ink border-amber-line line-through" : "bg-rose-wash text-rose-ink border-rose-line line-through") : fav ? "bg-amber-soft text-amber-ink border-amber-line" : "bg-muted text-title border-line"}`}>{m.id}</code><button onClick={() => { navigator.clipboard.writeText(m.id).catch(()=>{}); setCopiedId(m.id); setTimeout(()=> setCopiedId(null), 1500); }} className="p-1 rounded-md hover:bg-strong opacity-70 hover:opacity-100 transition-colors" title="Copy ID">{copiedId === m.id ? <Check className="w-3.5 h-3.5 text-emerald-ink" /> : <Copy className="w-3.5 h-3.5 text-mutedtxt group-hover/id:text-secondary" />}</button></div></td>
                     <td className="px-3 py-3 font-medium text-body">{m.owned_by || m.provider}</td>
                     <td className="px-3 py-3 font-mono text-secondary">{m.context_length ? (m.context_length >= 1000000 ? (m.context_length/1000000)+"M" : m.context_length >= 1000 ? Math.round(m.context_length/1000)+"K" : m.context_length) : "-"}</td>
                     <td className="px-3 py-3 font-mono font-bold">{m.score ?? "-"}</td>
                     <td className="px-3 py-3">{badge(m.live_status)}</td>
-                    <td className="px-3 py-3 text-xs">{h ? (isPayment ? <span className="inline-flex items-center gap-1 text-amber-ink bg-amber-soft border border-amber-line px-2 py-0.5 rounded-full font-semibold text-[11px]">out of credits {h.http_status ? ` ${h.http_status}` : ""}</span> : h.status === "usable" ? <span className="inline-flex items-center gap-1 text-emerald-ink bg-emerald-soft border border-emerald-line px-2 py-0.5 rounded-full font-semibold text-[11px]"><Check className="w-3 h-3" /> usable {h.latency_ms}ms</span> : h.status === "no-key" ? <span className="text-amber-ink bg-amber-soft border border-amber-line px-2 py-0.5 rounded-full text-[11px] font-semibold">no-key</span> : <span className="text-rose-ink font-semibold">{h.status}{h.http_status ? ` ${h.http_status}` : ""}</span>) : <span className="text-slate-400">—</span>}</td>
+                    <td className="px-3 py-3 text-xs">{h ? (isPayment ? <span className="inline-flex items-center gap-1 text-amber-ink bg-amber-soft border border-amber-line px-2 py-0.5 rounded-full font-semibold text-[11px]">out of credits {h.http_status ? ` ${h.http_status}` : ""}</span> : h.status === "usable" ? <span className="inline-flex items-center gap-1 text-emerald-ink bg-emerald-soft border border-emerald-line px-2 py-0.5 rounded-full font-semibold text-[11px]"><Check className="w-3 h-3" /> usable {h.latency_ms}ms</span> : h.status === "no-key" ? <span className="text-amber-ink bg-amber-soft border border-amber-line px-2 py-0.5 rounded-full text-[11px] font-semibold">no-key</span> : <span className="text-rose-ink font-semibold">{h.status}{h.http_status ? ` ${h.http_status}` : ""}</span>) : <span className="text-mutedtxt">—</span>}</td>
                     <td className="px-3 py-3 font-mono text-secondary"><span className={used>0 ? "font-bold text-title" : ""}>{used}</span> / {parseLimit(m.limit)}</td>
                     <td className="px-3 py-3 text-center">
-                      <button onClick={() => checkSingle(m.id)} disabled={isInvalid || checkingOne === m.id} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold border ${isInvalid ? "bg-muted text-slate-400 border-line cursor-not-allowed" : "bg-surface text-blue-ink border-blue-line hover:bg-blue-soft"}`} title={isInvalid ? "Invalid model ID — disabled" : t("models.check")}>
+                      <button onClick={() => checkSingle(m.id)} disabled={isInvalid || checkingOne === m.id} className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-[11px] font-semibold border ${isInvalid ? "bg-muted text-mutedtxt border-line cursor-not-allowed" : "bg-surface text-blue-ink border-blue-line hover:bg-blue-soft"}`} title={isInvalid ? "Invalid model ID — disabled" : t("models.check")}>
                         {checkingOne === m.id ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />} {t("models.check")}
                       </button>
                     </td>
@@ -501,7 +501,7 @@ export default function Models() {
             </tbody>
           </table>
         </div>
-        {visible.length === 0 && <div className="p-8 text-center text-sm text-slate-400">{favOnly && favorites.size === 0 ? t("chat.no_favorites") : t("models.no_match")}</div>}
+        {visible.length === 0 && <div className="p-8 text-center text-sm text-mutedtxt">{favOnly && favorites.size === 0 ? t("chat.no_favorites") : t("models.no_match")}</div>}
         <div className="px-5 py-3 bg-raised/70 border-t border-line text-xs font-mono text-secondary flex items-center justify-between">
           <span>{visible.length} models • {selected.size} selected{favorites.size > 0 ? ` • ★ ${favorites.size} favorites` : ""}</span>
           {favorites.size > 0 && <span className="hidden sm:inline text-[11px] text-amber-ink">{t("models.favorites_tip")}</span>}

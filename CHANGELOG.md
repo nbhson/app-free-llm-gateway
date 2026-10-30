@@ -4,6 +4,15 @@ Tất cả thay đổi đáng chú ý sẽ được ghi ở đây. Format theo [
 
 ## [Unreleased]
 
+### Changed (Round 6 — UI/UX: Minimalism token cleanup + dark mode consistency)
+- **Xoá toàn bộ ~200 chỗ hard-code `slate-*`** trong `apps/web/src` (103 `text-slate-400`, 41 `bg-slate-900`, 18 `bg-slate-800`, 19 `text-slate-300`...) — mọi màu giờ đi qua design token, dark mode nhất quán 100% (trước đây nút chính `bg-slate-900 text-white` gần như biến mất trên canvas `#0b1424`, badge `text-slate-300` gần như vô hình trên card trắng)
+- **Token mới** — `--app-primary/-hover/-ink`: nút chính đơn sắc, tự ĐẢO NGƯỢC trong dark mode (nút sáng chữ tối) nên CTA giữ contrast mạnh; `--app-codebg/-surface/-row/-line/-text*`: surface terminal (curl box, JSON viewer, code block) cố định luôn-tối ở cả 2 theme — terminal tối là convention, không lật theo theme
+- **Hệ thống nút thống nhất theo Minimalism (1 accent duy nhất)** — CTA tương tác (Create, Save, Apply, Send, Download, Retry) = `bg-amber-500` (accent); surface trạng thái (nav active, selected row, avatar, tooltip, toast, user bubble) = `bg-primary` đơn sắc; destructive = rose; hết trạng thái hai hệ xen kẽ tuỳ tiện giữa các trang
+- **Contrast a11y tăng** — meta text `text-slate-400` (2.9:1 trên trắng) → `text-mutedtxt` (4.76:1); checkbox accent `accent-slate-600` → `accent-amber-500`; strikethrough decoration theo token
+- **Bỏ decorative gradient** (anti-pattern Minimalism) — banner "Cache Live" + card Quickstart flatten về `bg-codesurface`; gradient amber chỉ còn ở logo (1 hiệu ứng duy nhất, đúng luật kết hợp Minimalism)
+- **Bỏ inline style màu cứng** — Dashboard verify number `#059669/#ea580c` → `text-emerald-ink/text-orange-ink` class; MessageList attachment chip `bg-white/10` → `bg-primary-ink/10` (đúng trên bubble đã đảo)
+- **Không đổi** — logic, layout, spacing, rounding (đã nhất quán `rounded-lg/xl`), i18n, a11y focus ring từ Round 3; zero thay đổi gateway
+
 ### Added (Round 5 — resilience: giảm 4xx/5xx cho người dùng khi providers còn valid)
 - **Retry cùng provider trên lỗi tạm thời** — `lib/provider-executor.ts` refactor thành `attemptProvider()` dùng chung (sequential + parallel): 5xx/network error được retry in-place `PROVIDER_RETRIES` lần (default 1, max 3) với backoff jitter `PROVIDER_RETRY_BACKOFF_MS` (default 400ms) trước khi đốt fallback hop; timeout của executor và 429/4xx không retry (429 đã rotate key + cooldown; retry timeout sẽ nhân đôi worst-case latency)
 - **Pair health theo cặp (provider, model)** — `lib/pair-health.ts` mới: nhớ 400/404/422 liên tiếp ≥2 (`MODEL_FAIL_THRESHOLD`) cho một cặp → đẩy pair xuống CUỐI provider order trong TTL 10 phút (`MODEL_DEMOTE_TTL_MS`) thay vì skip (vẫn thử khi mọi option healthy đã fail); success trên pair clears ngay; persist `data/pair-health.json` sống qua restart — hết cảnh ăn lại 400 "model not found" y hệt mỗi request do mapping drift

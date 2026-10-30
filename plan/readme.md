@@ -3,6 +3,56 @@
 > Free LLM Gateway: Hono API gateway đa provider (OpenAI-compatible), virtual keys,
 > circuit breaker, quota, semantic cache, BYOK, web tools. Monorepo `apps/gateway` + `apps/web`.
 
+## Round 6 (2026-10-30) — UI/UX: Minimalism token cleanup + dark mode consistency
+
+### Bối cảnh
+
+User hỏi "@ui-ux-design-styles có thể cải thiện UI/UX không?". Đánh giá hiện trạng:
+app đã có token system + dark mode từ Round 3, nhưng audit grep thấy **~200 chỗ
+hard-code `slate-*`** rải trong 13+ file — phá nhất quán dark mode (nút chính
+`bg-slate-900` gần như tàng hình trên canvas tối; badge `text-slate-300` vô hình
+trên card trắng) và vi phạm style đang chọn.
+
+### Style chọn: Minimalism (01-minimalism)
+
+Dashboard SaaS data-dense → đúng bảng chọn của skill (Linear/Stripe/Notion style).
+Loại trừ: Glassmorphism/Neumorphism (skill cấm cho dense data tables), Brutalism,
+Maximalism. Palette hiện tại (slate + amber) giữ nguyên — chỉ siết kỷ luật:
+
+| Quy tắc Minimalism | Trước | Sau |
+|---|---|---|
+| Single accent | amber xen lẫn slate-900 cho CTA tuỳ trang | CTA = amber-500 duy nhất; mono `--app-primary` chỉ cho selected/nav/tooltip/toast |
+| No decorative gradient | banner Cache Live + Quickstart gradient slate | flatten `bg-codesurface`; gradient chỉ còn logo |
+| No hard-coded color | ~200 chỗ slate-* + inline #059669 | 0 chỗ — mọi màu qua token |
+| Contrast | slate-400 meta 2.9:1 | mutedtxt 4.76:1 |
+
+### Token mới (index.css)
+
+- `--app-primary / -hover / -ink`: mono button — light: slate-900/white;
+  dark: **đảo ngược** #f1f5f9/slate-900 (nút sáng trên nền tối — trước đây mất hết contrast).
+- `--app-codebg / -surface / -row / -line / -text*`: surface terminal LUÔN tối ở cả
+  2 theme (curl boxes, JSON viewers, code blocks) — terminal tối là convention.
+
+### Trạng thái Round 6
+
+- [x] 0 chỗ `slate-[0-9]|gray-[0-9]|zinc-[0-9]` trong apps/web/src (đã là ~200)
+- [x] Button system: amber CTA / mono selected / rose destructive — nhất quán mọi trang
+- [x] `tsc --noEmit` web pass; `eslint` 0 error; `vite build` ✓; gateway tests **373/373** (không đổi)
+- [x] Web dev server boot OK (smoke :5199)
+- [x] CHANGELOG [Unreleased] Round 6
+
+### Cân nhắc / không làm
+
+- **Đổi rounding về 0–8px** (chuẩn Minimalism gắt): app đã nhất quán rounded-lg/xl —
+  đổi toàn bộ = churn lớn, lợi ích thấp. Ghi nhận là chủ đích.
+- **Aurora UI layer**: skill cho phép ghép Minimalism+Aurora (1 hiệu ứng) — user chọn
+  scope "Đầy đủ: token cleanup + polish", không thêm gradient trang trí.
+- **Chart internals** (Usage.tsx SVG foreignObject `color: white`, drop-shadow): nằm
+  trong pie slice có màu riêng, giữ nguyên.
+- **Inline flex/size styles** trong Usage legend: layout, không phải màu — giữ.
+
+
+
 ## Round 5 (2026-10-30) — Resilience: giảm 4xx/5xx khi providers còn valid
 
 ### Vấn đề của user

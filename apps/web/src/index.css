@@ -17,6 +17,20 @@
   --app-secondary: #475569; --app-mutedtxt: #64748b;
   --app-line: #e2e8f0; --app-line-soft: #f1f5f9; --app-line-strong: #cbd5e1;
   --app-divider: #f1f5f9;
+  /* Primary action (Minimalism: single monochrome anchor, accent amber for states).
+     Light = dark button on light canvas; dark = INVERTED (light button on dark canvas)
+     so the primary CTA keeps strong contrast instead of vanishing (bg-slate-900 on #0b1424). */
+  --app-primary: #0f172a; --app-primary-hover: #1e293b; --app-primary-ink: #ffffff;
+  /* Terminal/code surfaces — ALWAYS dark in both themes (curl boxes, JSON viewers,
+     code blocks). Not theme-flipped: a terminal is expected to be dark. */
+  --app-codebg: #020617;      /* slate-950 terminal body */
+  --app-codesurface: #0f172a; /* slate-900 terminal header / JSON card */
+  --app-coderow: #1e293b;     /* slate-800 chip / copy button inside terminal */
+  --app-codeline: #334155;    /* slate-700 border inside terminal */
+  --app-codetext: #e2e8f0;    /* slate-200 main code text */
+  --app-codetext-dim: #cbd5e1;/* slate-300 labels */
+  --app-codetext-bright: #f1f5f9; /* slate-100 emphasized */
+  --app-codetext-faint: #94a3b8;  /* slate-400 muted labels inside terminal */
   --chart-grid: #f1f5f9;
   --scrollbar-thumb: rgba(148, 163, 184, 0.4);
   --scrollbar-thumb-hover: rgba(100, 116, 139, 0.6);
@@ -29,6 +43,9 @@
   --app-secondary: #a3b2c7; --app-mutedtxt: #8ca0b8;
   --app-line: #263551; --app-line-soft: #1e2c47; --app-line-strong: #3a4d6e;
   --app-divider: #1e2c47;
+  /* Primary inverts in dark: light button, dark ink */
+  --app-primary: #f1f5f9; --app-primary-hover: #e2e8f0; --app-primary-ink: #0f172a;
+  /* Terminal surfaces intentionally identical in dark */
   --chart-grid: #263551;
   --scrollbar-thumb: rgba(71, 85, 105, 0.5);
   --scrollbar-thumb-hover: rgba(100, 116, 139, 0.7);
@@ -50,6 +67,17 @@
   --color-linestrong: var(--app-line-strong);
   --color-divsoft: var(--app-divider);
   --color-chartgrid: var(--chart-grid);
+  --color-primary: var(--app-primary);
+  --color-primary-hover: var(--app-primary-hover);
+  --color-primary-ink: var(--app-primary-ink);
+  --color-codebg: var(--app-codebg);
+  --color-codesurface: var(--app-codesurface);
+  --color-coderow: var(--app-coderow);
+  --color-codeline: var(--app-codeline);
+  --color-codetext: var(--app-codetext);
+  --color-codetextdim: var(--app-codetext-dim);
+  --color-codetextbright: var(--app-codetext-bright);
+  --color-codetextfaint: var(--app-codetext-faint);
 }
 
 /* Per-hue pastel chip tokens: soft (bg), wash (stronger bg), ink (text),

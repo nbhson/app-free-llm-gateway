@@ -91,7 +91,7 @@ export const Composer = React.memo(function Composer({
             onPaste={onPaste}
             placeholder={t("chat.placeholder")}
             rows={1}
-            className="w-full min-h-[44px] max-h-[120px] px-3 py-3 pr-10 rounded-xl border border-line bg-raised focus:bg-surface focus:outline-none focus:ring-2 focus:ring-heading/10 resize-none text-sm leading-6 placeholder:text-slate-400"
+            className="w-full min-h-[44px] max-h-[120px] px-3 py-3 pr-10 rounded-xl border border-line bg-raised focus:bg-surface focus:outline-none focus:ring-2 focus:ring-heading/10 resize-none text-sm leading-6 placeholder:text-mutedtxt"
             style={{ height: "44px" }}
             onInput={(e) => {
               const ta = e.target as HTMLTextAreaElement;
@@ -99,7 +99,7 @@ export const Composer = React.memo(function Composer({
               ta.style.height = Math.min(ta.scrollHeight, 120) + "px";
             }}
           />
-          <span className="absolute right-3 bottom-3 text-[11px] text-slate-400 pointer-events-none hidden sm:block">{t("chat.sendHint")}</span>
+          <span className="absolute right-3 bottom-3 text-[11px] text-mutedtxt pointer-events-none hidden sm:block">{t("chat.sendHint")}</span>
         </div>
         {isStreaming ? (
           <button aria-label="Stop generation" onClick={onStop} className="p-3 rounded-xl bg-rose-600 hover:bg-rose-700 text-white shadow-sm">
@@ -110,7 +110,7 @@ export const Composer = React.memo(function Composer({
             aria-label="Send message"
             onClick={onSend}
             disabled={!input.trim() && pendingAttachments.length === 0}
-            className="p-3 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:bg-strong disabled:cursor-not-allowed text-white shadow-sm transition-colors"
+            className="p-3 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:bg-strong disabled:cursor-not-allowed text-white shadow-sm transition-colors"
           >
             <Send className="w-5 h-5" />
           </button>
