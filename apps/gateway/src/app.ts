@@ -122,16 +122,11 @@ export function createApp() {
     if (!vk) {
       return c.json({ error: { message: "Invalid API key", type: "invalid_api_key", code: 401 } }, 401);
     }
-    // Scope check for chat: if model or provider pinned via x-router, verify scope
+    // Model scope: POST /v1/chat checks body model in the route itself; the
+    // x-router provider pin is enforced below (removed the dead query-param
+    // scope block that computed a violation but never acted on it).
     const pinned = c.req.header("x-router");
-    const model = c.req.query("model") || "";
-    if (vk && !vk.scopes.models.includes("*") && model && !vk.scopes.models.some((m) => model.includes(m))) {
-      // For chat POST we check body later; this is query param check for models list
-      if (c.req.path.startsWith("/v1/models") && model && !vk.scopes.models.includes("*")) {
-        // allow list but filter later
-      }
-    }
-    if (vk && pinned && !vk.scopes.providers.includes("*") && !vk.scopes.providers.includes(pinned)) {
+    if (pinned && !vk.scopes.providers.includes("*") && !vk.scopes.providers.includes(pinned)) {
       return c.json({ error: { message: `Key not allowed for provider ${pinned}`, type: "insufficient_scope" } }, 403);
     }
     setRequestVk(c, vk);

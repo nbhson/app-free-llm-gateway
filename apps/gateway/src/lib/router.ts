@@ -70,28 +70,18 @@ export function getProvidersForRequest(model: string, strategy: Strategy = "tier
   // Priority: real key -> public free (pollinations).
   // If no real keys are configured, public providers go first so `auto` hits
   // live free instead of failing fast.
-  const hasRealKeyFor = (pid: string): boolean => {
-    return hasRealKey(pid);
-  };
   filtered.sort((a, b) => {
     // FINAL_FALLBACK always last — never pulled up by sort (if it passed isUsable).
     if (a === FINAL_FALLBACK && b !== FINAL_FALLBACK) return 1;
     if (b === FINAL_FALLBACK && a !== FINAL_FALLBACK) return -1;
-    const aReal = hasRealKeyFor(a);
-    const bReal = hasRealKeyFor(b);
+    const aReal = hasRealKey(a);
+    const bReal = hasRealKey(b);
     if (aReal !== bReal) return aReal ? -1 : 1;
     const aPublic = isPublicProvider(a);
     const bPublic = isPublicProvider(b);
     if (aPublic !== bPublic) return aPublic ? -1 : 1; // public before dummy (dummy already filtered)
-    const aHas = hasRealKey(a);
-    const bHas = hasRealKey(b);
-    if (aHas !== bHas) return aHas ? -1 : 1;
     return 0;
   });
-  // Keep FINAL_FALLBACK last even if sort stability changes
-  if (filtered.includes(FINAL_FALLBACK)) {
-    return [...filtered.filter((p) => p !== FINAL_FALLBACK), FINAL_FALLBACK];
-  }
   return filtered;
 }
 

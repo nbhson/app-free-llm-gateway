@@ -64,53 +64,5 @@ export function isRedisAvailable(): boolean {
 }
 
 // ---- helpers ----
-
-export async function redisGet(key: string): Promise<string | null> {
-  const r = getRedis();
-  if (!r) return null;
-  try {
-    return await r.get(key);
-  } catch (err) {
-    logger.warn({ err: (err as Error).message, key }, "[redis] GET failed");
-    return null;
-  }
-}
-
-export async function redisSet(key: string, value: string, ttlSec?: number): Promise<void> {
-  const r = getRedis();
-  if (!r) return;
-  try {
-    if (ttlSec && ttlSec > 0) await r.set(key, value, "EX", ttlSec);
-    else await r.set(key, value);
-  } catch (err) {
-    logger.warn({ err: (err as Error).message, key }, "[redis] SET failed");
-  }
-}
-
-export async function redisIncrWithExpire(key: string, ttlSec: number): Promise<number> {
-  const r = getRedis();
-  if (!r) return 0;
-  try {
-    const pipeline = r.pipeline();
-    pipeline.incr(key);
-    pipeline.expire(key, ttlSec);
-    const results = await pipeline.exec();
-    // results: [ [err, incrVal], [err, expireVal] ]
-    const val = results?.[0]?.[1] as number | undefined;
-    return typeof val === "number" ? val : 0;
-  } catch (err) {
-    logger.warn({ err: (err as Error).message, key }, "[redis] INCR+EXPIRE failed");
-    return 0;
-  }
-}
-
-export function redisPipeline(): ReturnType<Redis["pipeline"]> | null {
-  const r = getRedis();
-  if (!r) return null;
-  try {
-    return r.pipeline();
-  } catch (err) {
-    logger.warn({ err: (err as Error).message }, "[redis] pipeline creation failed");
-    return null;
-  }
-}
+// (removed unused wrappers redisGet/redisSet/redisIncrWithExpire/redisPipeline —
+// modules use getRedis() directly; re-add only if a consumer appears)

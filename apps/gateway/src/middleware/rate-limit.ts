@@ -25,7 +25,9 @@ function memoryCheck(key: string, limit: number, now: number): { allowed: boolea
   }
   w.count++;
   windows.set(key, w);
-  return { allowed: true, remaining: Math.max(0, limit - w.count), resetSec: Math.ceil(w.resetAt / 1000) };
+  // resetSec is RELATIVE (seconds until the window resets) — same semantics as
+  // the denied path's retryAfter, so x-ratelimit-reset means one thing.
+  return { allowed: true, remaining: Math.max(0, limit - w.count), resetSec: Math.ceil((w.resetAt - now) / 1000) };
 }
 
 export const virtualKeyRateLimit: MiddlewareHandler = async (c, next) => {
@@ -56,7 +58,7 @@ export const virtualKeyRateLimit: MiddlewareHandler = async (c, next) => {
       windowMs: 60000,
       nowMs: now,
     }),
-    new Promise<null>((resolve) => setTimeout(() => resolve(null), 250).unref?.() ?? setTimeout(() => resolve(null), 250)),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), 250).unref?.()),
   ]).catch(() => null) as Awaited<ReturnType<typeof slidingCheck>>;
   if (sliding !== null) {
     if (!sliding.allowed) {
@@ -64,7 +66,7 @@ export const virtualKeyRateLimit: MiddlewareHandler = async (c, next) => {
     }
     c.header("x-ratelimit-limit-requests", String(effectiveLimit));
     c.header("x-ratelimit-remaining-requests", String(Math.max(0, effectiveLimit - Math.ceil(sliding.estimated) - 1)));
-    c.header("x-ratelimit-reset", String(Math.ceil((now + 60000) / 1000)));
+    c.header("x-ratelimit-reset", String(Math.ceil(60000 / 1000))); // relative seconds (window is 60s)
     await next();
     return;
   }

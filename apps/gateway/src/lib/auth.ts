@@ -1,5 +1,4 @@
 import crypto from "node:crypto";
-import { config } from "../config.js";
 
 // Timing-safe compare using Node crypto (constant-time for equal-length buffers,
 // length-mismatch short-circuits safely without leaking content).
@@ -28,19 +27,9 @@ export function timingSafeEqual(a: string, b: string): boolean {
   }
 }
 
-export function isValidMasterKey(key: string): boolean {
-  return timingSafeEqual(key, config.masterKey);
-}
-
 export function extractBearer(c: { req: { header: (n: string) => string | undefined } }): string | null {
   const auth = c.req.header("authorization") || c.req.header("Authorization");
   if (!auth) return null;
   const m = auth.match(/^Bearer\s+(.+)$/i);
   return m ? m[1].trim() : null;
-}
-
-export function isValidVirtualKey(key: string): boolean {
-  if (isValidMasterKey(key)) return true;
-  // Strict: no dev fallback. Use virtual-keys store via isValidVirtualKeyLive for fgk-* validation.
-  return false;
 }
