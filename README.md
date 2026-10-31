@@ -1,5 +1,7 @@
 # app-auto-llm-free
 
+[![CI](https://github.com/nbhson/app-free-llm-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/nbhson/app-free-llm-gateway/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 > **One endpoint for all free LLMs.** Self-hosted, OpenAI-compatible gateway aggregating all free providers & models into a single endpoint.
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
