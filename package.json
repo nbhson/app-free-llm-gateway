@@ -24,7 +24,7 @@
     "sync:providers": "npm run sync:providers -w apps-gateway"
   },
   "devDependencies": {
-    "@eslint/js": "^9.18.0",
+    "@eslint/js": "^10.0.1",
     "@types/better-sqlite3": "^9.6.0",
     "@types/pg": "^8.23.1",
     "concurrently": "^8.2.2",
