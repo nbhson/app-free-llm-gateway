@@ -107,6 +107,44 @@ describe("app auth middleware", () => {
   });
 });
 
+describe("/metrics auth", () => {
+  const app = createApp();
+  const master = config.masterKey;
+  const origPrometheus = config.prometheusEnabled;
+
+  afterEach(() => {
+    (config as unknown as { prometheusEnabled: boolean }).prometheusEnabled = origPrometheus;
+  });
+
+  it("404 when PROMETHEUS disabled (preserved local-dev off behavior)", async () => {
+    (config as unknown as { prometheusEnabled: boolean }).prometheusEnabled = false;
+    const res = await app.request("/metrics");
+    expect(res.status).toBe(404);
+  });
+
+  it("403 without key when enabled (no longer public)", async () => {
+    const res = await app.request("/metrics");
+    expect(res.status).toBe(403);
+  });
+
+  it("403 with non-admin virtual key", async () => {
+    const created = createVirtualKey({ name: "metrics-user-key", role: "user" });
+    try {
+      const res = await app.request("/metrics", { headers: { Authorization: `Bearer ${created.key}` } });
+      expect(res.status).toBe(403);
+    } finally {
+      deleteVirtualKey(created.id);
+    }
+  });
+
+  it("200 with admin (master) key", async () => {
+    const res = await app.request("/metrics", { headers: { Authorization: `Bearer ${master}` } });
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toContain("text/plain");
+    expect(await res.text()).toContain("# HELP");
+  });
+});
+
 describe("app chat end-to-end via middleware (mocked provider)", () => {
   const origPollinations = providers["pollinations"];
   const origKiraai = providers["kiraai"];

@@ -62,12 +62,22 @@ function load(): VirtualKey[] {
   return [master];
 }
 
+function chmodPrivate(p: string): void {
+  // virtual-keys.json holds key hashes + encrypted material — restrict to
+  // owner. POSIX only (chmod is a no-op/unsupported on Windows); never fail
+  // the save because of permission bits.
+  try {
+    if (process.platform !== "win32") fs.chmodSync(p, 0o600);
+  } catch { /* ignore: chmod unsupported on this FS */ }
+}
+
 function save(keys: VirtualKey[]): void {
   fs.mkdirSync(path.dirname(STORE_PATH), { recursive: true });
   // Atomic write: tmp + rename so a crash mid-write can't corrupt the store
   const tmp = `${STORE_PATH}.tmp`;
   fs.writeFileSync(tmp, JSON.stringify(keys, null, 2));
   fs.renameSync(tmp, STORE_PATH);
+  chmodPrivate(STORE_PATH);
 }
 
 async function saveAsync(keys: VirtualKey[]): Promise<void> {
@@ -77,6 +87,7 @@ async function saveAsync(keys: VirtualKey[]): Promise<void> {
     const tmp = `${STORE_PATH}.tmp`;
     await fs.promises.writeFile(tmp, JSON.stringify(keys, null, 2));
     await fs.promises.rename(tmp, STORE_PATH);
+    chmodPrivate(STORE_PATH);
   } catch { /* ignore: async save failed */ }
 }
 

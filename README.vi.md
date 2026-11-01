@@ -5,12 +5,16 @@
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Stack: Hono + Node](https://img.shields.io/badge/Stack-Hono%20%2B%20Node-green)](https://hono.dev)
 [![OpenAI Compatible](https://img.shields.io/badge/API-OpenAI%20Compatible-00c853)](docs/vi/API.md)
-[![MIỄN PHÍ](https://img.shields.io/badge/MIỄN_PHÍ-51_Provider-00c853?style=flat-square)](docs/vi/PROVIDERS.md)
-[![MIỄN PHÍ](https://img.shields.io/badge/MIỄN_PHÍ-338_Model-00c853?style=flat-square)](models.yaml)
+[![MIỄN PHÍ](https://img.shields.io/badge/MIỄN_PHÍ-50_Provider-00c853?style=flat-square)](docs/vi/PROVIDERS.md)
+[![MIỄN PHÍ](https://img.shields.io/badge/MIỄN_PHÍ-419_Model-00c853?style=flat-square)](models)
 [![Không Cần Thẻ](https://img.shields.io/badge/Không_Cần_Thẻ-29%2F30-3b82f6?style=flat-square)](docs/vi/FREELLMS_FREE_TIER.md)
 
+> Số đếm tại ngày **2026-11-01**: 50 provider (`apps/gateway/src/providers/registry.ts` `providerIds`) / 419 model (`models/*.yaml`, id duy nhất). Nguồn sự thật: `GET /api/stats` (trường `models_source`) — cập nhật badge cùng lúc với registry, tránh drift.
+>
+> 🔒 `GET /metrics` (Prometheus) **yêu cầu admin key**: bật mặc định, nhưng scrape phải gửi `Authorization: Bearer <admin-key>` (virtual key `role: admin` hoặc master key). Khi `PROMETHEUS_ENABLED=false` trả về `404`.
+
 > ### 🆓 **100% MIỄN PHÍ — Không Cần Thẻ • Không Trial • Mãi Mãi**
-> **51 Provider • 338 Model (316 freellms + 14 KiraAI + 8 B.AI/TokenHarbor) • Một Endpoint OpenAI-Compatible** — Tự host, BYOK, chi phí `$0`.
+> **50 Provider • 419 Model • Một Endpoint OpenAI-Compatible** — Tự host, BYOK, chi phí `$0`.
 >
 > | Nhóm | Provider | Model | Không cần thẻ |
 > |------|----------|-------|--------------|
@@ -37,11 +41,11 @@
 
 ---
 
-## 📸 Screenshots — Dashboard Live (51 provider • 316 free • verified 24h)
+## 📸 Screenshots — Dashboard Live (50 provider • 419 model • verified 24h)
 
-| Providers — 51 IDs, tier, hasKey, `Get Key ↗` + Live Health 5s | Models — 316 models, filter `kiraai`, `Check Live`, Hide 404 (`usable`/`timeout`/`404`) |
+| Providers — 50 IDs, tier, hasKey, `Get Key ↗` + Live Health 5s | Models — 419 models, filter `kiraai`, `Check Live`, Hide 404 (`usable`/`timeout`/`404`) |
 |:---:|:---:|
-| ![Providers — 51 live, health 5s](docs/images/providers.png) | ![Models — 316 live verify](docs/images/models.png) |
+| ![Providers — 50 live, health 5s](docs/images/providers.png) | ![Models — 419 live verify](docs/images/models.png) |
 
 | Chat — `ollama-cloud/gpt-oss:120b`, Context Window + vision | Usage — Provider Topology + Requests/Tokens by Provider |
 |:---:|:---:|
@@ -58,7 +62,7 @@
 | Danh mục | Tính năng |
 |----------|----------|
 | **API Thống nhất (OpenAI-Compatible)** | `POST /v1/chat/completions` (stream + non-stream), `/v1/completions` (legacy text), `/v1/models`, `/v1/embeddings`, `/v1/images/generations`, `/v1/audio/*`, `/v1/responses`, `/v1/conversations`, `/v1/messages` (Anthropic) — dùng ngay với OpenAI SDK, Vercel AI, LangChain |
-| **51 Provider Miễn Phí (338 Model)** | **Permanent Free (28)**: NVIDIA NIM (81+), ModelScope (43), Cloudflare (35), Gemini (15), OVH (10), Cohere (10), OpenRouter (17), SambaNova, SiliconFlow, Groq, Cerebras, Z AI, Agnes, Aion, LLM7, Chutes, Glhf, **B.AI (4, 0 Credits)**, **TokenHarbor (3 :free + 1 reserved)**…<br>**Quota Free (4)**: GitHub Models (13), Mistral (9), Kilo Code (8), HuggingFace (4)<br>**Scraped/Unlimited (3)**: Pollinations, LLM7.io, Ollama Cloud<br>**Custom Free (3)**: OrcaRouter, FreeAI, Cline |
+| **50 Provider Miễn Phí (419 Model)** | **Permanent Free (28)**: NVIDIA NIM (81+), ModelScope (43), Cloudflare (35), Gemini (15), OVH (10), Cohere (10), OpenRouter (17), SambaNova, SiliconFlow, Groq, Cerebras, Z AI, Agnes, Aion, LLM7, Chutes, Glhf, **B.AI (4, 0 Credits)**, **TokenHarbor (3 :free + 1 reserved)**…<br>**Quota Free (4)**: GitHub Models (13), Mistral (9), Kilo Code (8), HuggingFace (4)<br>**Scraped/Unlimited (3)**: Pollinations, LLM7.io, Ollama Cloud<br>**Custom Free (3)**: OrcaRouter, FreeAI, Cline |
 | **Routing Thông Minh & Fallback** | Fallback theo tier (key thật → public free), alias model (`auto`, `gpt-4`, `glm`, `qwen`, `code` → free tốt nhất), header `x-router` pin, bỏ qua `deprecated`/`quota`/`breaker`, filter `hasKey` |
 | **Resilience v2 (0.9.0)** | Executor `tryProviders` chung (6 routes), Redis Lua sliding-window quota/rate-limit (không spike biên), circuit breaker 5/30s half-open (chỉ 5xx/429/exception), quota TPM/RPM (NVIDIA 40, Groq 30), mid-stream SSE, token pre-flight, persisted 404 strikethrough |
 | **Quản Lý Key An Toàn** | AES-256-GCM at-rest, BYOK, virtual keys `fgk-...` (scopes, RPM), `fgk-master-...` admin, script xoay key |

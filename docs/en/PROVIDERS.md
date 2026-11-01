@@ -2,8 +2,9 @@
 
 # Providers
 
-> **Historical source: freellms.org (scan 2026-09-06) — 30 providers, 316 free models, 41 IDs — live sync is now source of truth (2185 total / 882 free / 853 hasKey, `?hasKey=1` 2190 total) + 2 new providers B.AI/TokenHarbor → 51 IDs, 338 models (2026-09-10).**  
-> Dashboard nav has **Providers (51) before Models (338)**. The **Get Key ↗** column (direct console + freellms ↗) lives in `apps/web/src/pages/Providers.tsx:1` + `lib/getKeyUrls.ts:1` (32 URLs). Table **highlights hasRealKey**: `background #f0fdf4` + `borderLeft 3px #16a34a` + badge `● has key` green + `Keys` `✓ real` green + `Get Key` green when hasRealKey. **Top filter** debounce 400ms `q` + pill `hasKey`, **sticky bottom pagination** LOV 25/50 (no longer on top).  
+> **Historical source: freellms.org (scan 2026-09-06) — 30 providers, 316 free models, 41 IDs — live sync is now source of truth.**
+> **Current counts (2026-11-01): 50 provider IDs (`apps/gateway/src/providers/registry.ts` `providerIds`) / 419 models (`models/*.yaml`, unique ids) — source of truth `GET /api/stats` (`models_source`). Keep these numbers in sync with README badges.**  
+> Dashboard nav has **Providers (50) before Models (419)**. The **Get Key ↗** column (direct console + freellms ↗) lives in `apps/web/src/pages/Providers.tsx:1` + `lib/getKeyUrls.ts:1` (32 URLs). Table **highlights hasRealKey**: `background #f0fdf4` + `borderLeft 3px #16a34a` + badge `● has key` green + `Keys` `✓ real` green + `Get Key` green when hasRealKey. **Top filter** debounce 400ms `q` + pill `hasKey`, **sticky bottom pagination** LOV 25/50 (no longer on top).  
 > Historical details: [`docs/FREELLMS_FREE_TIER.md`](FREELLMS_FREE_TIER.md) + `data/freellms-providers.json:1` / `data/freellms-models-free.json:1`; **live**: `data/live-models.json:1` / `GET /api/models/live` / `POST /api/models/live/sync`  
 > Gateway `apps/gateway/src/providers/registry.ts:1` holds 51 IDs (30 freellms slugs + 14 alias + 2 new + 2 B.AI alias + 1 TokenHarbor + 2 b-ai alias), `models.yaml:1` has 338 models (316 freellms + 14 KiraAI + 8 B.AI/TokenHarbor), and `lib/paths.ts:1` fixes the 7→316 bug, `middleware/rate-limit.ts:1` 4x list limit 200.
 

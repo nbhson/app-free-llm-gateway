@@ -73,9 +73,20 @@ export function createApp() {
     return res;
   });
 
-  // Metrics (Prometheus via prom-client) — public if enabled, no auth
+  // Metrics (Prometheus via prom-client) — disabled (404) unless enabled,
+  // and admin-gated when enabled: scrape config must send
+  // `Authorization: Bearer <admin-key>` (or `x-api-key`).
   app.get("/metrics", async (c) => {
     if (!config.prometheusEnabled) return c.text("prometheus disabled", 404);
+    let key = extractBearer(c);
+    if (!key) {
+      const xKey = c.req.header("x-api-key") || c.req.header("X-API-Key");
+      if (xKey) key = xKey.trim();
+    }
+    const vk = key ? isValidVirtualKeyLive(key) : null;
+    if (!vk || vk.role !== "admin") {
+      return c.json({ error: { message: "Admin required for /metrics", type: "forbidden" } }, 403);
+    }
     const { renderMetrics } = await import("./lib/metrics.js");
     const { getAllStates } = await import("./lib/circuit-breaker.js");
     const { metrics } = await import("./lib/metrics.js");

@@ -56,6 +56,8 @@ interface ApiConfigResponse {
 interface ApiStatsResponse {
   providers: number;
   free_models: number;
+  total_models: number;
+  models_source: string;
   logs: { total: number };
   breakers: unknown;
   flags: { semanticCache: boolean; compression: boolean; costRouting: boolean };
@@ -197,10 +199,13 @@ describe("api misc read endpoints", () => {
     expect(data._source).toBe(".env");
   });
 
-  it("GET /stats aggregates gateway state", async () => {
+  it("GET /stats aggregates gateway state (counts derived from real data, no hardcoded fallback)", async () => {
     const data = await resJson<ApiStatsResponse>(await apiRoute.request("/stats"));
     expect(data.providers).toBe(providerIds.length);
     expect(data.free_models).toBeGreaterThan(300);
+    // total_models mirrors the live models/ catalog instead of a stale hardcode
+    expect(data.total_models).toBeGreaterThanOrEqual(data.free_models);
+    expect(typeof data.models_source).toBe("string");
     expect(data.logs).toHaveProperty("total");
     expect(data).toHaveProperty("breakers");
     expect(data.flags).toHaveProperty("semanticCache");

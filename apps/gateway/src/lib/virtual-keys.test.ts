@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach } from "vitest";
+import fs from "node:fs";
 import {
   createVirtualKey,
   deleteVirtualKey,
@@ -7,6 +8,7 @@ import {
   listVirtualKeys,
 } from "./virtual-keys.js";
 import { config } from "../config.js";
+import { resolveDataPath } from "./paths.js";
 
 function cleanupTestKeys(): void {
   for (const k of listVirtualKeys()) {
@@ -57,6 +59,18 @@ describe("virtual-keys lifecycle", () => {
       expect(created.scopes).toMatchObject({ models: ["*"], providers: ["*"] });
       expect(created.role).toBe("user");
       expect(created.rpmLimit).toBe(60);
+    } finally {
+      deleteVirtualKey(created.id);
+    }
+  });
+
+  it("store file is written owner-only (chmod 600, POSIX)", () => {
+    if (process.platform === "win32") return; // chmod not applicable
+    const created = createVirtualKey({ name: `ut-chmod-${Date.now()}` });
+    try {
+      const stat = fs.statSync(resolveDataPath("virtual-keys.json"));
+      // mask to permission bits — owner rw, nothing for group/others
+      expect(stat.mode & 0o777).toBe(0o600);
     } finally {
       deleteVirtualKey(created.id);
     }

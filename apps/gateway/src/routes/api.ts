@@ -230,7 +230,7 @@ apiRoute.get("/models/sync", (c) => {
   return c.json({
     source: "freellms.org",
     last_sync: "2026-09-06",
-    models_yaml: "models.yaml (316 free)",
+    models_yaml: "models/ directory catalog (419 models, counted 2026-11-01 — see GET /api/stats models_source)",
     data_files: ["data/freellms-providers.json", "data/freellms-models-free.json"],
     script: "python scripts/sync-freellms.py",
   });
@@ -867,16 +867,23 @@ apiRoute.put("/config", async (c) => {
 
 apiRoute.get("/stats", (c) => {
   const freellms = loadProvidersJson();
+  // Source of truth: models/ catalog (loadModelsYaml) — same source /v1/models uses.
+  // data/freellms-models-free.json is used when present (historical freellms scan);
+  // when missing, counts are derived from live sources and marked `models_source`
+  // so docs/dashboard can label them as fallback estimates instead of hardcoding.
   const freeModelsArr = readDataJson<FreellmsModelEntry[]>("freellms-models-free.json", []);
-  const freeModels = freeModelsArr.length || 316;
+  const yamlModels = loadModelsYaml();
+  const freeModels = freeModelsArr.length || yamlModels.length;
+  const freellmsProviders = freellms.length || providerIds.length;
   const logStats = getStats();
   return c.json({
     uptime: process.uptime(),
     requests: logStats.total,
     providers: providerIds.length,
-    freellms_providers: freellms.length || 30,
+    freellms_providers: freellmsProviders,
     free_models: freeModels,
-    total_models: 365,
+    total_models: yamlModels.length || freeModels,
+    models_source: freeModelsArr.length ? "data/freellms-models-free.json" : "models/ catalog (fallback estimate)",
     tiers: config.fallbackTiers,
     logs: logStats,
     breakers: getAllStates(),

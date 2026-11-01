@@ -1065,6 +1065,7 @@ FALLBACK_TIERS=${form.FALLBACK_TIERS}`, [form]);
               {applying ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Zap className="w-3.5 h-3.5" />} {applying ? (t("settings.applying") || "Applying...") : (t("settings.applyToServer") || "Apply to server")}
             </button>
           </div>
+          <p className="w-full text-xs text-amber-ink" role="note">{t("settings.hotReloadWarning") || "⚠️ Hot-reload is in-memory only: changes apply immediately but are lost on gateway restart. Copy the snippet into .env to persist."}</p>
         </div>
         {validationErrors.length > 0 && (
           <div className="text-xs px-3 py-2 rounded-lg border bg-rose-soft border-rose-line text-rose-ink" role="alert">

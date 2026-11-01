@@ -1,18 +1,22 @@
 # app-auto-llm-free
 
-[![CI](https://github.com/nbhson/app-free-llm-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/nbhson/app-free-llm-gateway/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/nbhson/app-free-llm-gateway/actions/workflows/ci.yml/badge.svg)](https://github.com/nbhson/app-free-llm-gateway/actions/workflows/ci.yml) [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 > **One endpoint for all free LLMs.** Self-hosted, OpenAI-compatible gateway aggregating all free providers & models into a single endpoint.
 
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![Stack: Hono + Node](https://img.shields.io/badge/Stack-Hono%20%2B%20Node-green)](https://hono.dev)
 [![OpenAI Compatible](https://img.shields.io/badge/API-OpenAI%20Compatible-00c853)](docs/en/API.md)
-[![FREE](https://img.shields.io/badge/FREE-51_Providers-00c853?style=flat-square)](docs/en/PROVIDERS.md)
-[![FREE](https://img.shields.io/badge/FREE-338_Models-00c853?style=flat-square)](models.yaml)
+[![FREE](https://img.shields.io/badge/FREE-50_Providers-00c853?style=flat-square)](docs/en/PROVIDERS.md)
+[![FREE](https://img.shields.io/badge/FREE-419_Models-00c853?style=flat-square)](models)
+
+> Counts as of **2026-11-01**: 50 providers (`apps/gateway/src/providers/registry.ts` `providerIds`) / 419 models (`models/*.yaml`, unique ids). Source of truth: `GET /api/stats` (`models_source` field) — update badges together with the registry, don't let them drift.
+>
+> 🔒 `GET /metrics` (Prometheus) is **admin-gated**: enabled by default, but scrapes must send `Authorization: Bearer <admin-key>` (a virtual key with `role: admin` or the master key). With `PROMETHEUS_ENABLED=false` it returns `404`.
 [![No Card](https://img.shields.io/badge/No_Card-29%2F30-3b82f6?style=flat-square)](docs/en/FREELLMS_FREE_TIER.md)
 
 > ### 🆓 **100% FREE — No Credit Card • No Trial • Forever**
-> **51 Providers • 338 Models (316 freellms free + 8 aliases) • One OpenAI-Compatible Endpoint** — Self-hosted, BYOK, costs you `$0`.
+> **50 Providers • 419 Models • One OpenAI-Compatible Endpoint** — Self-hosted, BYOK, costs you `$0`.
 >
 > | Tier | Providers | Models | No Card |
 > |------|-----------|--------|---------|
@@ -39,11 +43,11 @@
 
 ---
 
-## 📸 Screenshots — Live Dashboard (51 providers • 316 free • verified 24h)
+## 📸 Screenshots — Live Dashboard (50 providers • 419 models • verified 24h)
 
-| Providers — 51 IDs, tier, hasKey, `Get Key ↗` + Live Health 5s | Models — 316 models, `kiraai` filter, `Check Live`, Hide 404 (`usable`/`timeout`/`404`) |
+| Providers — 50 IDs, tier, hasKey, `Get Key ↗` + Live Health 5s | Models — 419 models, `kiraai` filter, `Check Live`, Hide 404 (`usable`/`timeout`/`404`) |
 |:---:|:---:|
-| ![Providers — 51 live, health 5s](docs/images/providers.png) | ![Models — 316 live verify](docs/images/models.png) |
+| ![Providers — 50 live, health 5s](docs/images/providers.png) | ![Models — 419 live verify](docs/images/models.png) |
 
 | Chat — `ollama-cloud/gpt-oss:120b`, Context Window + vision | Usage — Provider Topology + Requests/Tokens by Provider |
 |:---:|:---:|
@@ -60,7 +64,7 @@
 | Category | Features |
 |----------|----------|
 | **Unified OpenAI-Compatible API** | `POST /v1/chat/completions` (stream + non-stream), `/v1/completions` (legacy text), `/v1/models`, `/v1/embeddings`, `/v1/images/generations`, `/v1/audio/*`, `/v1/responses`, `/v1/conversations`, `/v1/messages` (Anthropic) — drop-in for OpenAI SDK, Vercel AI, LangChain |
-| **51 Free Providers (338 Models)** | **Permanent Free (28)**: NVIDIA NIM (81+), ModelScope (43), Cloudflare (35), Gemini (15), OVH (10), Cohere (10), OpenRouter (17), SambaNova, SiliconFlow, Groq, Cerebras, Z AI, Agnes, Aion, LLM7, Chutes, Glhf, **B.AI (4, 0 Credits)**, **TokenHarbor (3 :free + 1 reserved)**…<br>**Quota Free (4)**: GitHub Models (13), Mistral (9), Kilo Code (8), HuggingFace (4)<br>**Scraped/Unlimited (3)**: Pollinations, LLM7.io, Ollama Cloud<br>**Custom Free (3)**: OrcaRouter, FreeAI, Cline |
+| **50 Free Providers (419 Models)** | **Permanent Free (28)**: NVIDIA NIM (81+), ModelScope (43), Cloudflare (35), Gemini (15), OVH (10), Cohere (10), OpenRouter (17), SambaNova, SiliconFlow, Groq, Cerebras, Z AI, Agnes, Aion, LLM7, Chutes, Glhf, **B.AI (4, 0 Credits)**, **TokenHarbor (3 :free + 1 reserved)**…<br>**Quota Free (4)**: GitHub Models (13), Mistral (9), Kilo Code (8), HuggingFace (4)<br>**Scraped/Unlimited (3)**: Pollinations, LLM7.io, Ollama Cloud<br>**Custom Free (3)**: OrcaRouter, FreeAI, Cline |
 | **Smart Routing & Fallback** | Tiered fallback (real key → public free), model aliases (`auto`, `gpt-4`, `glm`, `qwen`, `code` → best free), header `x-router` pin, skips `deprecated`/`quota`/`breaker`, `hasKey` filter |
 | **Resilience v2 (0.9.0)** | Shared `tryProviders` executor (6 routes), Redis Lua sliding-window quota/rate-limit (no boundary spikes), circuit breaker 5/30s half-open (5xx/429/exceptions only), TPM/RPM quotas (NVIDIA 40, Groq 30), mid-stream SSE, token pre-flight, persisted 404 strikethrough |
 | **Secure Key Management** | AES-256-GCM at-rest, BYOK, virtual keys `fgk-...` (scopes, RPM limits), `fgk-master-...` admin, key rotation script |
@@ -254,7 +258,7 @@ curl -X POST http://localhost:7373/api/keys \
 |----------|-------|
 | [GETTING_STARTED.md](docs/en/GETTING_STARTED.md) | **For newcomers — 5 min** from 0 to first API call, Dashboard, common errors |
 | [ARCHITECTURE.md](docs/en/ARCHITECTURE.md) | Architecture, request flow, provider interface |
-| [PROVIDERS.md](docs/en/PROVIDERS.md) | List of **41 providers**, free tier limits, base URLs, how to add provider |
+| [PROVIDERS.md](docs/en/PROVIDERS.md) | List of **50 providers**, free tier limits, base URLs, how to add provider |
 | [FREELLMS_FREE_TIER.md](docs/en/FREELLMS_FREE_TIER.md) | Freellms.org snapshot (historical) — live is now source of truth |
 | [OPERATIONS.md](docs/en/OPERATIONS.md) | Operations & live verify (hasKey, Sync Live Now, persisted 404) |
 | [API.md](docs/en/API.md) | OpenAI-compatible endpoints, aliases, streaming, error codes, pagination 25/50 |
@@ -266,7 +270,7 @@ curl -X POST http://localhost:7373/api/keys \
 
 ## 🗺️ Roadmap
 
-- [x] **P1 Scaffold** — Hono + Vite + Drizzle + Docker (51 ids, live models, pagination 25/50)
+- [x] **P1 Scaffold** — Hono + Vite + Drizzle + Docker (50 ids, live models, pagination 25/50)
 - [x] **Freellms Sync** — Historical snapshot (now disabled, live is source)
 - [x] **P2 Gateway Core** ✅ Done — 30 adapters, streaming SSE, `auto` 15-tier, `x-router` pin, sanitize spaces
 - [x] **P3 Resilience** ✅ Done — key-manager AES-GCM, quota RPM/TPM, breaker 5/30s, health 41, persisted 404 strikethrough + disable
